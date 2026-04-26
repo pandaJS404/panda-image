@@ -1,0 +1,202 @@
+:root {
+  --color-scheme: dark;
+  --app-bg: #0e1116;
+  --surface-1: #141a22;
+  --surface-2: #1b2430;
+  --surface-3: #232d3a;
+  --surface-4: #2b3544;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-white: rgba(255, 255, 255, 1);
+  --editor-frame-border: rgba(255, 255, 255, 0.9);
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.68);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --accent: #57b5f9;
+  --focus-ring: rgba(87, 181, 249, 0.45);
+  --panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  --overlay-backdrop: rgba(5, 10, 16, 0.82);
+  --link-underline: rgba(255, 255, 255, 0.36);
+
+  --toolbar-surface: rgba(20, 26, 34, 0.88);
+  --toolbar-surface-raised: rgba(27, 36, 48, 0.96);
+  --toolbar-shell-background: linear-gradient(180deg, rgba(12, 16, 23, 0.94), rgba(9, 13, 19, 0.98));
+  --toolbar-shell-border: rgba(255, 255, 255, 0.08);
+  --toolbar-group-surface: rgba(255, 255, 255, 0.026);
+  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.04);
+  --toolbar-control-surface: rgba(255, 255, 255, 0.035);
+  --toolbar-control-surface-hover: rgba(255, 255, 255, 0.065);
+  --toolbar-control-border: rgba(255, 255, 255, 0.56);
+  --toolbar-control-border-strong: rgba(255, 255, 255, 0.82);
+  --toolbar-primary-surface: rgba(193, 152, 251, 0.14);
+  --toolbar-primary-surface-hover: rgba(193, 152, 251, 0.2);
+  --toolbar-primary-border: rgba(193, 152, 251, 0.16);
+  --toolbar-primary-shadow:
+    inset 0 0 0 1px rgba(193, 152, 251, 0.42),
+    0 10px 24px rgba(110, 76, 155, 0.14);
+  --toolbar-divider: rgba(255, 255, 255, 0.1);
+  --toolbar-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
+  --toolbar-hover: rgba(255, 255, 255, 0.06);
+  --toolbar-active: rgba(87, 181, 249, 0.14);
+  --toolbar-leading-surface: rgba(255, 255, 255, 0.03);
+  --toolbar-leading-surface-hover: rgba(255, 255, 255, 0.05);
+  --toolbar-menu-surface: rgba(255, 255, 255, 0.03);
+  --toolbar-menu-surface-hover: rgba(255, 255, 255, 0.08);
+  --toolbar-menu-border: rgba(255, 255, 255, 0.24);
+
+  --brand-primary: #f8e81c;
+  --brand-primary-contrast: #121212;
+  --brand-purple: #c198fb;
+  --brand-purple-muted: #55436f;
+  --button-brand-fg: #f3e7ff;
+  --button-brand-hover-fg: #ffffff;
+  --status-danger: #ff5f56;
+  --status-info: #57b5f9;
+  --status-success: #37b589;
+
+  --loading-mask: rgba(9, 13, 18, 0.22);
+  --control-focus-outline: rgba(255, 255, 255, 0.08);
+  --control-focus-ring: rgba(87, 181, 249, 0.12);
+  --control-focus-ring-strong: rgba(87, 181, 249, 0.16);
+  --color-picker-field-surface: #ffffff;
+  --color-picker-field-border: rgba(255, 255, 255, 0.14);
+  --color-picker-field-focus: rgba(87, 181, 249, 0.28);
+  --drag-handle-surface: rgba(255, 255, 255, 0.03);
+  --drag-handle-overlay: rgba(255, 255, 255, 0.05);
+  --drag-handle-border: rgba(255, 255, 255, 0.14);
+  --drag-handle-glow: var(--focus-ring);
+  --theme-create-color-ring: #ffffff;
+  --image-picker-error: #ff7875;
+
+  --theme-toggle-surface: rgba(255, 255, 255, 0.04);
+  --theme-toggle-surface-hover: rgba(255, 255, 255, 0.08);
+  --theme-toggle-border: rgba(255, 255, 255, 0.12);
+  --theme-toggle-thumb: rgba(255, 255, 255, 0.96);
+  --theme-toggle-thumb-fg: #0f172a;
+  --theme-toggle-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  --theme-toggle-label: var(--text-primary);
+  --switch-host-width: 40px;
+  --switch-host-height: 24px;
+  --switch-host-icon-size: 18px;
+  --switch-host-icon-top: 3px;
+  --switch-host-icon-unchecked-left: 18px;
+  --switch-host-icon-checked-left: 4px;
+  --switch-host-icon-color: rgba(15, 23, 42, 0.72);
+  --switch-host-icon-checked-color: rgba(15, 23, 42, 0.88);
+  --page-header-shell: linear-gradient(180deg, rgba(20, 26, 34, 0.72), rgba(20, 26, 34, 0));
+  --page-header-shell-border: rgba(255, 255, 255, 0.08);
+
+  --interactive-transition:
+    color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease,
+    opacity 160ms ease, transform 160ms ease;
+
+  --color-black: var(--surface-1);
+  --color-secondary: var(--text-primary);
+  --color-primary: var(--accent);
+  --color-gray: var(--text-tertiary);
+  --color-dark-gray: var(--surface-3);
+  --color-hover: var(--surface-2);
+
+  --h0: 4.5rem;
+  --h1: 3rem;
+  --h2: 2.25rem;
+  --h3: 1.5rem;
+  --h4: 1.125rem;
+  --h5: 0.75rem;
+  --lh: calc(4 / 3);
+  --m1: calc(2 / 3 * 1em);
+  --m2: calc(4 / 3 * 1em);
+  --m3: calc(8 / 3 * 1em);
+  --m4: calc(16 / 3 * 1em);
+  --x1: 0.5rem;
+  --x2: 1rem;
+  --x3: 2rem;
+  --x4: 4rem;
+  --x5: 8rem;
+  --x6: 16rem;
+
+  --cm-background: transparent;
+  --cm-text: inherit;
+  --cm-string: inherit;
+  --cm-comment: inherit;
+  --cm-variable: inherit;
+  --cm-variable-2: inherit;
+  --cm-variable-3: inherit;
+  --cm-number: inherit;
+  --cm-keyword: inherit;
+  --cm-property: inherit;
+  --cm-definition: inherit;
+  --cm-meta: inherit;
+  --cm-operator: inherit;
+  --cm-attribute: inherit;
+  --cm-tag: inherit;
+  --cm-builtin: inherit;
+}
+
+:root[data-ui-theme='light'] {
+  --color-scheme: light;
+  --app-bg: #f4f7fb;
+  --surface-1: #ffffff;
+  --surface-2: #edf2f7;
+  --surface-3: #dbe5f0;
+  --surface-4: #c8d5e3;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-white: rgba(15, 23, 42, 0.12);
+  --editor-frame-border: rgba(15, 23, 42, 0.12);
+  --text-primary: rgba(15, 23, 42, 0.92);
+  --text-secondary: rgba(15, 23, 42, 0.64);
+  --text-tertiary: rgba(15, 23, 42, 0.48);
+  --focus-ring: rgba(87, 181, 249, 0.3);
+  --panel-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  --overlay-backdrop: rgba(241, 245, 249, 0.84);
+  --link-underline: rgba(15, 23, 42, 0.28);
+
+  --toolbar-surface: rgba(255, 255, 255, 0.92);
+  --toolbar-surface-raised: rgba(255, 255, 255, 0.98);
+  --toolbar-shell-background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 251, 0.98));
+  --toolbar-shell-border: rgba(15, 23, 42, 0.08);
+  --toolbar-group-surface: rgba(15, 23, 42, 0.03);
+  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.72);
+  --toolbar-control-surface: rgba(15, 23, 42, 0.035);
+  --toolbar-control-surface-hover: rgba(15, 23, 42, 0.07);
+  --toolbar-control-border: rgba(15, 23, 42, 0.18);
+  --toolbar-control-border-strong: rgba(15, 23, 42, 0.32);
+  --toolbar-primary-border: rgba(193, 152, 251, 0.24);
+  --toolbar-primary-shadow:
+    inset 0 0 0 1px rgba(193, 152, 251, 0.32),
+    0 8px 18px rgba(110, 76, 155, 0.12);
+  --toolbar-divider: rgba(15, 23, 42, 0.12);
+  --toolbar-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+  --toolbar-hover: rgba(15, 23, 42, 0.06);
+  --toolbar-active: rgba(87, 181, 249, 0.12);
+  --toolbar-leading-surface: rgba(255, 255, 255, 0.7);
+  --toolbar-leading-surface-hover: rgba(255, 255, 255, 0.88);
+  --toolbar-menu-surface: rgba(15, 23, 42, 0.04);
+  --toolbar-menu-surface-hover: rgba(15, 23, 42, 0.08);
+  --toolbar-menu-border: rgba(15, 23, 42, 0.14);
+
+  --button-brand-fg: #4f3a71;
+  --button-brand-hover-fg: #3f2b62;
+  --loading-mask: rgba(244, 247, 251, 0.56);
+  --control-focus-outline: rgba(15, 23, 42, 0.08);
+  --control-focus-ring: rgba(87, 181, 249, 0.16);
+  --control-focus-ring-strong: rgba(87, 181, 249, 0.22);
+  --color-picker-field-surface: #ffffff;
+  --color-picker-field-border: rgba(15, 23, 42, 0.14);
+  --color-picker-field-focus: rgba(87, 181, 249, 0.22);
+  --drag-handle-surface: rgba(15, 23, 42, 0.04);
+  --drag-handle-overlay: rgba(15, 23, 42, 0.06);
+  --drag-handle-border: rgba(15, 23, 42, 0.12);
+  --drag-handle-glow: rgba(87, 181, 249, 0.28);
+  --theme-create-color-ring: rgba(15, 23, 42, 0.18);
+
+  --theme-toggle-surface: rgba(15, 23, 42, 0.04);
+  --theme-toggle-surface-hover: rgba(15, 23, 42, 0.08);
+  --theme-toggle-border: rgba(15, 23, 42, 0.1);
+  --theme-toggle-thumb: rgba(15, 23, 42, 0.94);
+  --theme-toggle-thumb-fg: #ffffff;
+  --theme-toggle-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  --page-header-shell: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0));
+  --page-header-shell-border: rgba(15, 23, 42, 0.08);
+}
