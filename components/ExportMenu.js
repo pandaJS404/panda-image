@@ -32,11 +32,13 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
   }
 
   const handleQuickExport = format => () => exportImage(format, { filename: getFilename() })
+
   const handleModalExport = format => async () => {
     await exportImage(format, { filename: getFilename() })
     setOpen(false)
   }
-  const handleOpenExport = async () => {
+
+  const handlePreviewExport = async () => {
     await exportImage('blob', { filename: getFilename(), open: true })
     setOpen(false)
   }
@@ -69,7 +71,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
           aria-tooltip="导出菜单"
           onClick={() => setOpen(true)}
         >
-          <span className="export-trigger-button__label">导出</span>
+          <span className="export-trigger-button__label">{'导出'}</span>
           <span className="export-trigger-button__icon">
             <DownOutlined />
           </span>
@@ -98,7 +100,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
                 />
               </div>
               <div className="export-row export-row--stacked">
-                <span>尺寸</span>
+                <span className="export-menu-filename">文件名</span>
                 <Segmented
                   block
                   className="export-size-segmented"
@@ -108,9 +110,24 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
                 />
               </div>
               <div className="export-row export-row--actions">
-                <ButtonPrimitive fullWidth className="export-open-button" onClick={handleOpenExport}>
-                  打开
-                </ButtonPrimitive>
+                <div className="export-action-stack">
+                  <ButtonPrimitive
+                    fullWidth
+                    className="export-open-button export-preview-button"
+                    onClick={handlePreviewExport}
+                    disabled={loading}
+                  >
+                    预览
+                  </ButtonPrimitive>
+                  <ButtonPrimitive
+                    fullWidth
+                    className="export-download-button"
+                    onClick={handleModalExport('blob')}
+                    disabled={loading}
+                  >
+                    导出
+                  </ButtonPrimitive>
+                </div>
                 <div className="export-save-container export-save-container--brand">
                   <span>下载</span>
                   <div className="export-format-actions">

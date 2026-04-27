@@ -291,6 +291,10 @@
   box-shadow: none;
 }
 
+.export-format-button {
+  padding: 10px;
+}
+
 .image-picker-mode-button {
   margin: 0 8px 8px 0;
   color: var(--text-primary);
@@ -418,8 +422,15 @@
 
 .export-open-button {
   justify-content: center;
-  flex: 1 1 96px;
-  min-height: 64px;
+  flex: 1 1 auto;
+  min-height: 56px;
+  color: var(--brand-purple);
+}
+
+.export-download-button {
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 56px;
   color: var(--brand-purple);
 }
 
@@ -429,10 +440,37 @@
   color: var(--brand-purple-muted);
 }
 
+.export-format-actions .export-format-button,
+.export-format-actions .export-format-button.ant-btn {
+  border-color: var(--border-subtle);
+}
+
 .export-size-option[data-selected='true'],
 .export-format-button:hover,
 .export-format-button:focus-visible {
   color: var(--brand-purple);
+}
+
+.export-format-actions .export-format-button:hover,
+.export-format-actions .export-format-button:focus-visible,
+.export-format-actions .export-format-button:active,
+.export-format-actions .export-format-button.ant-btn:hover,
+.export-format-actions .export-format-button.ant-btn:focus-visible,
+.export-format-actions .export-format-button.ant-btn:active,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-default:hover,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-default:focus-visible,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-default:active,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:hover,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
+.export-format-actions
+  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active {
+  border-color: var(--brand-purple);
+  box-shadow: none;
 }
 
 .list-setting-display-button.ant-select {

@@ -16,7 +16,6 @@ function AppProviders() {
       <ConfigProvider
         theme={{
           algorithm: uiTheme === 'light' ? antdTheme.defaultAlgorithm : antdTheme.darkAlgorithm,
-          token: getAntdThemeTokens(uiTheme),
           components: ANTD_THEME_COMPONENTS,
           hashed: false,
           cssVar: true,
