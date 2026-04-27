@@ -403,6 +403,7 @@ function Settings(props) {
         open={open}
         title="设置"
         footer={null}
+        centered
         destroyOnHidden
         width="calc(100vw - 24px)"
         rootClassName="settings-modal"
