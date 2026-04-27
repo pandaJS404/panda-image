@@ -51,16 +51,6 @@ function FontSelect(props) {
         items={[{ id: 'upload', name: '上传字体 +' }, ...FONTS]}
         listClassName="font-select-list"
         popoverClassName="font-select-popover"
-        popoverStyles={{
-          root: {
-            width: '240px',
-            maxWidth: 'calc(100vw - 40px)',
-          },
-          container: {
-            width: '100%',
-            maxWidth: '100%',
-          },
-        }}
         {...props}
         onChange={onChange}
       >

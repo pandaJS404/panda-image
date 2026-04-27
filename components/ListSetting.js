@@ -45,6 +45,7 @@ function ListSetting({
   const itemMap = React.useMemo(() => {
     return new Map(items.map(item => [item.id, item]))
   }, [items])
+  console.log('🚀 ~ ListSetting ~ itemMap:', itemMap)
 
   const selectedItem = itemMap.get(selected) || getFallbackSelectedItem(selected)
 
@@ -55,6 +56,7 @@ function ListSetting({
       item,
     }))
   }, [items])
+  console.log('🚀 ~ ListSetting ~ options:', options)
 
   const handleOpenChange = nextOpen => {
     if (openRef.current === nextOpen) {
@@ -83,10 +85,7 @@ function ListSetting({
   }
 
   return (
-    <div
-      className={getClassName('list-select-container', className)}
-      data-open={open || undefined}
-    >
+    <div className={getClassName('list-select-container', className)} data-open={open || undefined}>
       <Select
         open={open}
         value={
@@ -100,19 +99,15 @@ function ListSetting({
         labelInValue
         size="small"
         variant="filled"
-        showSearch={false}
-        virtual={false}
         listHeight={160}
-        filterOption={false}
         options={options}
-        suffixIcon={null}
-        placement="bottomLeft"
+        placement="bottomRight"
         popupMatchSelectWidth
         prefix={<span className="label">{title}</span>}
         className={getClassName(
           'list-setting-display-button',
           open && 'list-setting-display-button--open',
-          displayClassName
+          displayClassName,
         )}
         classNames={{
           ...DEFAULT_SELECT_CLASS_NAMES,
