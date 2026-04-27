@@ -39,7 +39,7 @@ function BackgroundSelect({
   }
 
   return (
-    <div className="bg-select-container">
+    <div className="bg-select-container tools-item">
       <Popover
         trigger="click"
         placement="bottomLeft"

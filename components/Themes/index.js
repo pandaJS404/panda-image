@@ -1,10 +1,9 @@
 import React from 'react'
-import { BgColorsOutlined, DeleteOutlined } from '@ant-design/icons'
+import { BgColorsOutlined, CloseOutlined } from '@ant-design/icons'
 import { Modal } from 'antd'
 
 import GlobalHighlights from './GlobalHighlights'
 import Dropdown from '../Dropdown'
-import ReferralLink from '../ReferralLink'
 import ButtonPrimitive from '../buttons/ButtonPrimitive'
 
 const ThemeCreate = React.lazy(() => import('./ThemeCreate'))
@@ -14,23 +13,15 @@ const CUSTOM_THEME_PREFIX = '自定义主题'
 const ThemeItem = ({ children, item, isSelected, remove }) => (
   <div className={`theme-item${item.id === 'create' ? ' theme-item--create' : ''}`}>
     <span className="theme-item-content">{children}</span>
-    {item.referral ? (
-      <div className={`theme-item-referral${isSelected ? ' is-selected' : ''}`}>
-        <ReferralLink href={item.referral}>购买</ReferralLink>
-      </div>
-    ) : null}
+
     {item.custom && !isSelected ? (
-      <ButtonPrimitive
-        iconOnly
-        className="theme-item-remove-button"
+      <CloseOutlined
         aria-tooltip="移除主题"
         onClick={event => {
           event.stopPropagation()
           remove(item.id)
         }}
-      >
-        <DeleteOutlined />
-      </ButtonPrimitive>
+      />
     ) : null}
   </div>
 )

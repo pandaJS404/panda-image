@@ -13,33 +13,22 @@ const ToolbarGroup = ({ children, className = '', gap = 0 }) => {
   )
 }
 
-const Toolbar = ({ style, className = '', leading, tools, portalSlot, exportActions }) => (
-  <Card
-    className={`toolbar toolbar-card${className ? ` ${className}` : ''}`}
-    style={style}
-    role="toolbar"
-    variant="borderless"
-    classNames={{ body: 'toolbar-card__body' }}
-    styles={{ body: { padding: 0, background: 'transparent' } }}
-  >
-    <Flex className="toolbar-layout" align="stretch" gap={16}>
-      <Flex className="toolbar-cluster toolbar-cluster--main" align="stretch" gap={16}>
+const Toolbar = ({ style, className = '', leading, tools, exportActions }) => (
+  <div className={`toolbar ${className ? ` ${className}` : ''}`} style={style}>
+    <Flex className="toolbar-layout" align="stretch" gap={20}>
+      <Flex className="toolbar-cluster toolbar-cluster--main" align="stretch" gap={20}>
         <ToolbarGroup className="toolbar-group--leading" gap={10}>
           {leading}
         </ToolbarGroup>
-        <ToolbarGroup className="toolbar-group--tools" gap={20}>
+        <ToolbarGroup className="toolbar-group--tools" gap={10}>
           {tools}
         </ToolbarGroup>
-      </Flex>
-
-      <Flex className="toolbar-cluster toolbar-cluster--side" align="stretch" gap={12}>
-        {portalSlot ? <div className="toolbar-portal">{portalSlot}</div> : null}
-        <ToolbarGroup className="toolbar-group--primary toolbar-group--export" gap={8}>
+        <ToolbarGroup className="toolbar-group--primary toolbar-group--export" gap={10}>
           {exportActions}
         </ToolbarGroup>
       </Flex>
     </Flex>
-  </Card>
+  </div>
 )
 
 export default Toolbar

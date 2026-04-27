@@ -1,122 +1,162 @@
 import React from 'react'
-import { Popover } from 'antd'
+import { CheckCircleFilled } from '@ant-design/icons'
+import { Select } from 'antd'
 
-import ButtonPrimitive from './buttons/ButtonPrimitive'
-import SvgAsset from './svg/SvgAsset'
-import CheckmarkAsset from './svg/assets/checkmark.svg?react'
-
-const DEFAULT_POPOVER_CLASS_NAMES = {
-  root: 'list-setting-popover',
-  container: 'list-setting-popover__container',
-  content: 'list-setting-popover__content',
+const DEFAULT_SELECT_CLASS_NAMES = {
+  prefix: 'list-setting-display-prefix',
+  content: 'list-setting-display-content',
+  popup: {
+    root: 'list-setting-popover',
+    list: 'list-setting-list',
+    listItem: 'list-setting-option',
+  },
 }
 
-class ListSetting extends React.Component {
-  static defaultProps = {
-    onOpen: () => {},
-    onClose: () => {},
-    className: '',
-    listClassName: '',
-    displayClassName: '',
-    popoverClassName: '',
-    popoverStyles: undefined,
+const getClassName = (...parts) => parts.filter(Boolean).join(' ')
+
+const getFallbackSelectedItem = selected =>
+  selected == null ? {} : { id: selected, name: String(selected) }
+
+function renderItemContent(render, item, selected) {
+  if (typeof render !== 'function') {
+    return <span>{item?.name}</span>
   }
 
-  state = { isVisible: false }
+  return render(item, selected)
+}
 
-  select = id => {
-    if (this.props.selected !== id) {
-      this.props.onChange(id)
+function ListSetting({
+  items,
+  selected,
+  title,
+  children,
+  onChange,
+  onOpen = () => {},
+  onClose = () => {},
+  className = '',
+  listClassName = '',
+  displayClassName = '',
+  popoverClassName = '',
+  popoverStyles,
+}) {
+  const [open, setOpen] = React.useState(false)
+  const openRef = React.useRef(false)
+
+  const itemMap = React.useMemo(() => {
+    return new Map(items.map(item => [item.id, item]))
+  }, [items])
+
+  const selectedItem = itemMap.get(selected) || getFallbackSelectedItem(selected)
+
+  const options = React.useMemo(() => {
+    return items.map(item => ({
+      value: item.id,
+      label: item.name,
+      item,
+    }))
+  }, [items])
+
+  const handleOpenChange = nextOpen => {
+    if (openRef.current === nextOpen) {
+      return
     }
 
-    this.handleOpenChange(false)
-  }
+    openRef.current = nextOpen
+    setOpen(nextOpen)
 
-  handleOpenChange = isVisible => {
-    const handler = isVisible ? this.props.onOpen : this.props.onClose
-    handler()
-    this.setState({ isVisible })
-  }
-
-  handleTriggerKeyDown = event => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      this.handleOpenChange(!this.state.isVisible)
-    }
-  }
-
-  handleItemKeyDown = id => event => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      this.select(id)
-    }
-  }
-
-  renderListItems() {
-    return this.props.items.map(item => (
-      <ButtonPrimitive
-        key={item.id}
-        fullWidth
-        className="list-setting-item-button"
-        onClick={this.select.bind(null, item.id)}
-        onKeyDown={this.handleItemKeyDown(item.id)}
-      >
-        {this.props.children(item, this.props.selected)}
-        {this.props.selected === item.id ? <SvgAsset component={CheckmarkAsset} /> : null}
-      </ButtonPrimitive>
-    ))
-  }
-
-  render() {
-    const {
-      items,
-      selected,
-      title,
-      children,
-      className,
-      listClassName,
-      displayClassName,
-      popoverClassName,
-      popoverStyles,
-    } = this.props
-    const { isVisible } = this.state
-
-    const selectedItem = items.filter(item => item.id === selected)[0] || {}
-    const popoverClassNames = {
-      ...DEFAULT_POPOVER_CLASS_NAMES,
-      root: [DEFAULT_POPOVER_CLASS_NAMES.root, popoverClassName].filter(Boolean).join(' '),
+    if (nextOpen) {
+      onOpen()
+      return
     }
 
-    return (
-      <div className={`list-select-container${className ? ` ${className}` : ''}`}>
-        <Popover
-          trigger="click"
-          placement="bottomLeft"
-          open={isVisible}
-          arrow={false}
-          classNames={popoverClassNames}
-          styles={popoverStyles}
-          onOpenChange={this.handleOpenChange}
-          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-          content={
-            <div className={`list-setting-list${listClassName ? ` ${listClassName}` : ''}`}>
-              {this.renderListItems()}
+    onClose()
+  }
+
+  const handleSelect = (nextValue, option) => {
+    const nextId = option?.item?.id ?? nextValue?.value ?? nextValue
+
+    if (nextId != null && nextId !== selected) {
+      onChange(nextId)
+    }
+
+    handleOpenChange(false)
+  }
+
+  return (
+    <div
+      className={getClassName('list-select-container', className)}
+      data-open={open || undefined}
+    >
+      <Select
+        open={open}
+        value={
+          selectedItem.id != null
+            ? {
+                value: selectedItem.id,
+                label: selectedItem.name,
+              }
+            : undefined
+        }
+        labelInValue
+        size="small"
+        variant="filled"
+        showSearch={false}
+        virtual={false}
+        listHeight={160}
+        filterOption={false}
+        options={options}
+        suffixIcon={null}
+        placement="bottomLeft"
+        popupMatchSelectWidth
+        prefix={<span className="label">{title}</span>}
+        className={getClassName(
+          'list-setting-display-button',
+          open && 'list-setting-display-button--open',
+          displayClassName
+        )}
+        classNames={{
+          ...DEFAULT_SELECT_CLASS_NAMES,
+          popup: {
+            ...DEFAULT_SELECT_CLASS_NAMES.popup,
+            root: getClassName(DEFAULT_SELECT_CLASS_NAMES.popup.root, popoverClassName),
+            list: getClassName(DEFAULT_SELECT_CLASS_NAMES.popup.list, listClassName),
+          },
+        }}
+        styles={{
+          popup: {
+            root: popoverStyles?.root,
+            list: popoverStyles?.list,
+            listItem: popoverStyles?.listItem,
+          },
+        }}
+        onSelect={handleSelect}
+        onOpenChange={handleOpenChange}
+        optionRender={({ data }) => (
+          <div className="list-setting-item-button">
+            {renderItemContent(children, data.item, selected)}
+            {selected === data.item.id ? <CheckCircleFilled /> : null}
+          </div>
+        )}
+        labelRender={({ value }) => {
+          const activeItem = itemMap.get(value) || selectedItem
+
+          return (
+            <span className="list-setting-display-value">
+              {renderItemContent(children, activeItem, selected)}
+            </span>
+          )
+        }}
+        popupRender={originNode => (
+          <div className="list-setting-popover__container" style={popoverStyles?.container}>
+            <div className="list-setting-popover__content" style={popoverStyles?.content}>
+              {originNode}
             </div>
-          }
-        >
-          <ButtonPrimitive
-            fullWidth
-            active={isVisible}
-            className={`list-setting-display-button${displayClassName ? ` ${displayClassName}` : ''}`}
-            onKeyDown={this.handleTriggerKeyDown}
-          >
-            <span className="label">{title}</span>
-            {children(selectedItem)}
-          </ButtonPrimitive>
-        </Popover>
-      </div>
-    )
-  }
+          </div>
+        )}
+        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
+      />
+    </div>
+  )
 }
 
-export default ListSetting
+export default React.memo(ListSetting)

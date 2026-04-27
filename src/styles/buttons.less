@@ -11,7 +11,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--button-gap, 8px);
-  width: 100%;
   min-width: 0;
 }
 
@@ -109,36 +108,91 @@
   }
 
   .toolbar-group--tools {
+    .toolbar-button,
+    .toolbar-button.ant-btn,
+    .toolbar-button:hover,
+    .toolbar-button.ant-btn:hover,
+    .toolbar-button:focus-visible,
+    .toolbar-button.ant-btn:focus-visible,
+    .toolbar-button:active,
+    .toolbar-button.ant-btn:active,
+    .toolbar-button[data-active='true'],
+    .toolbar-button.ant-btn[data-active='true'],
+    .toolbar-button.ant-btn.ant-btn-default:hover,
+    .toolbar-button.ant-btn.ant-btn-default:focus-visible,
+    .toolbar-button.ant-btn.ant-btn-default:active,
+    .toolbar-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:hover,
+    .toolbar-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
+    .toolbar-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      outline: none;
+    }
+
     .copy-trigger-button,
-    .settings-trigger-button {
+    .copy-trigger-button.ant-btn,
+    .settings-trigger-button,
+    .settings-trigger-button.ant-btn {
       width: var(--toolbar-control-height);
       min-width: var(--toolbar-control-height);
       color: var(--text-secondary);
     }
 
     .copy-trigger-button:hover,
+    .copy-trigger-button.ant-btn:hover,
     .copy-trigger-button:focus-visible,
+    .copy-trigger-button.ant-btn:focus-visible,
+    .copy-trigger-button:active,
+    .copy-trigger-button.ant-btn:active,
+    .copy-trigger-button[data-active='true'],
+    .copy-trigger-button.ant-btn[data-active='true'],
+    .copy-trigger-button.ant-btn.ant-btn-default:hover,
+    .copy-trigger-button.ant-btn.ant-btn-default:focus-visible,
+    .copy-trigger-button.ant-btn.ant-btn-default:active,
+    .copy-trigger-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:hover,
+    .copy-trigger-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
+    .copy-trigger-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active,
     .settings-trigger-button:hover,
-    .settings-trigger-button:focus-visible {
-      color: var(--text-primary);
+    .settings-trigger-button.ant-btn:hover,
+    .settings-trigger-button:focus-visible,
+    .settings-trigger-button.ant-btn:focus-visible,
+    .settings-trigger-button.ant-btn:active,
+    .settings-trigger-button[data-active='true'] {
+      color: var(--text-secondary);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      outline: none;
     }
 
     .bg-select-display {
+      position: relative;
       width: var(--toolbar-control-height);
       height: var(--toolbar-control-height);
       padding: 0;
+      overflow: hidden;
       border-radius: var(--toolbar-group-radius);
       background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    .bg-select-display > .panda-button__content {
+      position: absolute;
+      inset: 4px;
+      overflow: hidden;
+      border-radius: calc(var(--toolbar-group-radius) - 1px);
+      background: var(--surface-1);
     }
 
     .bg-select-display:hover,
-    .bg-select-display:focus-visible {
-      box-shadow: inset 0 0 0 2px var(--focus-ring);
-    }
-
+    .bg-select-display:focus-visible,
+    .bg-select-display:active,
     .bg-select-display[data-active='true'] {
-      background: var(--toolbar-active);
-      box-shadow: none;
+      background: transparent;
+      border-color: transparent;
+      box-shadow: inset 0 0 0 1px var(--toolbar-tools-item-shadow-color);
     }
   }
 }
@@ -154,7 +208,6 @@
 
 .copy-action-button {
   justify-content: center;
-  border-top: 1px solid currentColor;
   background: transparent;
   color: var(--text-secondary);
 }
@@ -197,8 +250,17 @@
 }
 
 .theme-create-field-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
   justify-content: space-between;
   padding: 4px 4px 4px 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
   background: transparent;
   border-color: transparent;
   box-shadow: none;
@@ -373,68 +435,103 @@
   color: var(--brand-purple);
 }
 
-.list-setting-display-button {
+.list-setting-display-button.ant-select {
   width: 100%;
   min-height: 40px;
-  padding: 8px;
   user-select: none;
   color: var(--text-primary);
   background: var(--surface-2);
   border-radius: 0;
-  justify-content: space-between;
+  transition: var(--interactive-transition);
 }
 
-.list-setting-display-button .label {
+.list-setting-display-button.ant-select .ant-select-selector {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.list-setting-display-button.ant-select .ant-select-prefix,
+.list-setting-display-button.ant-select .label {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-inline-end: 12px;
   color: var(--text-secondary);
 }
 
-.list-setting-display-button[data-active='true'] {
+.list-setting-display-button.ant-select .ant-select-selection-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.list-setting-display-button.ant-select .ant-select-selection-search {
+  inset-inline-start: 0;
+}
+
+.list-setting-display-button.ant-select .ant-select-selection-item,
+.list-setting-display-button.ant-select .ant-select-selection-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-inline-end: 0;
+  margin-inline-end: 0;
+}
+
+.list-setting-display-button.ant-select .ant-select-selection-placeholder {
+  color: var(--text-secondary);
+}
+
+.list-setting-display-value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+  text-align: right;
+}
+
+.list-setting-display-button--open.ant-select,
+.list-setting-display-button.ant-select.ant-select-open {
   background: var(--surface-3);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-.list-setting-display-button:focus-visible {
+.list-setting-display-button.ant-select.ant-select-focused {
   outline: none;
   box-shadow: inset 0 0 0 1px var(--focus-ring);
 }
 
 .list-setting-item-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
   min-height: 41px;
   padding: 8px 16px;
+  box-sizing: border-box;
   user-select: none;
   color: var(--text-primary);
   background: var(--surface-2);
-  border: none;
-  border-bottom: 1px solid var(--border-subtle);
   border-radius: 0;
-  justify-content: space-between;
-}
-
-.list-setting-item-button:hover,
-.list-setting-item-button:focus-visible {
-  background: var(--surface-3);
-}
-
-.list-setting-item-button:first-of-type {
-  border-top: 1px solid var(--border-subtle);
-}
-
-.list-setting-item-button:last-of-type {
-  border-bottom: none;
-}
-
-.list-setting-item-button:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 1px var(--focus-ring);
 }
 
 .theme-item-remove-button {
   display: flex;
-  margin-right: 6px;
+  justify-content: center;
   cursor: pointer;
 }
 
 .theme-item-remove-button svg {
-  transform: scale(1.6);
+  transform: scale(1.2);
 }

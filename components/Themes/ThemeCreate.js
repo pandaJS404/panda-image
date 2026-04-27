@@ -35,6 +35,13 @@ const HighlightPicker = ({ title, onChange, color }) => (
   </div>
 )
 
+const handleHighlightKeyDown = onSelect => event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    onSelect()
+  }
+}
+
 const ThemeCreate = ({
   theme,
   themes,
@@ -80,11 +87,13 @@ const ThemeCreate = ({
           <div className="theme-create-colors">
             {HIGHLIGHT_KEYS.map(key => (
               <div className="theme-create-field" key={key}>
-                <ButtonPrimitive
-                  fullWidth
-                  active={highlight === key}
+                <p
+                  role="button"
+                  tabIndex={0}
+                  data-active={highlight === key || undefined}
                   className="theme-create-field-button"
                   onClick={() => selectHighlight(key)}
+                  onKeyDown={handleHighlightKeyDown(() => selectHighlight(key))}
                 >
                   <div className="theme-create-button-row">
                     <span>{getHighlightLabel(key)}</span>
@@ -95,7 +104,7 @@ const ThemeCreate = ({
                       }}
                     />
                   </div>
-                </ButtonPrimitive>
+                </p>
               </div>
             ))}
           </div>

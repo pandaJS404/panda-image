@@ -13,7 +13,7 @@ const Header = ({ enableHeroText }) => (
         </a>
         <ThemeToggle />
       </div>
-      {enableHeroText ? (
+      {!enableHeroText ? (
         <h2 className="page-header-hero mt3">
           一键把源码生成精美图片。
           <br />

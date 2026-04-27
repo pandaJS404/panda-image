@@ -51,4 +51,50 @@ describe('Antd overlays smoke', () => {
     cy.get('[data-cy="export-button"]').click()
     cy.get('.export-menu-modal').should('be.visible')
   })
+
+  it('keeps theme preset selection and font upload affordance working inside ListSetting select', () => {
+    cy.visit('/')
+    editorVisible()
+
+    cy.get('[data-cy="themes-container"] .dropdown-container').click()
+    cy.get('[data-cy="dropdown-item"]').first().click()
+    cy.get('.theme-create-modal').should('be.visible')
+
+    cy.get('.theme-create-color-circle')
+      .first()
+      .invoke('attr', 'style')
+      .then(initialStyle => {
+        cy.get('.theme-create-select .list-setting-display-button').click()
+        cy.get('.list-setting-popover').should('be.visible')
+        cy.contains('.list-setting-item-button', 'Cobalt').click()
+        cy.get('.theme-create-select .list-setting-display-value').should('contain', 'Cobalt')
+        cy.get('.theme-create-color-circle')
+          .first()
+          .invoke('attr', 'style')
+          .should('not.eq', initialStyle)
+      })
+
+    cy.get('.theme-create-modal .ant-modal-close').click()
+    cy.get('.theme-create-modal').should('not.exist')
+
+    cy.get('[data-cy="settings-button"]').click()
+    cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-tabs .ant-tabs-tab').eq(1).click()
+
+    cy.get('.font-select input[type="file"]').then(([input]) => {
+      cy.stub(input, 'click').as('fontUploadClick')
+    })
+
+    cy.get('.font-select .list-setting-display-value')
+      .invoke('text')
+      .then(valueBefore => {
+        cy.get('.font-select .list-setting-display-button').click()
+        cy.get('.font-select-popover').should('be.visible')
+        cy.get('.font-select-popover .list-setting-option').first().click()
+        cy.get('@fontUploadClick').should('have.been.calledOnce')
+        cy.get('.font-select .list-setting-display-value').should($value => {
+          expect($value.text().trim()).to.eq(valueBefore.trim())
+        })
+      })
+  })
 })

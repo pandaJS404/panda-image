@@ -164,11 +164,11 @@
 }
 
 .toolbar {
-  --toolbar-control-height: 44px;
+  --ant-border-radius: 6px;
+  --toolbar-control-height: 42px;
   --toolbar-shell-gap: 16px;
-  --toolbar-shell-padding: 8px;
-  --toolbar-group-padding: 4px;
-  --toolbar-group-radius: 4px;
+  --toolbar-group-padding: 6px;
+  --toolbar-group-radius: 6px;
   --toolbar-leading-gap: 10px;
   --toolbar-tools-gap: 20px;
   position: relative;
@@ -208,22 +208,6 @@
   }
 }
 
-.toolbar.toolbar-card {
-  width: auto;
-  max-width: inherit;
-  background: var(--toolbar-shell-background);
-  border-radius: 10px;
-  box-shadow:
-    inset 0 0 0 1px var(--toolbar-shell-border),
-    var(--toolbar-shadow);
-  backdrop-filter: blur(18px);
-
-  .toolbar-card__body {
-    padding: 0;
-    background: transparent;
-  }
-}
-
 .toolbar-layout,
 .toolbar-cluster,
 .toolbar-group,
@@ -237,7 +221,6 @@
   align-items: center;
   justify-content: flex-start;
   gap: var(--toolbar-shell-gap);
-  padding: var(--toolbar-shell-padding);
   max-width: 100%;
 }
 
@@ -262,7 +245,7 @@
   align-items: center;
   min-height: var(--toolbar-control-height);
   padding: var(--toolbar-group-padding);
-  border-radius: 6px;
+  border-radius: var(--toolbar-group-radius);
   background: var(--toolbar-group-surface);
   box-shadow: inset 0 0 0 1px var(--toolbar-shell-border);
 
@@ -280,6 +263,7 @@
     background:
       linear-gradient(180deg, var(--toolbar-leading-surface-hover), var(--toolbar-leading-surface)),
       var(--toolbar-group-surface-raised);
+    box-shadow: inset 0 0 0 1px var(--toolbar-leading-border);
 
     > * {
       flex: 0 0 auto;
@@ -295,12 +279,7 @@
 
     > .dropdown-container {
       border-radius: var(--toolbar-group-radius);
-      background: var(--toolbar-leading-surface);
       transition: var(--interactive-transition);
-    }
-
-    > .dropdown-container:focus-within {
-      background: var(--toolbar-leading-surface-hover);
     }
   }
 
@@ -315,7 +294,6 @@
   }
 
   &.toolbar-group--export {
-    gap: 8px;
     background:
       linear-gradient(180deg, var(--toolbar-primary-surface), var(--toolbar-group-surface-raised)),
       var(--toolbar-group-surface-raised);
@@ -411,14 +389,6 @@
     cursor: pointer;
     text-decoration: underline;
   }
-}
-
-.referral-link {
-  display: block;
-  border-radius: 2px;
-  padding: 2px 3px;
-  font-weight: bold;
-  font-size: 10px;
 }
 
 .random-image-controls {

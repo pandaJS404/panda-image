@@ -1,15 +1,15 @@
 import React from 'react'
+import { CheckCircleFilled, CopyOutlined } from '@ant-design/icons'
 import { useCopyTextHandler } from '../src/shared/react/hooks'
 
 import { COLORS } from '../src/modules/editor/config'
 import SvgAsset from './svg/SvgAsset'
-import CheckMarkAsset from './svg/assets/checkmark.svg?react'
 import ControlsBoxyAsset from './svg/assets/controls-boxy.svg?react'
 import ControlsBwAsset from './svg/assets/controls-bw.svg?react'
 import ControlsDefaultAsset from './svg/assets/controls-default.svg?react'
-import CopyAsset from './svg/assets/copy.svg?react'
 
 const size = 24
+const copyIconStyle = { fontSize: size, color: COLORS.GRAY }
 
 const CopyButton = React.memo(function CopyButton({ text }) {
   const { onClick, copied } = useCopyTextHandler(text)
@@ -17,9 +17,9 @@ const CopyButton = React.memo(function CopyButton({ text }) {
   return (
     <button onClick={onClick} className="window-copy-action">
       {copied ? (
-        <SvgAsset component={CheckMarkAsset} size={size} color={COLORS.GRAY} />
+        <CheckCircleFilled style={copyIconStyle} />
       ) : (
-        <SvgAsset component={CopyAsset} size={size} color={COLORS.GRAY} />
+        <CopyOutlined style={copyIconStyle} />
       )}
     </button>
   )

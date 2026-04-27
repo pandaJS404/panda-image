@@ -3,6 +3,7 @@ import debounce from 'lodash.debounce'
 import { snapdom } from '@zumer/snapdom'
 import hljs from 'highlight.js/lib/common'
 import { App as AntdApp } from 'antd'
+import { AimOutlined } from '@ant-design/icons'
 
 import Dropdown from './Dropdown'
 import Settings from './Settings'
@@ -15,8 +16,6 @@ import ExportMenu from './ExportMenu'
 import CopyMenu from './CopyMenu'
 import Themes from './Themes'
 import FontFace from './FontFace'
-import SvgAsset from './svg/SvgAsset'
-import LanguageIconAsset from './svg/assets/language.svg?react'
 import {
   DEFAULT_CODE,
   DEFAULT_EXPORT_SIZE,
@@ -33,7 +32,7 @@ import {
 import { getRouteState } from '../src/modules/editor/state/routing'
 import { fileToDataURL, formatCode, getSettings, omit, unescapeHtml } from '../src/shared/utils'
 
-const languageIcon = <SvgAsset component={LanguageIconAsset} />
+const languageIcon = <AimOutlined />
 const getConfig = omit(['code', 'titleBar'])
 const backgroundPhotographerCredit = /\n\n\/\/ (?:Photo by.+?on .+|图片来源：.+?· .+)/
 const EXPORT_EXTENSIONS = {
@@ -56,7 +55,9 @@ const EXPORT_STAGE_STYLES = {
 }
 
 function searchLanguage(language) {
-  return LANGUAGE_NAME_HASH[language] || LANGUAGE_MIME_HASH[language] || LANGUAGE_MODE_HASH[language]
+  return (
+    LANGUAGE_NAME_HASH[language] || LANGUAGE_MIME_HASH[language] || LANGUAGE_MODE_HASH[language]
+  )
 }
 
 function resolveFormatLanguage(code, language) {
@@ -240,7 +241,7 @@ class Editor extends React.Component {
       format,
       squared = this.state.squaredImage,
       exportSize = (EXPORT_SIZES_HASH[this.state.exportSize] || DEFAULT_EXPORT_SIZE).value,
-    } = { format: 'png' }
+    } = { format: 'png' },
   ) => {
     const capture = await this.capturePandaImage({
       format,
@@ -251,8 +252,7 @@ class Editor extends React.Component {
     const backgroundColor = this.getExportBackgroundColor({ format, squared })
     const exportOptions = {
       type: snapdomType,
-      quality:
-        snapdomType === 'jpeg' || snapdomType === 'webp' ? EXPORT_QUALITY : undefined,
+      quality: snapdomType === 'jpeg' || snapdomType === 'webp' ? EXPORT_QUALITY : undefined,
       backgroundColor,
     }
 
@@ -303,7 +303,7 @@ class Editor extends React.Component {
         new window.ClipboardItem({
           [blob.type]: blob,
         }),
-      ])
+      ]),
     )
 
   updateSetting = (key, value) => {
@@ -384,7 +384,7 @@ class Editor extends React.Component {
   format = async () => {
     const resolvedLanguage = resolveFormatLanguage(
       this.state.code,
-      this.state.language && this.state.language.toLowerCase()
+      this.state.language && this.state.language.toLowerCase(),
     )
 
     try {

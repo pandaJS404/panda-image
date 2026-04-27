@@ -1,9 +1,8 @@
 import React from 'react'
+import { CheckCircleFilled, DownOutlined } from '@ant-design/icons'
 import { Select } from 'antd'
 import { matchSorter } from 'match-sorter'
-import SvgAsset from './svg/SvgAsset'
-import ArrowDownAsset from './svg/assets/arrow-down.svg?react'
-import CheckMarkAsset from './svg/assets/checkmark.svg?react'
+import { syncDomAttribute } from '../src/shared/react/hooks'
 
 const DROPDOWN_CLASS_NAMES = {
   prefix: 'dropdown-select__prefix',
@@ -21,7 +20,7 @@ const DROPDOWN_CLASS_NAMES = {
 const getItemValue = (item, index) =>
   `${item?.id || item?.mode || item?.mime || item?.name || 'item'}-${index}`
 
-const selectedIcon = <SvgAsset component={CheckMarkAsset} />
+const selectedIcon = <CheckCircleFilled />
 
 const getListIndex = (list, item) => {
   const exactIndex = list.findIndex(candidate => candidate === item)
@@ -52,6 +51,7 @@ const Dropdown = React.memo(
     disableInput,
     onOpen,
     title,
+    'aria-tooltip': ariaTooltip,
     className = '',
     ...props
   }) => {
@@ -81,7 +81,7 @@ const Dropdown = React.memo(
 
     const suffixIcon = (
       <span className="dropdown-arrow-icon">
-        <SvgAsset component={ArrowDownAsset} color="currentColor" />
+        <DownOutlined />
       </span>
     )
 
@@ -104,7 +104,12 @@ const Dropdown = React.memo(
     }
 
     const dropdownNode = (
-      <DropdownContainer className={className} isOpen={isOpen} {...props}>
+      <DropdownContainer
+        className={className}
+        isOpen={isOpen}
+        ariaTooltip={ariaTooltip}
+        {...props}
+      >
         <Select
           ref={selectRef}
           open={isOpen}
@@ -151,9 +156,16 @@ const Dropdown = React.memo(
   }
 )
 
-const DropdownContainer = ({ children, className, isOpen, ...props }) => {
+const DropdownContainer = ({ children, className, isOpen, ariaTooltip, ...props }) => {
+  const containerRef = React.useRef(null)
+
+  React.useEffect(() => {
+    syncDomAttribute(containerRef.current, 'aria-tooltip', ariaTooltip)
+  }, [ariaTooltip])
+
   return (
     <div
+      ref={containerRef}
       className={`dropdown-container${className ? ` ${className}` : ''}`}
       data-open={isOpen || undefined}
       {...props}

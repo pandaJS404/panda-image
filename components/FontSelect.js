@@ -1,13 +1,12 @@
 import React from 'react'
 
 import ListSetting from './ListSetting'
-import ReferralLink from './ReferralLink'
 import { FONTS } from '../src/modules/editor/config'
 import { fileToDataURL as blobToUrl } from '../src/shared/utils'
 
 const EXTENSIONS = ['.otf', '.ttf', '.woff']
 
-const Font = ({ id, name, link }) => {
+const Font = ({ id, name }) => {
   const fontStyle = id === 'upload' ? undefined : { fontFamily: id }
   const labelClassName = `font-option-label${id === 'upload' ? ' font-option-label--upload' : ''}`
 
@@ -16,13 +15,6 @@ const Font = ({ id, name, link }) => {
       <span className={labelClassName} style={fontStyle}>
         {name}
       </span>
-      {link ? (
-        <ReferralLink href={link} className="font-option-link">
-          <span className={labelClassName} style={fontStyle}>
-            购买
-          </span>
-        </ReferralLink>
-      ) : null}
     </>
   )
 }

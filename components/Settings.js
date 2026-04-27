@@ -388,7 +388,7 @@ function Settings(props) {
   ]
 
   return (
-    <div className="settings-container">
+    <div className="settings-container tools-item">
       <KeyboardShortcut trigger="cmd-/" handle={() => setOpen(current => !current)} />
       <ToolbarIconButton
         aria-tooltip="设置菜单"

@@ -106,6 +106,41 @@ const copyText = async text => {
   }
 }
 
+const resolveElement = node => {
+  if (!node) {
+    return null
+  }
+
+  if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) {
+    return node
+  }
+
+  if (typeof SVGElement !== 'undefined' && node instanceof SVGElement) {
+    return node
+  }
+
+  if (node.nativeElement) {
+    return resolveElement(node.nativeElement)
+  }
+
+  return null
+}
+
+export const syncDomAttribute = (target, name, value) => {
+  const element = resolveElement(target)
+
+  if (!element) {
+    return
+  }
+
+  if (value == null || value === false || value === '') {
+    element.removeAttribute(name)
+    return
+  }
+
+  element.setAttribute(name, String(value))
+}
+
 export const useAsyncCallback = callback => {
   const callbackRef = React.useRef(callback)
   const [state, setState] = React.useState({

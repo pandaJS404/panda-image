@@ -14,9 +14,7 @@ function useClipboardSupport() {
   const [isClipboardSupported, setClipboardSupport] = React.useState(false)
 
   React.useEffect(() => {
-    setClipboardSupport(
-      Boolean(window.navigator?.clipboard) && typeof ClipboardItem === 'function'
-    )
+    setClipboardSupport(Boolean(window.navigator?.clipboard) && typeof ClipboardItem === 'function')
   }, [])
 
   return isClipboardSupported
@@ -28,7 +26,7 @@ function CopyMenu({ copyImage }) {
   const [open, setOpen] = React.useState(false)
 
   const [showCopied, { loading: copied }] = useAsyncCallback(
-    () => new Promise(resolve => setTimeout(resolve, 1000))
+    () => new Promise(resolve => setTimeout(resolve, 1000)),
   )
 
   const [copy, { loading }] = useAsyncCallback(async event => {
@@ -60,7 +58,7 @@ function CopyMenu({ copyImage }) {
   }
 
   return (
-    <div className="copy-menu-container copy-menu-container--contrast">
+    <div className="copy-menu-container copy-menu-container--contrast tools-item">
       <div className="copy-trigger">
         <Popover
           trigger="click"
@@ -85,12 +83,7 @@ function CopyMenu({ copyImage }) {
             </div>
           }
         >
-          <ToolbarIconButton
-            active={open}
-            tone="muted"
-            className="copy-trigger-button"
-            aria-tooltip="复制菜单"
-          >
+          <ToolbarIconButton tone="muted" className="copy-trigger-button" aria-tooltip="复制菜单">
             <CopyOutlined />
           </ToolbarIconButton>
         </Popover>
