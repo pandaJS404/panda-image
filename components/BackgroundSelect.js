@@ -84,7 +84,7 @@ function BackgroundSelect({
         }
       >
         <ButtonPrimitive
-          tooltipTitle="背景菜单"
+          aria-tooltip="背景菜单"
           fullWidth
           active={open}
           className="bg-color-container bg-select-display"

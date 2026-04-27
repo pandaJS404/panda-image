@@ -6,31 +6,49 @@ describe('Antd overlays smoke', () => {
     cy.clearLocalStorage()
   })
 
-  it('opens the major popovers and closes the theme create popover on outside click', () => {
+  it('opens the major overlays and closes the theme create modal on outside click', () => {
     cy.visit('/')
     editorVisible()
 
+    cy.get('[data-cy="settings-button"]').should('have.attr', 'aria-tooltip')
+    cy.get('[data-cy="export-button"]').should('have.attr', 'aria-tooltip')
+    cy.get('[data-cy="quick-export-button"]').should('have.attr', 'aria-tooltip')
+    cy.get('[data-cy="display"]').should('have.attr', 'aria-tooltip')
+    cy.get('.copy-trigger-button').should('have.attr', 'aria-tooltip')
+    cy.get('[data-cy="themes-container"] .dropdown-container').should('have.attr', 'aria-tooltip')
+    cy.get('.toolbar .toolbar-group--leading > .dropdown-container')
+      .first()
+      .should('have.attr', 'aria-tooltip')
+
+    cy.get('[data-cy="settings-button"]').trigger('mouseenter', { force: true })
+    cy.get('[data-cy="export-button"]').trigger('mouseenter', { force: true })
+    cy.get('[data-cy="display"]').trigger('mouseenter', { force: true })
+    cy.get('.copy-trigger-button').trigger('mouseenter', { force: true })
+    cy.get('.ant-tooltip').should('not.exist')
+
     cy.get('[data-cy="themes-container"] .dropdown-container').click()
     cy.contains('[data-cy="dropdown-item"]', '新建主题 +').click()
-    cy.get('.theme-create-popover').should('be.visible')
+    cy.get('.theme-create-modal').should('be.visible')
 
-    cy.get('body').click(0, 0)
-    cy.get('.theme-create-popover').should('not.be.visible')
+    cy.get('.theme-create-modal .ant-modal-mask').click({ force: true })
+    cy.get('.theme-create-modal').should('not.exist')
 
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-popover').should('be.visible')
-    cy.contains('.bg-select-panel', '图片').click()
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
     cy.get('.bg-select-panel').should('be.visible')
 
     cy.get('[data-cy="settings-button"]').click()
-    cy.get('.settings-popover').should('be.visible')
-    cy.contains('.settings-panel', '其他').click()
+    cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-tabs .ant-tabs-tab').eq(2).click()
     cy.get('[data-cy="format-code-button"]').should('be.visible')
+    cy.get('.settings-modal .ant-modal-close').click()
+    cy.get('.settings-modal').should('not.exist')
 
     cy.get('.copy-trigger-button').click()
     cy.get('.copy-menu-popover').should('be.visible')
 
     cy.get('[data-cy="export-button"]').click()
-    cy.get('.export-menu-popover').should('be.visible')
+    cy.get('.export-menu-modal').should('be.visible')
   })
 })

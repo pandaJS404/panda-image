@@ -1,5 +1,5 @@
 import React from 'react'
-import { Select, Tooltip } from 'antd'
+import { Select } from 'antd'
 import { matchSorter } from 'match-sorter'
 import SvgAsset from './svg/SvgAsset'
 import ArrowDownAsset from './svg/assets/arrow-down.svg?react'
@@ -52,8 +52,8 @@ const Dropdown = React.memo(
     disableInput,
     onOpen,
     title,
-    tooltipPlacement = 'bottom',
     className = '',
+    ...props
   }) => {
     const [isOpen, setIsOpen] = React.useState(false)
     const [searchValue, setSearchValue] = React.useState('')
@@ -104,7 +104,7 @@ const Dropdown = React.memo(
     }
 
     const dropdownNode = (
-      <DropdownContainer className={className} isOpen={isOpen}>
+      <DropdownContainer className={className} isOpen={isOpen} {...props}>
         <Select
           ref={selectRef}
           open={isOpen}
@@ -147,19 +147,16 @@ const Dropdown = React.memo(
       return dropdownNode
     }
 
-    return (
-      <Tooltip destroyOnHidden placement={tooltipPlacement} title={title}>
-        {dropdownNode}
-      </Tooltip>
-    )
+    return dropdownNode
   }
 )
 
-const DropdownContainer = ({ children, className, isOpen }) => {
+const DropdownContainer = ({ children, className, isOpen, ...props }) => {
   return (
     <div
       className={`dropdown-container${className ? ` ${className}` : ''}`}
       data-open={isOpen || undefined}
+      {...props}
     >
       {children}
     </div>

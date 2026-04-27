@@ -1,6 +1,6 @@
 import React from 'react'
 import { MoonOutlined, SunOutlined } from '@ant-design/icons'
-import { Switch, Tooltip } from 'antd'
+import { Switch } from 'antd'
 
 import { useUiTheme } from '../src/ui-theme'
 
@@ -12,19 +12,21 @@ export default function ThemeToggle() {
   return (
     <div className="theme-toggle-shell" data-theme={uiTheme}>
       <span className="theme-toggle__label">{currentThemeLabel}</span>
-      <Tooltip destroyOnHidden placement="bottom" title={nextThemeLabel}>
-        <span className="theme-toggle__switch-shell" data-checked={isDark || undefined}>
-          <Switch
-            checked={isDark}
-            className="theme-toggle"
-            data-cy="theme-toggle"
-            onChange={toggleUiTheme}
-          />
-          <span className="theme-toggle__state-icon">
-            {isDark ? <MoonOutlined /> : <SunOutlined />}
-          </span>
+      <span
+        className="theme-toggle__switch-shell"
+        data-checked={isDark || undefined}
+        aria-tooltip={nextThemeLabel}
+      >
+        <Switch
+          checked={isDark}
+          className="theme-toggle"
+          data-cy="theme-toggle"
+          onChange={toggleUiTheme}
+        />
+        <span className="theme-toggle__state-icon">
+          {isDark ? <MoonOutlined /> : <SunOutlined />}
         </span>
-      </Tooltip>
+      </span>
     </div>
   )
 }

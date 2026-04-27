@@ -425,7 +425,7 @@ class Editor extends React.Component {
                 themes={this.props.themes}
               />
               <Dropdown
-                title="语言"
+                aria-tooltip="语言"
                 icon={languageIcon}
                 selected={
                   LANGUAGE_NAME_HASH[language] ||

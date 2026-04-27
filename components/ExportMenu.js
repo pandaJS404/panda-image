@@ -1,6 +1,6 @@
 import React from 'react'
 import { DownOutlined } from '@ant-design/icons'
-import { Popover, Segmented } from 'antd'
+import { Modal, Segmented } from 'antd'
 import { useKeyboardListener, useAsyncCallback } from '../src/shared/react/hooks'
 
 import { EXPORT_SIZES } from '../src/modules/editor/config'
@@ -31,11 +31,18 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
     return inputRef.current?.input?.value || inputRef.current?.value || undefined
   }
 
-  const handleExport = format => () => exportImage(format, { filename: getFilename() })
-  const handleOpenExport = () => exportImage('blob', { filename: getFilename(), open: true })
+  const handleQuickExport = format => () => exportImage(format, { filename: getFilename() })
+  const handleModalExport = format => async () => {
+    await exportImage(format, { filename: getFilename() })
+    setOpen(false)
+  }
+  const handleOpenExport = async () => {
+    await exportImage('blob', { filename: getFilename(), open: true })
+    setOpen(false)
+  }
 
-  useKeyboardListener('cmd-shift-e', preventDefault(handleExport('blob')))
-  useKeyboardListener('cmd-shift-s', preventDefault(handleExport('svg')))
+  useKeyboardListener('cmd-shift-e', preventDefault(handleQuickExport('blob')))
+  useKeyboardListener('cmd-shift-s', preventDefault(handleQuickExport('svg')))
 
   return (
     <div className="export-menu-container export-menu-container--brand">
@@ -43,23 +50,42 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
         <ToolbarButton
           justify="center"
           tone="brand"
-          onClick={handleExport('blob')}
+          onClick={handleQuickExport('blob')}
           data-cy="quick-export-button"
           className="export-trigger-button export-trigger-button--quick"
           data-role="primary"
-          tooltipTitle="快速导出"
+          aria-tooltip="快速导出"
         >
           {loading ? '导出中…' : '快速导出'}
         </ToolbarButton>
-        <Popover
-          trigger="click"
-          placement="bottomRight"
+        <ToolbarButton
+          id="export-menu"
+          active={open}
+          justify="between"
+          tone="brand"
+          className="export-trigger-button export-trigger-button--menu"
+          data-cy="export-button"
+          data-role="menu"
+          aria-tooltip="导出菜单"
+          onClick={() => setOpen(true)}
+        >
+          <span className="export-trigger-button__label">导出</span>
+          <span className="export-trigger-button__icon">
+            <DownOutlined />
+          </span>
+        </ToolbarButton>
+        <Modal
           open={open}
-          onOpenChange={setOpen}
-          classNames={{ root: 'export-menu-popover' }}
+          title="导出"
+          footer={null}
+          centered
+          destroyOnHidden
+          width="calc(100vw - 24px)"
+          rootClassName="export-menu-modal"
+          onCancel={() => setOpen(false)}
           styles={{ body: { padding: 0 } }}
-          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-          content={
+        >
+          {open ? (
             <div className="export-menu-panel">
               <div className="export-row">
                 <span className="export-menu-filename">文件名</span>
@@ -92,7 +118,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
                       <ButtonPrimitive
                         key={id}
                         className="export-format-button"
-                        onClick={handleExport(format)}
+                        onClick={handleModalExport(format)}
                         id={id}
                         disabled={loading}
                       >
@@ -103,24 +129,8 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
                 </div>
               </div>
             </div>
-          }
-        >
-          <ToolbarButton
-            id="export-menu"
-            active={open}
-            justify="between"
-            tone="brand"
-            className="export-trigger-button export-trigger-button--menu"
-            data-cy="export-button"
-            data-role="menu"
-            tooltipTitle="导出菜单"
-          >
-            <span className="export-trigger-button__label">导出</span>
-            <span className="export-trigger-button__icon">
-              <DownOutlined />
-            </span>
-          </ToolbarButton>
-        </Popover>
+          ) : null}
+        </Modal>
       </div>
     </div>
   )

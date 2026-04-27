@@ -135,6 +135,7 @@ describe('Basic', () => {
     })
 
     cy.get('#export-menu').click()
+    cy.get('.export-menu-modal').should('be.visible')
     cy.get('#export-jpg').click()
 
     cy.window({ timeout: 30000 }).should(win => {
@@ -142,6 +143,8 @@ describe('Basic', () => {
       expect(win.__exportBlob.type).to.eq('image/jpeg')
     })
 
+    cy.get('#export-menu').click()
+    cy.get('.export-menu-modal').should('be.visible')
     cy.get('#export-webp').click()
 
     cy.window({ timeout: 30000 }).should(win => {
@@ -174,7 +177,8 @@ describe('Basic', () => {
     })
 
     cy.get('[data-cy="settings-button"]').click()
-    cy.contains('.settings-panel', '其他').click()
+    cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-tabs .ant-tabs-tab').eq(2).click()
     cy.get('[data-cy="format-code-button"]').click()
 
     cy.get('.CodeMirror').should(([element]) => {
@@ -189,6 +193,7 @@ describe('Basic', () => {
     cy.get('.export-container').should('have.length', 1)
     cy.get('#export-menu').should('have.length', 1)
     cy.get('#export-menu').click()
+    cy.get('.export-menu-modal').should('be.visible')
     cy.get('#export-png').should('have.length', 1)
     cy.get('#export-jpg').should('have.length', 1)
     cy.get('#export-webp').should('have.length', 1)

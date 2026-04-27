@@ -21,13 +21,36 @@
   }
 }
 
-.export-menu-popover,
 .copy-menu-popover,
 .bg-select-popover,
-.settings-popover,
-.theme-create-popover,
 .selection-editor-popover {
   max-width: calc(100vw - 24px);
+}
+
+.export-menu-modal,
+.settings-modal,
+.theme-create-modal {
+  .ant-modal {
+    max-width: calc(100vw - 24px);
+    margin: 12px auto;
+    padding-bottom: 0;
+  }
+
+  .ant-modal-header {
+    padding: 14px 52px 12px 16px;
+  }
+}
+
+.export-menu-modal .ant-modal {
+  max-width: 256px;
+}
+
+.settings-modal .ant-modal {
+  max-width: 520px;
+}
+
+.theme-create-modal .ant-modal {
+  max-width: 656px;
 }
 
 .export-menu-panel,
@@ -40,7 +63,7 @@
 }
 
 .export-menu-panel {
-  width: min(256px, calc(100vw - 24px));
+  width: 100%;
 }
 
 .export-row {
@@ -315,23 +338,15 @@
 }
 
 .settings-panel {
-  width: min(520px, calc(100vw - 24px));
-  max-width: calc(100vw - 24px);
+  width: 100%;
+  max-width: 100%;
 }
 
 .settings-tabs {
   width: 100%;
 }
 
-.theme-create-anchor {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 4px);
-  width: 0;
-  height: 0;
-}
-
 .theme-create-panel {
-  width: min(656px, calc(100vw - 24px));
-  max-width: calc(100vw - 24px);
+  width: 100%;
+  max-width: 100%;
 }

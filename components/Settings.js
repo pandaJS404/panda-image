@@ -1,7 +1,7 @@
 import React from 'react'
 import omitBy from 'lodash.omitby'
 import { SettingOutlined } from '@ant-design/icons'
-import { Popover, Tabs } from 'antd'
+import { Modal, Tabs } from 'antd'
 import { useKeyboardListener } from '../src/shared/react/hooks'
 
 import ThemeSelect from './ThemeSelect'
@@ -120,7 +120,11 @@ function EditorSettings({
 }) {
   return (
     <div className="settings-content">
-      <FontSelect selected={font} onUpload={onUpload} onChange={onChange.bind(null, 'fontFamily')} />
+      <FontSelect
+        selected={font}
+        onUpload={onUpload}
+        onChange={onChange.bind(null, 'fontFamily')}
+      />
       <Slider
         label="字号"
         value={size}
@@ -240,23 +244,26 @@ function Settings(props) {
     setPresets(currentPresets => [...storedPresets, ...currentPresets])
   }, [])
 
-  const handleResetShortcut = React.useCallback(event => {
-    if (event.__pandaSettingsResetHandled) {
-      return
-    }
+  const handleResetShortcut = React.useCallback(
+    event => {
+      if (event.__pandaSettingsResetHandled) {
+        return
+      }
 
-    const matchesResetShortcut =
-      event.shiftKey &&
-      (event.metaKey || event.ctrlKey) &&
-      (event.key === '\\' || event.key === '|' || event.code === 'Backslash')
+      const matchesResetShortcut =
+        event.shiftKey &&
+        (event.metaKey || event.ctrlKey) &&
+        (event.key === '\\' || event.key === '|' || event.code === 'Backslash')
 
-    if (matchesResetShortcut) {
-      event.__pandaSettingsResetHandled = true
-      event.preventDefault()
-      props.resetDefaultSettings()
-      setPreviousSettings(null)
-    }
-  }, [props])
+      if (matchesResetShortcut) {
+        event.__pandaSettingsResetHandled = true
+        event.preventDefault()
+        props.resetDefaultSettings()
+        setPreviousSettings(null)
+      }
+    },
+    [props],
+  )
 
   React.useEffect(() => {
     const targets = [window, document, document.body].filter(Boolean)
@@ -383,15 +390,26 @@ function Settings(props) {
   return (
     <div className="settings-container">
       <KeyboardShortcut trigger="cmd-/" handle={() => setOpen(current => !current)} />
-      <Popover
-        trigger="click"
-        placement="bottomLeft"
+      <ToolbarIconButton
+        aria-tooltip="设置菜单"
+        active={open}
+        className="settings-trigger-button"
+        data-cy="settings-button"
+        onClick={() => setOpen(current => !current)}
+      >
+        <SettingOutlined />
+      </ToolbarIconButton>
+      <Modal
         open={open}
-        onOpenChange={setOpen}
-        classNames={{ root: 'settings-popover' }}
+        title="设置"
+        footer={null}
+        destroyOnHidden
+        width="calc(100vw - 24px)"
+        rootClassName="settings-modal"
+        onCancel={() => setOpen(false)}
         styles={{ body: { padding: 0 } }}
-        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-        content={
+      >
+        {open ? (
           <div className="settings-panel">
             <Presets
               show={showPresets}
@@ -412,17 +430,8 @@ function Settings(props) {
               tabPosition="left"
             />
           </div>
-        }
-      >
-        <ToolbarIconButton
-          tooltipTitle="设置菜单"
-          active={open}
-          className="settings-trigger-button"
-          data-cy="settings-button"
-        >
-          <SettingOutlined />
-        </ToolbarIconButton>
-      </Popover>
+        ) : null}
+      </Modal>
     </div>
   )
 }

@@ -89,7 +89,7 @@ function CopyMenu({ copyImage }) {
             active={open}
             tone="muted"
             className="copy-trigger-button"
-            tooltipTitle="复制菜单"
+            aria-tooltip="复制菜单"
           >
             <CopyOutlined />
           </ToolbarIconButton>

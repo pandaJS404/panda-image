@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button as AntButton, Tooltip } from 'antd'
+import { Button as AntButton } from 'antd'
 import { VisuallyHidden } from '@reach/visually-hidden'
 
 const noop = () => {}
@@ -16,8 +16,6 @@ const ButtonPrimitive = React.forwardRef(
       iconOnly = false,
       children,
       title,
-      tooltipTitle,
-      tooltipPlacement = 'bottom',
       loading = false,
       href,
       htmlType = 'button',
@@ -40,7 +38,7 @@ const ButtonPrimitive = React.forwardRef(
       onClick(event)
     }
 
-    const buttonNode = (
+    return (
       <AntButton
         ref={ref}
         href={href}
@@ -71,16 +69,6 @@ const ButtonPrimitive = React.forwardRef(
         {title ? <VisuallyHidden>{title}</VisuallyHidden> : null}
         {children}
       </AntButton>
-    )
-
-    if (!tooltipTitle) {
-      return buttonNode
-    }
-
-    return (
-      <Tooltip destroyOnHidden placement={tooltipPlacement} title={tooltipTitle}>
-        {buttonNode}
-      </Tooltip>
     )
   }
 )

@@ -114,6 +114,14 @@ module.exports = defineConfig({
     }),
   ],
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  optimizeDeps: {
+    esbuildOptions: {
+      // Dependency scanning runs before plugin transforms.
+      loader: {
+        '.js': 'jsx',
+      },
+    },
+  },
   server: {
     port: 3000,
     proxy: apiProxyTarget

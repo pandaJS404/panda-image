@@ -3,6 +3,7 @@ import { editorVisible } from '../support'
 
 describe('UI theme shell smoke', () => {
   const themeDropdown = () => cy.get('.toolbar .dropdown-container').first()
+  const languageDropdown = () => cy.get('.toolbar .toolbar-group--leading > .dropdown-container').first()
   const uiThemeToggle = () => cy.get('[data-cy="theme-toggle"]')
   const settingsButton = () => cy.get('[data-cy="settings-button"]')
 
@@ -21,6 +22,13 @@ describe('UI theme shell smoke', () => {
     editorVisible()
 
     uiThemeToggle().should('exist')
+    themeDropdown().should('have.attr', 'aria-tooltip')
+    languageDropdown().should('have.attr', 'aria-tooltip')
+    cy.get('.theme-toggle__switch-shell').should('have.attr', 'aria-tooltip')
+
+    themeDropdown().trigger('mouseenter', { force: true })
+    cy.get('.theme-toggle__switch-shell').trigger('mouseenter', { force: true })
+    cy.get('.ant-tooltip').should('not.exist')
 
     pickTheme('Cobalt')
     cy.wait(1500) // URL updates are debounced
@@ -30,8 +38,8 @@ describe('UI theme shell smoke', () => {
     cy.contains('[data-cy="dropdown-item"]', 'Cobalt').click()
 
     settingsButton().click()
-    cy.get('.settings-popover').should('be.visible')
-    settingsButton().click()
+    cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-modal .ant-modal-close').click()
 
     uiThemeToggle().click()
 
@@ -42,7 +50,7 @@ describe('UI theme shell smoke', () => {
     cy.contains('[data-cy="dropdown-item"]', 'Cobalt').click()
 
     settingsButton().click()
-    cy.get('.settings-popover').should('be.visible')
+    cy.get('.settings-modal').should('be.visible')
 
     cy.window().then(win => {
       expect(JSON.parse(win.localStorage.PANDA_STATE).theme).to.eq('cobalt')

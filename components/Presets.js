@@ -20,7 +20,7 @@ const Preset = React.memo(({ remove, apply, selected, preset }) => {
         active={isSelected}
         className="preset-preview-button"
         onClick={handleApply}
-        tooltipTitle={preset.name ? `应用预设 ${preset.name}` : '应用预设'}
+        aria-tooltip={preset.name ? `应用预设 ${preset.name}` : '应用预设'}
         style={{
           backgroundImage: `url('${preset.icon}')`,
           backgroundColor: preset.backgroundColor,
@@ -31,7 +31,7 @@ const Preset = React.memo(({ remove, apply, selected, preset }) => {
           iconOnly
           onClick={() => remove(preset.id)}
           className="preset-remove-button"
-          tooltipTitle="移除预设"
+          aria-tooltip="移除预设"
         >
           <DeleteOutlined />
         </ButtonPrimitive>
@@ -57,7 +57,7 @@ const Presets = React.memo(
             iconOnly
             onClick={toggle}
             className="settings-presets-toggle"
-            tooltipTitle="切换预设列表"
+            aria-tooltip="切换预设列表"
           >
             {show ? <UpOutlined /> : <DownOutlined />}
           </ButtonPrimitive>

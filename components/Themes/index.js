@@ -1,6 +1,6 @@
 import React from 'react'
 import { BgColorsOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Popover } from 'antd'
+import { Modal } from 'antd'
 
 import GlobalHighlights from './GlobalHighlights'
 import Dropdown from '../Dropdown'
@@ -23,7 +23,7 @@ const ThemeItem = ({ children, item, isSelected, remove }) => (
       <ButtonPrimitive
         iconOnly
         className="theme-item-remove-button"
-        tooltipTitle="移除主题"
+        aria-tooltip="移除主题"
         onClick={event => {
           event.stopPropagation()
           remove(item.id)
@@ -53,7 +53,6 @@ function Themes({ themes, theme, highlights, update, create, remove, updateHighl
   }, [themes, isCreateOpen])
 
   const mergedHighlights = { ...theme.highlights, ...highlights }
-  const dropdownValue = isCreateOpen ? { name } : theme
   const dropdownList = [{ id: 'create', name: '新建主题 +' }, ...themes]
 
   const handleThemeSelected = nextTheme => {
@@ -79,46 +78,39 @@ function Themes({ themes, theme, highlights, update, create, remove, updateHighl
   return (
     <div className="themes" data-cy="themes-container">
       <Dropdown
-        title="主题"
+        aria-tooltip="主题"
         innerRef={dropdown}
         icon={<BgColorsOutlined />}
-        disableInput={isCreateOpen}
-        selected={dropdownValue}
+        selected={theme}
         list={dropdownList}
         itemWrapper={props => <ThemeItem {...props} remove={remove} />}
         onChange={handleThemeSelected}
-        onOpen={() => {
-          if (isCreateOpen) {
-            setCreateOpen(false)
-          }
-        }}
       />
-      <Popover
-        trigger="click"
-        placement="bottomLeft"
+      <Modal
         open={isCreateOpen}
-        onOpenChange={setCreateOpen}
-        classNames={{ root: 'theme-create-popover theme-create-popup' }}
+        title="新建主题"
+        footer={null}
+        centered
+        destroyOnHidden
+        width="calc(100vw - 24px)"
+        rootClassName="theme-create-modal"
+        onCancel={() => setCreateOpen(false)}
         styles={{ body: { padding: 0 } }}
-        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-        content={
-          isCreateOpen ? (
-            <React.Suspense fallback={null}>
-              <ThemeCreate
-                theme={theme}
-                themes={themes}
-                highlights={mergedHighlights}
-                create={handleCreate}
-                updateHighlights={updateHighlights}
-                name={name}
-                onInputChange={event => setName(event.target.value)}
-              />
-            </React.Suspense>
-          ) : null
-        }
       >
-        <span className="theme-create-anchor" />
-      </Popover>
+        {isCreateOpen ? (
+          <React.Suspense fallback={null}>
+            <ThemeCreate
+              theme={theme}
+              themes={themes}
+              highlights={mergedHighlights}
+              create={handleCreate}
+              updateHighlights={updateHighlights}
+              name={name}
+              onInputChange={event => setName(event.target.value)}
+            />
+          </React.Suspense>
+        ) : null}
+      </Modal>
       <GlobalHighlights highlights={mergedHighlights} />
     </div>
   )
