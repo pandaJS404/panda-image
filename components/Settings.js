@@ -1,12 +1,11 @@
 import React from 'react'
 import omitBy from 'lodash.omitby'
 import { SettingOutlined } from '@ant-design/icons'
-import { Modal, Tabs } from 'antd'
+import { Modal, Slider as AntSlider, Tabs } from 'antd'
 import { useKeyboardListener } from '../src/shared/react/hooks'
 
 import ThemeSelect from './ThemeSelect'
 import FontSelect from './FontSelect'
-import Slider from './Slider'
 import Input from './Input'
 import Toggle from './Toggle'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
@@ -26,12 +25,80 @@ function getViewportWidthMax() {
 const SETTINGS_MENU_LABELS = {
   Window: '窗口',
   Editor: '编辑器',
+  Watermark: '水印',
   Misc: '其他',
+}
+
+function formatSliderDisplay(value, unit) {
+  if (!Number.isFinite(value)) {
+    return ''
+  }
+
+  const normalizedValue = Number.isInteger(value) ? value : Number.parseFloat(value.toFixed(1))
+
+  return `${normalizedValue}${unit}`
+}
+
+function getSliderMarks(minValue, maxValue, unit) {
+  const midpoint = Number.parseFloat(((minValue + maxValue) / 2).toFixed(1))
+
+  return {
+    [minValue]: formatSliderDisplay(minValue, unit),
+    [midpoint]: formatSliderDisplay(midpoint, unit),
+    [maxValue]: formatSliderDisplay(maxValue, unit),
+  }
 }
 
 function KeyboardShortcut({ trigger, handle }) {
   useKeyboardListener(trigger, handle)
   return null
+}
+
+function SettingsSlider({
+  className = '',
+  label,
+  value,
+  onChange,
+  minValue = 0,
+  maxValue = 100,
+  step = 1,
+  unit = 'px',
+  serializeValue = nextValue => `${nextValue}${unit}`,
+}) {
+  const numericValue = Number.parseFloat(value)
+  const sliderValue = Number.isFinite(numericValue) ? numericValue : minValue
+  const marks = React.useMemo(
+    () => getSliderMarks(minValue, maxValue, unit),
+    [maxValue, minValue, unit]
+  )
+
+  const handleChange = React.useCallback(
+    nextValue => {
+      if (Array.isArray(nextValue)) {
+        return
+      }
+
+      onChange(serializeValue(nextValue))
+    },
+    [onChange, serializeValue]
+  )
+
+  return (
+    <div className={`settings-row settings-slider-row${className ? ` ${className}` : ''}`}>
+      <span className="settings-slider-label">{label}</span>
+      <AntSlider
+        aria-label={label}
+        value={sliderValue}
+        className="settings-slider-control"
+        onChange={handleChange}
+        min={minValue}
+        max={maxValue}
+        step={step}
+        marks={marks}
+        tooltip={{ formatter: tooltipValue => formatSliderDisplay(tooltipValue, unit) }}
+      />
+    </div>
+  )
 }
 
 function WindowSettings({
@@ -45,7 +112,6 @@ function WindowSettings({
   windowControls,
   widthAdjustment,
   width,
-  watermark,
 }) {
   const widthMax = getViewportWidthMax()
 
@@ -57,13 +123,15 @@ function WindowSettings({
         onChange={onChange}
       />
       <div className="settings-split-row">
-        <Slider
+        <SettingsSlider
           label="垂直边距"
           value={paddingVertical}
           maxValue={200}
           onChange={onChange.bind(null, 'paddingVertical')}
         />
-        <Slider
+      </div>
+      <div className="settings-split-row">
+        <SettingsSlider
           label="水平边距"
           value={paddingHorizontal}
           onChange={onChange.bind(null, 'paddingHorizontal')}
@@ -72,12 +140,12 @@ function WindowSettings({
       <Toggle label="投影" enabled={dropShadow} onChange={onChange.bind(null, 'dropShadow')} />
       {dropShadow ? (
         <div className="settings-split-row drop-shadow-options">
-          <Slider
+          <SettingsSlider
             label="Y 轴偏移"
             value={dropShadowOffsetY}
             onChange={onChange.bind(null, 'dropShadowOffsetY')}
           />
-          <Slider
+          <SettingsSlider
             label="模糊半径"
             value={dropShadowBlurRadius}
             onChange={onChange.bind(null, 'dropShadowBlurRadius')}
@@ -90,20 +158,17 @@ function WindowSettings({
         onChange={onChange.bind(null, 'widthAdjustment')}
       />
       {!widthAdjustment ? (
-        <div className="settings-row width-row">
-          <Input
-            label="宽度"
-            type="number"
-            value={width}
-            min={DEFAULT_WIDTHS.minWidth}
-            max={widthMax}
-            onChange={event => onChange('width', event.target.value)}
-            width="50%"
-            fieldClassName="settings-inline-field"
-          />
-        </div>
+        <SettingsSlider
+          className="width-row"
+          label="宽度"
+          value={width}
+          minValue={DEFAULT_WIDTHS.minWidth}
+          maxValue={widthMax}
+          unit="px"
+          serializeValue={nextValue => nextValue}
+          onChange={onChange.bind(null, 'width')}
+        />
       ) : null}
-      <Toggle label="水印" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
     </div>
   )
 }
@@ -125,7 +190,7 @@ function EditorSettings({
         onUpload={onUpload}
         onChange={onChange.bind(null, 'fontFamily')}
       />
-      <Slider
+      <SettingsSlider
         label="字号"
         value={size}
         minValue={10}
@@ -133,7 +198,7 @@ function EditorSettings({
         step={0.5}
         onChange={onChange.bind(null, 'fontSize')}
       />
-      <Slider
+      <SettingsSlider
         label="行高"
         value={lineHeight}
         minValue={90}
@@ -160,6 +225,14 @@ function EditorSettings({
         enabled={hiddenCharacters}
         onChange={onChange.bind(null, 'hiddenCharacters')}
       />
+    </div>
+  )
+}
+
+function WatermarkSettings({ onChange, watermark }) {
+  return (
+    <div className="settings-content">
+      <Toggle label="水印" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
     </div>
   )
 }
@@ -240,9 +313,18 @@ function Settings(props) {
   const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
+    if (typeof localStorage === 'undefined') {
+      return
+    }
+
     const storedPresets = getPresets(localStorage) || []
     setPresets(currentPresets => [...storedPresets, ...currentPresets])
   }, [])
+
+  const handleResetAll = React.useCallback(() => {
+    props.resetDefaultSettings()
+    setPreviousSettings(null)
+  }, [props])
 
   const handleResetShortcut = React.useCallback(
     event => {
@@ -255,14 +337,15 @@ function Settings(props) {
         (event.metaKey || event.ctrlKey) &&
         (event.key === '\\' || event.key === '|' || event.code === 'Backslash')
 
-      if (matchesResetShortcut) {
-        event.__pandaSettingsResetHandled = true
-        event.preventDefault()
-        props.resetDefaultSettings()
-        setPreviousSettings(null)
+      if (!matchesResetShortcut) {
+        return
       }
+
+      event.__pandaSettingsResetHandled = true
+      event.preventDefault()
+      handleResetAll()
     },
-    [props],
+    [handleResetAll]
   )
 
   React.useEffect(() => {
@@ -274,46 +357,72 @@ function Settings(props) {
     }
   }, [handleResetShortcut])
 
-  const togglePresets = () => setShowPresets(current => !current)
+  const togglePresets = React.useCallback(() => {
+    setShowPresets(current => !current)
+  }, [])
 
-  const handleChange = (key, value) => {
-    props.onChange(key, value)
-    setPreviousSettings(null)
-  }
+  const toggleOpen = React.useCallback(() => {
+    setOpen(current => !current)
+  }, [])
 
-  const handleFontUpload = (id, url) => {
-    props.onChange('fontFamily', id)
-    props.onChange('fontUrl', url)
+  const closeModal = React.useCallback(() => {
     setOpen(false)
-  }
+  }, [])
 
-  const getSettingsFromProps = () => omitBy(props, invalidSetting)
-
-  const applyPreset = preset => {
-    const nextPreviousSettings = getSettingsFromProps()
-    props.applyPreset(preset)
-    setPreviousSettings(nextPreviousSettings)
-  }
-
-  const undoPreset = () => {
-    props.applyPreset({ ...previousSettings, id: null })
-    setPreviousSettings(null)
-  }
-
-  const removePreset = id => {
-    if (props.preset === id) {
-      props.onChange('preset', null)
+  const handleChange = React.useCallback(
+    (key, value) => {
+      props.onChange(key, value)
       setPreviousSettings(null)
+    },
+    [props]
+  )
+
+  const handleFontUpload = React.useCallback(
+    (id, url) => {
+      props.onChange('fontFamily', id)
+      props.onChange('fontUrl', url)
+      setOpen(false)
+    },
+    [props]
+  )
+
+  const getSettingsFromProps = React.useCallback(() => omitBy(props, invalidSetting), [props])
+
+  const applyPreset = React.useCallback(
+    nextPreset => {
+      const nextPreviousSettings = getSettingsFromProps()
+      props.applyPreset(nextPreset)
+      setPreviousSettings(nextPreviousSettings)
+    },
+    [getSettingsFromProps, props]
+  )
+
+  const undoPreset = React.useCallback(() => {
+    if (!previousSettings) {
+      return
     }
 
-    setPresets(currentPresets => {
-      const nextPresets = currentPresets.filter(preset => preset.id !== id)
-      savePresets(nextPresets.filter(preset => preset.custom))
-      return nextPresets
-    })
-  }
+    props.applyPreset({ ...previousSettings, id: null })
+    setPreviousSettings(null)
+  }, [previousSettings, props])
 
-  const createPreset = async () => {
+  const removePreset = React.useCallback(
+    id => {
+      if (props.preset === id) {
+        props.onChange('preset', null)
+        setPreviousSettings(null)
+      }
+
+      setPresets(currentPresets => {
+        const nextPresets = currentPresets.filter(currentPreset => currentPreset.id !== id)
+        savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
+        return nextPresets
+      })
+    },
+    [props]
+  )
+
+  const createPreset = React.useCallback(async () => {
     const newPreset = getSettingsFromProps()
 
     newPreset.id = `preset:${generateId()}`
@@ -328,11 +437,11 @@ function Settings(props) {
 
     setPresets(currentPresets => {
       const nextPresets = [newPreset, ...currentPresets]
-      savePresets(nextPresets.filter(preset => preset.custom))
+      savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
       return nextPresets
     })
     setPreviousSettings(null)
-  }
+  }, [getSettingsFromProps, props])
 
   const tabItems = [
     {
@@ -350,7 +459,6 @@ function Settings(props) {
           windowControls={props.windowControls}
           widthAdjustment={props.widthAdjustment}
           width={props.width}
-          watermark={props.watermark}
         />
       ),
     },
@@ -371,15 +479,17 @@ function Settings(props) {
       ),
     },
     {
+      key: 'Watermark',
+      label: SETTINGS_MENU_LABELS.Watermark,
+      children: <WatermarkSettings onChange={handleChange} watermark={props.watermark} />,
+    },
+    {
       key: 'Misc',
       label: SETTINGS_MENU_LABELS.Misc,
       children: (
         <MiscSettings
           format={props.format}
-          reset={() => {
-            props.resetDefaultSettings()
-            setPreviousSettings(null)
-          }}
+          reset={handleResetAll}
           applyPreset={props.applyPreset}
           settings={getSettingsFromProps()}
         />
@@ -389,13 +499,13 @@ function Settings(props) {
 
   return (
     <div className="settings-container tools-item">
-      <KeyboardShortcut trigger="cmd-/" handle={() => setOpen(current => !current)} />
+      <KeyboardShortcut trigger="cmd-/" handle={toggleOpen} />
       <ToolbarIconButton
         aria-tooltip="设置菜单"
         active={open}
         className="settings-trigger-button"
         data-cy="settings-button"
-        onClick={() => setOpen(current => !current)}
+        onClick={toggleOpen}
       >
         <SettingOutlined />
       </ToolbarIconButton>
@@ -407,7 +517,7 @@ function Settings(props) {
         destroyOnHidden
         width="calc(100vw - 24px)"
         rootClassName="settings-modal"
-        onCancel={() => setOpen(false)}
+        onCancel={closeModal}
         styles={{ body: { padding: 0 } }}
       >
         {open ? (

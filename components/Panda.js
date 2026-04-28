@@ -51,7 +51,7 @@ function getResolvedLanguageModeFromProps(props) {
   const config = { ...DEFAULT_SETTINGS, ...props.config }
   const requestedMode = resolveRequestedLanguageMode(
     props.children,
-    config.language && config.language.toLowerCase()
+    config.language && config.language.toLowerCase(),
   )
   const languageMode = searchLanguage(requestedMode)
 
@@ -221,7 +221,11 @@ class Panda extends React.PureComponent {
         return null
       }
 
-      if (!currentState.isLanguageLoading && !currentState.showLanguageMask && !shouldApplyResolvedMode) {
+      if (
+        !currentState.isLanguageLoading &&
+        !currentState.showLanguageMask &&
+        !shouldApplyResolvedMode
+      ) {
         return null
       }
 
@@ -229,7 +233,9 @@ class Panda extends React.PureComponent {
         activeLanguageMode: shouldApplyResolvedMode
           ? nextResolvedMode.mode
           : currentState.activeLanguageMode,
-        activeModeKey: shouldApplyResolvedMode ? nextResolvedMode.modeKey : currentState.activeModeKey,
+        activeModeKey: shouldApplyResolvedMode
+          ? nextResolvedMode.modeKey
+          : currentState.activeModeKey,
         isLanguageLoading: false,
         showLanguageMask: false,
       }
@@ -238,7 +244,7 @@ class Panda extends React.PureComponent {
 
   ensureCurrentModeLoaded = async (
     nextResolvedMode = this.getResolvedLanguageMode(),
-    { showMask = true } = {}
+    { showMask = true } = {},
   ) => {
     const requestId = (this.languageLoadRequestId || 0) + 1
     const isNextModeUnchanged =
@@ -343,7 +349,7 @@ class Panda extends React.PureComponent {
         this.props.editorRef.current.editor.doc.markText(
           this.state.selectionAt.from,
           this.state.selectionAt.to,
-          { css }
+          { css },
         )
       }
     }
@@ -370,6 +376,7 @@ class Panda extends React.PureComponent {
       showInvisibles: config.hiddenCharacters,
       autoCloseBrackets: true,
     }
+    console.log('🚀 ~ Panda ~ render ~ options:', options)
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
       this.props.config.backgroundImage
@@ -495,7 +502,7 @@ class Panda extends React.PureComponent {
               <SelectionEditor onChange={this.onSelectionChange} />
             </React.Suspense>,
             // TODO: don't use portal?
-            selectionNode
+            selectionNode,
           )}
       </div>
     )
@@ -504,7 +511,7 @@ class Panda extends React.PureComponent {
 
 function selectedLinesReducer(
   { prevLine, selected },
-  { type, lineNumber, numLines, selectedLines }
+  { type, lineNumber, numLines, selectedLines },
 ) {
   const newState = {}
 

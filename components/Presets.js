@@ -86,14 +86,15 @@ const Presets = React.memo(
         {show && applied ? (
           <div className="settings-presets-applied">
             <span>已应用预设</span>
-            <ButtonPrimitive onClick={undo} className="settings-presets-undo">
+
+            <p onClick={undo} className="settings-presets-undo">
               撤销 <span>&#x21A9;</span>
-            </ButtonPrimitive>
+            </p>
           </div>
         ) : null}
       </div>
     )
-  }
+  },
 )
 
 export default Presets

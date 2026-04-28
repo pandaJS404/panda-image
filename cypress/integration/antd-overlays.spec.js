@@ -40,7 +40,15 @@ describe('Antd overlays smoke', () => {
 
     cy.get('[data-cy="settings-button"]').click()
     cy.get('.settings-modal').should('be.visible')
-    cy.get('.settings-tabs .ant-tabs-tab').eq(2).click()
+    cy.get('.settings-modal .ant-slider').its('length').should('be.gte', 2)
+    cy.get('.settings-modal .slider-control').should('not.exist')
+    cy.get('.settings-modal .ant-slider').first().click('center')
+    cy.wait(900)
+    cy.window().then(win => {
+      const state = JSON.parse(win.localStorage.PANDA_STATE)
+      expect(state.paddingVertical).to.match(/px$/)
+    })
+    cy.get('.settings-tabs .ant-tabs-tab').last().click()
     cy.get('[data-cy="format-code-button"]').should('be.visible')
     cy.get('.settings-modal .ant-modal-close').click()
     cy.get('.settings-modal').should('not.exist')

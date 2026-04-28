@@ -39,6 +39,8 @@ describe('UI theme shell smoke', () => {
 
     settingsButton().click()
     cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-modal .ant-slider').should('exist')
+    cy.get('.settings-modal .slider-control').should('not.exist')
     cy.get('.settings-modal .ant-modal-close').click()
 
     uiThemeToggle().click()
@@ -51,6 +53,8 @@ describe('UI theme shell smoke', () => {
 
     settingsButton().click()
     cy.get('.settings-modal').should('be.visible')
+    cy.get('.settings-modal .ant-slider').should('exist')
+    cy.get('.settings-modal .slider-control').should('not.exist')
 
     cy.window().then(win => {
       expect(JSON.parse(win.localStorage.PANDA_STATE).theme).to.eq('cobalt')
