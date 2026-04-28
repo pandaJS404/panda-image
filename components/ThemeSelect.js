@@ -5,11 +5,9 @@ import SvgAsset from './svg/SvgAsset'
 import WindowThemeBwAsset from './svg/assets/window-theme-bw.svg?react'
 import WindowThemeBoxyAsset from './svg/assets/window-theme-boxy.svg?react'
 import WindowThemeNoneAsset from './svg/assets/window-theme-none.svg?react'
-import WindowThemeSharpAsset from './svg/assets/window-theme-sharp.svg?react'
 
 const WINDOW_THEMES_MAP = {
   none: WindowThemeNoneAsset,
-  sharp: WindowThemeSharpAsset,
   bw: WindowThemeBwAsset,
   boxy: WindowThemeBoxyAsset,
 }
@@ -29,9 +27,11 @@ class ThemeSelect extends React.Component {
   }
 
   renderThemes() {
+    const selectedTheme = this.props.selected === 'sharp' ? 'none' : this.props.selected
+
     return Object.keys(WINDOW_THEMES_MAP).map(theme => {
       const asset = WINDOW_THEMES_MAP[theme]
-      const checked = this.props.selected === theme
+      const checked = selectedTheme === theme
 
       return (
         <button

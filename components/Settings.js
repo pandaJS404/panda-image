@@ -1,18 +1,19 @@
 import React from 'react'
 import omitBy from 'lodash.omitby'
 import { SettingOutlined } from '@ant-design/icons'
-import { Modal, Slider as AntSlider, Tabs } from 'antd'
+import { Modal, Popover, Slider as AntSlider, Tabs } from 'antd'
 import { useKeyboardListener } from '../src/shared/react/hooks'
 
 import ThemeSelect from './ThemeSelect'
 import FontSelect from './FontSelect'
+import ColorPicker from './ColorPicker'
 import Input from './Input'
 import Toggle from './Toggle'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import ToolbarIconButton from './buttons/ToolbarIconButton'
 import Presets from './Presets'
 import { DEFAULT_PRESETS, DEFAULT_SETTINGS, DEFAULT_WIDTHS } from '../src/modules/editor/config'
-import { getPresets, savePresets, generateId, fileToJSON } from '../src/shared/utils'
+import { getPresets, savePresets, generateId, fileToJSON, stringifyColor } from '../src/shared/utils'
 
 function getViewportWidthMax() {
   if (typeof window === 'undefined') {
@@ -69,7 +70,7 @@ function SettingsSlider({
   const sliderValue = Number.isFinite(numericValue) ? numericValue : minValue
   const marks = React.useMemo(
     () => getSliderMarks(minValue, maxValue, unit),
-    [maxValue, minValue, unit]
+    [maxValue, minValue, unit],
   )
 
   const handleChange = React.useCallback(
@@ -80,7 +81,7 @@ function SettingsSlider({
 
       onChange(serializeValue(nextValue))
     },
-    [onChange, serializeValue]
+    [onChange, serializeValue],
   )
 
   return (
@@ -101,8 +102,64 @@ function SettingsSlider({
   )
 }
 
+function SettingsColorField({ className = '', label, value, onChange }) {
+  const [open, setOpen] = React.useState(false)
+  const displayColor = value || DEFAULT_SETTINGS.codeMirrorBorderColor
+
+  const handleChange = React.useCallback(
+    nextColor => {
+      if (typeof nextColor === 'string') {
+        onChange(nextColor)
+        return
+      }
+
+      if (nextColor?.rgb) {
+        onChange(stringifyColor(nextColor))
+      }
+    },
+    [onChange],
+  )
+
+  return (
+    <div className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}>
+      <span className="settings-slider-label">{label}</span>
+      <Popover
+        trigger="click"
+        placement="bottomRight"
+        open={open}
+        onOpenChange={setOpen}
+        classNames={{ root: 'settings-color-popover' }}
+        styles={{ body: { padding: 0 } }}
+        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
+        content={
+          <div className="settings-color-popover__content">
+            <ColorPicker color={displayColor} onChange={handleChange} />
+          </div>
+        }
+      >
+        <ButtonPrimitive
+          active={open}
+          className="settings-color-trigger"
+          aria-label={label}
+          aria-tooltip={label}
+        >
+          <span className="settings-color-trigger__alpha" aria-hidden="true" />
+          <span
+            className="settings-color-trigger__swatch"
+            aria-hidden="true"
+            style={{ background: displayColor }}
+          />
+        </ButtonPrimitive>
+      </Popover>
+    </div>
+  )
+}
+
 function WindowSettings({
   onChange,
+  codeMirrorBorder,
+  codeMirrorBorderColor,
+  codeMirrorBorderRadius,
   windowTheme,
   paddingHorizontal,
   paddingVertical,
@@ -117,11 +174,38 @@ function WindowSettings({
 
   return (
     <div className="settings-content">
+      <Toggle
+        label="编辑器边框"
+        enabled={codeMirrorBorder}
+        onChange={onChange.bind(null, 'codeMirrorBorder')}
+      />
+      {codeMirrorBorder ? (
+        <SettingsColorField
+          label="编辑器边框颜色"
+          value={codeMirrorBorderColor}
+          onChange={onChange.bind(null, 'codeMirrorBorderColor')}
+        />
+      ) : null}
       <ThemeSelect
         selected={windowTheme || 'none'}
         windowControls={windowControls}
         onChange={onChange}
       />
+      {windowTheme === '__never__' ? (
+      <SettingsColorField
+        label="编辑器边框颜色"
+        value={codeMirrorBorderColor}
+        onChange={onChange.bind(null, 'codeMirrorBorderColor')}
+      />
+      ) : null}
+      <div className="settings-split-row">
+        <SettingsSlider
+          label="圆角"
+          value={codeMirrorBorderRadius}
+          maxValue={24}
+          onChange={onChange.bind(null, 'codeMirrorBorderRadius')}
+        />
+      </div>
       <div className="settings-split-row">
         <SettingsSlider
           label="垂直边距"
@@ -345,7 +429,7 @@ function Settings(props) {
       event.preventDefault()
       handleResetAll()
     },
-    [handleResetAll]
+    [handleResetAll],
   )
 
   React.useEffect(() => {
@@ -374,7 +458,7 @@ function Settings(props) {
       props.onChange(key, value)
       setPreviousSettings(null)
     },
-    [props]
+    [props],
   )
 
   const handleFontUpload = React.useCallback(
@@ -383,7 +467,7 @@ function Settings(props) {
       props.onChange('fontUrl', url)
       setOpen(false)
     },
-    [props]
+    [props],
   )
 
   const getSettingsFromProps = React.useCallback(() => omitBy(props, invalidSetting), [props])
@@ -394,7 +478,7 @@ function Settings(props) {
       props.applyPreset(nextPreset)
       setPreviousSettings(nextPreviousSettings)
     },
-    [getSettingsFromProps, props]
+    [getSettingsFromProps, props],
   )
 
   const undoPreset = React.useCallback(() => {
@@ -419,7 +503,7 @@ function Settings(props) {
         return nextPresets
       })
     },
-    [props]
+    [props],
   )
 
   const createPreset = React.useCallback(async () => {
@@ -450,6 +534,9 @@ function Settings(props) {
       children: (
         <WindowSettings
           onChange={handleChange}
+          codeMirrorBorder={props.codeMirrorBorder}
+          codeMirrorBorderColor={props.codeMirrorBorderColor}
+          codeMirrorBorderRadius={props.codeMirrorBorderRadius}
           windowTheme={props.windowTheme}
           paddingHorizontal={props.paddingHorizontal}
           paddingVertical={props.paddingVertical}

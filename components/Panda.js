@@ -376,7 +376,6 @@ class Panda extends React.PureComponent {
       showInvisibles: config.hiddenCharacters,
       autoCloseBrackets: true,
     }
-    console.log('🚀 ~ Panda ~ render ~ options:', options)
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
       this.props.config.backgroundImage
@@ -430,6 +429,8 @@ class Panda extends React.PureComponent {
                 '--panda-drop-shadow': config.dropShadow
                   ? `0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
                   : 'none',
+                '--panda-code-border-color': config.codeMirrorBorderColor,
+                '--panda-code-border-radius': config.codeMirrorBorderRadius,
                 '--panda-code-padding-left': '12px',
                 '--panda-font-family': `${config.fontFamily}, monospace`,
                 '--panda-font-size': config.fontSize,
@@ -450,7 +451,9 @@ class Panda extends React.PureComponent {
               {CodeMirror && (
                 <CodeMirror
                   ref={this.props.editorRef}
-                  className={`CodeMirror__container window-theme__${config.windowTheme}`}
+                  className={`CodeMirror__container window-theme__${config.windowTheme}${
+                    config.codeMirrorBorder ? ' CodeMirror__container--bordered' : ''
+                  }`}
                   value={this.state.editorValue}
                   options={options}
                   autoCursor={false}

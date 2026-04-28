@@ -1098,6 +1098,9 @@ export const DEFAULT_SETTINGS = {
   dropShadowBlurRadius: '68px',
   theme: DEFAULT_THEME.id,
   windowTheme: 'none',
+  codeMirrorBorder: false,
+  codeMirrorBorderColor: 'rgba(255,255,255,1)',
+  codeMirrorBorderRadius: '5px',
   language: DEFAULT_LANGUAGE,
   fontFamily: 'Hack',
   fontSize: '14px',
@@ -1148,6 +1151,7 @@ export const DEFAULT_PRESETS = [
   {
     ...DEFAULT_SETTINGS,
     backgroundColor: 'rgba(182,162,145,1)',
+    codeMirrorBorder: true,
     dropShadow: false,
     theme: 'zenburn',
     windowTheme: 'bw',
@@ -1158,6 +1162,7 @@ export const DEFAULT_PRESETS = [
   {
     ...DEFAULT_SETTINGS,
     backgroundColor: 'rgba(121,72,185,1)',
+    codeMirrorBorder: true,
     dropShadow: false,
     theme: 'verminal',
     windowTheme: 'bw',

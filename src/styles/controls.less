@@ -957,6 +957,77 @@
   pointer-events: none;
 }
 
+.settings-color-row {
+  display: grid;
+  grid-template-columns: minmax(84px, max-content) auto;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 12px;
+  min-width: 0;
+  padding: 8px 12px 8px 8px;
+  box-sizing: border-box;
+}
+
+.settings-color-trigger {
+  --button-padding: 0;
+  --button-radius: 10px;
+  --button-hover-bg: var(--surface-2);
+  position: relative;
+  width: 46px;
+  min-width: 46px;
+  height: 28px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  box-shadow: none;
+}
+
+.settings-color-trigger.ant-btn,
+.settings-color-trigger:hover,
+.settings-color-trigger.ant-btn:hover,
+.settings-color-trigger:focus-visible,
+.settings-color-trigger.ant-btn:focus-visible,
+.settings-color-trigger:active,
+.settings-color-trigger.ant-btn:active,
+.settings-color-trigger.ant-btn.ant-btn-default:hover,
+.settings-color-trigger.ant-btn.ant-btn-default:focus-visible,
+.settings-color-trigger.ant-btn.ant-btn-default:active,
+.settings-color-trigger.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:hover,
+.settings-color-trigger.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
+.settings-color-trigger.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active {
+  background: var(--surface-1);
+  border-color: var(--border-strong);
+}
+
+.settings-color-trigger[data-active='true'] {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 1px var(--focus-ring);
+}
+
+.settings-color-trigger > .panda-button__content {
+  position: absolute;
+  inset: 4px;
+  display: block;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--surface-1);
+}
+
+.settings-color-trigger__alpha,
+.settings-color-trigger__swatch {
+  position: absolute;
+  inset: 0;
+}
+
+.settings-color-trigger__alpha {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==);
+}
+
+.settings-color-popover__content {
+  width: 220px;
+}
+
 .settings-inline-field {
   max-width: 50%;
   margin-left: auto;

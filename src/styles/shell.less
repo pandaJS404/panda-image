@@ -547,7 +547,7 @@
     min-width: inherit;
     position: relative;
     z-index: 1;
-    border-radius: 5px;
+    border-radius: var(--panda-code-border-radius, 5px);
     box-shadow: var(--panda-drop-shadow, none);
 
     .CodeMirror {
@@ -555,7 +555,7 @@
       min-width: inherit;
       padding: 18px 18px;
       padding-left: var(--panda-code-padding-left, 12px);
-      border-radius: 5px;
+      border-radius: var(--panda-code-border-radius, 5px);
       font-family: var(--panda-font-family, monospace) !important;
       font-size: var(--panda-font-size, 14px);
       line-height: var(--panda-line-height, 133%);
@@ -565,17 +565,13 @@
     }
   }
 
+  .CodeMirror__container--bordered > .CodeMirror {
+    border: 2px solid var(--panda-code-border-color, #fff);
+  }
+
   .CodeMirror-scroll,
   .CodeMirror-hscrollbar {
     overflow: hidden !important;
-  }
-
-  .window-theme__sharp > .CodeMirror {
-    border-radius: 0;
-  }
-
-  .window-theme__bw > .CodeMirror {
-    border: 2px solid #fff;
   }
 
   .window-controls + .CodeMirror__container > .CodeMirror {
