@@ -3,11 +3,13 @@ import axios from 'axios'
 import { fileToDataURL } from '../utils'
 
 const normalizeApiOrigin = value => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
+const configuredApiProxyTarget = normalizeApiOrigin(import.meta.env.VITE_API_PROXY_TARGET || '')
 const configuredApiOrigin = normalizeApiOrigin(
   import.meta.env.VITE_API_URL || import.meta.env.NEXT_PUBLIC_API_URL || ''
 )
 const unsplashAccessKey =
   import.meta.env.VITE_UNSPLASH_ACCESS_KEY || import.meta.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY || ''
+const hasConfiguredRandomImageApi = Boolean(configuredApiProxyTarget || configuredApiOrigin)
 const RANDOM_IMAGE_PAGE_SIZE = 8
 const PICSUM_FALLBACK_WIDTH = 1600
 const PICSUM_FALLBACK_HEIGHT = 1200
@@ -105,9 +107,9 @@ const normalizePicsumImage = photo => ({
   id: String(photo.id),
   url: buildPicsumImageUrl(photo.id),
   photographer: {
-    name: photo?.author || 'Unsplash',
-    profile_url: photo?.url || 'https://unsplash.com',
-    sourceName: 'Unsplash',
+    name: photo?.author || 'Lorem Picsum',
+    profile_url: photo?.url || 'https://picsum.photos',
+    sourceName: 'Lorem Picsum',
   },
   palette: null,
   provider: 'picsum',
@@ -194,40 +196,65 @@ const trackUnsplashDownload = async image => {
   }
 }
 
+const resolveRandomImageByIdFallback = async id => {
+  let image = randomImageCache.get(String(id)) || null
+
+  if (!image && unsplashClient) {
+    try {
+      image = await fetchUnsplashImageById(id)
+    } catch (fallbackError) {
+      if (!shouldUseRandomImageFallback(fallbackError)) {
+        throw fallbackError
+      }
+    }
+  }
+
+  if (!image) {
+    image = await fetchPicsumImageById(id)
+  }
+
+  await trackUnsplashDownload(image)
+
+  return toPublicRandomImage(image)
+}
+
+const resolveRandomImageListFallback = async () => {
+  if (unsplashClient) {
+    try {
+      return await fetchUnsplashRandomFromClient()
+    } catch (fallbackError) {
+      if (!shouldUseRandomImageFallback(fallbackError)) {
+        throw fallbackError
+      }
+    }
+  }
+
+  return fetchPicsumRandom()
+}
+
 const unsplash = {
   async download(id) {
+    if (!hasConfiguredRandomImageApi) {
+      return resolveRandomImageByIdFallback(id)
+    }
+
     try {
-      return client
-        .get(`/unsplash/download/${id}`)
-        .then(res => res.data)
-        .then(normalizeServerRandomImage)
+      const response = await client.get(`/unsplash/download/${id}`)
+
+      return normalizeServerRandomImage(response.data)
     } catch (error) {
       if (!shouldUseRandomImageFallback(error)) {
         throw error
       }
 
-      let image = randomImageCache.get(String(id)) || null
-
-      if (!image && unsplashClient) {
-        try {
-          image = await fetchUnsplashImageById(id)
-        } catch (fallbackError) {
-          if (!shouldUseRandomImageFallback(fallbackError)) {
-            throw fallbackError
-          }
-        }
-      }
-
-      if (!image) {
-        image = await fetchPicsumImageById(id)
-      }
-
-      await trackUnsplashDownload(image)
-
-      return toPublicRandomImage(image)
+      return resolveRandomImageByIdFallback(id)
     }
   },
   async random() {
+    if (!hasConfiguredRandomImageApi) {
+      return resolveRandomImageListFallback()
+    }
+
     try {
       const imageUrls = await client.get('/unsplash/random')
       const images = await Promise.all(imageUrls.data.map(downloadThumbnailImage))
@@ -238,17 +265,7 @@ const unsplash = {
         throw error
       }
 
-      if (unsplashClient) {
-        try {
-          return await fetchUnsplashRandomFromClient()
-        } catch (fallbackError) {
-          if (!shouldUseRandomImageFallback(fallbackError)) {
-            throw fallbackError
-          }
-        }
-      }
-
-      return fetchPicsumRandom()
+      return resolveRandomImageListFallback()
     }
   },
 }

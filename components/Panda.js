@@ -18,6 +18,7 @@ import {
   ensureCodeMirrorMode,
   isCodeMirrorModeLoaded,
 } from '../src/modules/editor/codemirror/loaders'
+import { getCanvasBackgroundStyle } from '../src/modules/editor/background'
 import SvgAsset from './svg/SvgAsset'
 
 const SelectionEditor = React.lazy(() => import('./SelectionEditor'))
@@ -376,10 +377,6 @@ class Panda extends React.PureComponent {
       showInvisibles: config.hiddenCharacters,
       autoCloseBrackets: true,
     }
-    const backgroundImage =
-      (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
-      this.props.config.backgroundImage
-
     const themeConfig = this.props.theme || THEMES_HASH[config.theme]
 
     const light = themeConfig && themeConfig.light
@@ -390,18 +387,7 @@ class Panda extends React.PureComponent {
       typeof document !== 'undefined' &&
       document.getElementById('style-editor-button')
 
-    const backgroundStyle =
-      this.props.config.backgroundMode === 'image'
-        ? {
-            backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-          }
-        : {
-            background: this.props.config.backgroundColor || config.backgroundColor,
-            backgroundSize: 'auto',
-            backgroundRepeat: 'repeat',
-          }
+    const backgroundStyle = getCanvasBackgroundStyle(this.props.config)
 
     return (
       <div className="section panda-section">

@@ -248,15 +248,103 @@
 }
 
 .bg-select-panel {
-  width: min(268px, calc(100vw - 24px));
+  width: min(396px, calc(100vw - 24px));
 }
 
 .bg-select-tabs {
   min-width: 0;
 }
 
+.bg-select-tabs .ant-tabs-content-holder,
+.bg-select-tabs .ant-tabs-tabpane {
+  min-width: 0;
+}
+
 .picker-tabs-contents {
   min-width: 0;
+}
+
+.picker-tabs-contents--gradient {
+  max-height: min(360px, calc(100vh - 240px));
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.bg-gradient-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  content-visibility: auto;
+}
+
+.bg-gradient-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  text-align: left;
+  box-shadow: none;
+  cursor: pointer;
+  transition: var(--interactive-transition);
+}
+
+.bg-gradient-item:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.bg-gradient-item:focus-visible {
+  outline: none;
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.bg-gradient-item[data-selected='true'] {
+  border-color: var(--accent);
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.bg-gradient-item[data-selected='true']:hover {
+  border-color: var(--accent);
+  background: var(--surface-3);
+}
+
+.bg-gradient-swatch {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.7;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.bg-gradient-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bg-gradient-status {
+  padding: 20px 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .bg-gradient-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .panda-color-picker {

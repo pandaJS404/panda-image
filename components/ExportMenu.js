@@ -3,7 +3,7 @@ import { DownOutlined } from '@ant-design/icons'
 import { Modal, Segmented } from 'antd'
 import { useKeyboardListener, useAsyncCallback } from '../src/shared/react/hooks'
 
-import { EXPORT_SIZES } from '../src/modules/editor/config'
+import { EXPORT_SIZES, EXPORT_SIZES_HASH } from '../src/modules/editor/config'
 import Input from './Input'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import ToolbarButton from './buttons/ToolbarButton'
@@ -14,6 +14,8 @@ const EXPORT_FORMATS = [
   { id: 'export-webp', label: 'WEBP', format: 'webp' },
   { id: 'export-svg', label: 'SVG', format: 'svg' },
 ]
+const QUICK_EXPORT_FORMAT = 'webp'
+const QUICK_EXPORT_SIZE = EXPORT_SIZES_HASH['4x'].value
 
 function preventDefault(fn) {
   return event => {
@@ -31,7 +33,22 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
     return inputRef.current?.input?.value || inputRef.current?.value || undefined
   }
 
-  const handleQuickExport = format => () => exportImage(format, { filename: getFilename() })
+  const handleQuickExport = React.useCallback(
+    () =>
+      exportImage(QUICK_EXPORT_FORMAT, {
+        filename: getFilename(),
+        exportSize: QUICK_EXPORT_SIZE,
+      }),
+    [exportImage]
+  )
+
+  const handleQuickSvgExport = React.useCallback(
+    () =>
+      exportImage('svg', {
+        filename: getFilename(),
+      }),
+    [exportImage]
+  )
 
   const handleModalExport = format => async () => {
     await exportImage(format, { filename: getFilename() })
@@ -43,8 +60,8 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
     setOpen(false)
   }
 
-  useKeyboardListener('cmd-shift-e', preventDefault(handleQuickExport('blob')))
-  useKeyboardListener('cmd-shift-s', preventDefault(handleQuickExport('svg')))
+  useKeyboardListener('cmd-shift-e', preventDefault(handleQuickExport))
+  useKeyboardListener('cmd-shift-s', preventDefault(handleQuickSvgExport))
 
   return (
     <div className="export-menu-container export-menu-container--brand">
@@ -52,7 +69,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
         <ToolbarButton
           justify="center"
           tone="brand"
-          onClick={handleQuickExport('blob')}
+          onClick={handleQuickExport}
           data-cy="quick-export-button"
           className="export-trigger-button export-trigger-button--quick"
           data-role="primary"

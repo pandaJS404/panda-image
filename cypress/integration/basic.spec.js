@@ -79,7 +79,7 @@ describe('Basic', () => {
     })
   })
 
-  it('Should export PNG with the same code layout as the preview', () => {
+  it('Should quick export 4x WEBP with the same code layout as the preview', () => {
     cy.visit('/')
     editorVisible()
     cy.get('.CodeMirror').should('exist')
@@ -103,19 +103,19 @@ describe('Basic', () => {
 
     cy.window().then({ timeout: 40000 }, async win => {
       const exportNode = win.document.getElementById('export-container')
-      const pngDataUrl = await blobToDataURL(win, win.__exportBlob)
+      const exportedDataUrl = await blobToDataURL(win, win.__exportBlob)
       const image = await new Promise((resolve, reject) => {
         const exportedImage = new win.Image()
 
         exportedImage.onload = () => resolve(exportedImage)
         exportedImage.onerror = reject
-        exportedImage.src = pngDataUrl
+        exportedImage.src = exportedDataUrl
       })
 
-      expect(win.__exportBlob.type).to.eq('image/png')
+      expect(win.__exportBlob.type).to.eq('image/webp')
       expect(win.__exportBlob.size).to.be.greaterThan(0)
-      expect(image.naturalWidth).to.eq(exportNode.offsetWidth * 2)
-      expect(image.naturalHeight).to.eq(exportNode.offsetHeight * 2)
+      expect(image.naturalWidth).to.eq(exportNode.offsetWidth * 4)
+      expect(image.naturalHeight).to.eq(exportNode.offsetHeight * 4)
     })
   })
 

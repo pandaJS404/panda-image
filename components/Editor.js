@@ -29,6 +29,11 @@ import {
   LANGUAGE_MODE_HASH,
   LANGUAGE_NAME_HASH,
 } from '../src/modules/editor/config'
+import {
+  applyBackgroundStyle,
+  getSquareExportBackgroundStyle,
+  isStaticGradientActive,
+} from '../src/modules/editor/background'
 import { getRouteState } from '../src/modules/editor/state/routing'
 import { fileToDataURL, formatCode, getSettings, omit, unescapeHtml } from '../src/shared/utils'
 
@@ -150,12 +155,14 @@ class Editor extends React.Component {
   }
 
   getExportBackgroundColor = ({ format, squared }) => {
+    const hasStaticGradient = squared && isStaticGradientActive(this.state)
+
     if (format === 'jpg' || format === 'jpeg') {
-      return squared ? this.state.backgroundColor : '#ffffff'
+      return hasStaticGradient ? null : squared ? this.state.backgroundColor : '#ffffff'
     }
 
     if (format === 'webp') {
-      return squared ? this.state.backgroundColor : null
+      return hasStaticGradient ? null : squared ? this.state.backgroundColor : null
     }
 
     return null
@@ -195,7 +202,15 @@ class Editor extends React.Component {
     clone.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'))
     clone.style.width = `${sourceNode.offsetWidth}px`
     clone.style.height = `${squared ? sourceNode.offsetWidth : sourceNode.offsetHeight}px`
-    clone.style.background = squared ? this.state.backgroundColor : 'none'
+    if (squared) {
+      applyBackgroundStyle(clone, getSquareExportBackgroundStyle(this.state))
+    } else {
+      clone.style.background = 'none'
+      clone.style.backgroundImage = ''
+      clone.style.backgroundSize = ''
+      clone.style.backgroundRepeat = ''
+      clone.style.backgroundBlendMode = ''
+    }
     clone.style.alignItems = 'start'
     clone.style.justifyContent = 'start'
 
@@ -271,13 +286,30 @@ class Editor extends React.Component {
     return capture.toBlob(exportOptions).then(fileToDataURL)
   }
 
+  getExportUrl = exportResult => {
+    if (typeof exportResult === 'string') {
+      return {
+        url: exportResult,
+        revoke: null,
+      }
+    }
+
+    const url = window.URL.createObjectURL(exportResult)
+
+    return {
+      url,
+      revoke: () => window.URL.revokeObjectURL(url),
+    }
+  }
+
   exportImage = (format = 'blob', options = {}) => {
     const link = document.createElement('a')
     const prefix = options.filename || this.state.name || 'panda'
 
-    return this.getPandaImage({ format })
-      .then(blob => window.URL.createObjectURL(blob))
-      .then(url => {
+    return this.getPandaImage({ format, exportSize: options.exportSize })
+      .then(exportResult => {
+        const { url, revoke } = this.getExportUrl(exportResult)
+
         if (!options.open) {
           link.download = `${prefix}.${this.getExportExtension(format)}`
         }
@@ -293,7 +325,9 @@ class Editor extends React.Component {
         document.body.appendChild(link)
         link.click()
         link.remove()
-        window.setTimeout(() => window.URL.revokeObjectURL(url), 30000)
+        if (revoke) {
+          window.setTimeout(() => revoke(), 30000)
+        }
       })
   }
 
@@ -398,7 +432,10 @@ class Editor extends React.Component {
   render() {
     const {
       backgroundColor,
+      backgroundGradient,
+      backgroundGradientBlendMode,
       backgroundImage,
+      backgroundImageSelection,
       backgroundMode,
       code,
       exportSize,
@@ -445,7 +482,10 @@ class Editor extends React.Component {
                 updateHighlights={this.updateHighlights}
                 mode={backgroundMode}
                 color={backgroundColor}
+                gradient={backgroundGradient}
+                gradientBlendMode={backgroundGradientBlendMode}
                 image={backgroundImage}
+                imageSelection={backgroundImageSelection}
                 pandaRef={this.pandaNode.current}
               />
               <Settings

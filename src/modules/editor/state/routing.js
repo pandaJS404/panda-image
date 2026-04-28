@@ -54,6 +54,8 @@ const mapper = new Morph({
 
 const readMappings = [
   { field: 'bg:backgroundColor' },
+  { field: 'bgg:backgroundGradient' },
+  { field: 'bgbm:backgroundGradientBlendMode' },
   { field: 't:theme' },
   { field: 'wt:windowTheme' },
   { field: 'cb:codeMirrorBorder', type: 'bool' },
@@ -86,6 +88,8 @@ const readMappings = [
 
 const writeMappings = [
   { field: 'backgroundColor:bg' },
+  { field: 'backgroundGradient:bgg' },
+  { field: 'backgroundGradientBlendMode:bgbm' },
   { field: 'theme:t' },
   { field: 'windowTheme:wt' },
   { field: 'codeMirrorBorder:cb', type: 'bool' },

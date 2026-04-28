@@ -625,7 +625,7 @@ function Settings(props) {
               className="settings-tabs"
               items={tabItems}
               onChange={setSelectedMenu}
-              tabPosition="left"
+              tabPlacement="left"
             />
           </div>
         ) : null}

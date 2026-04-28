@@ -1093,6 +1093,8 @@ export const DEFAULT_SETTINGS = {
   backgroundImageSelection: null,
   backgroundMode: 'color',
   backgroundColor: DEFAULT_BG_COLOR,
+  backgroundGradient: null,
+  backgroundGradientBlendMode: null,
   dropShadow: true,
   dropShadowOffsetY: '20px',
   dropShadowBlurRadius: '68px',

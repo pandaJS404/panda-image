@@ -56,4 +56,32 @@ describe('background color', () => {
     cy.url().should(url => expect(decodeURIComponent(url)).to.contain(`?bg=rgba(255,0,255,1)`))
     cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(255, 0, 255)')
   })
+
+  it('selects a gradient and clears it when switching back to a color', () => {
+    cy.visit('/')
+    const darkRed = '#D0021B'
+    const darkRedTile = `[title="${darkRed}"]`
+
+    openPicker()
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
+    cy.get('[data-cy="background-gradient-item"][data-gradient-name="Warm Flame"]').click()
+
+    cy.url().should('contain', 'bgg=')
+    cy.get('.container-bg .bg')
+      .invoke('css', 'background-image')
+      .should('match', /gradient/i)
+    cy.get('.bg-color-container .bg-color').invoke('css', 'background-image').should('match', /gradient/i)
+
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(0).click()
+    cy.get(picker).find(darkRedTile).click()
+    closePicker()
+
+    cy.url().should(url => {
+      const decodedUrl = decodeURIComponent(url)
+      expect(decodedUrl).to.contain('?bg=')
+      expect(decodedUrl).not.to.contain('bgg=')
+      expect(decodedUrl).not.to.contain('bgbm=')
+    })
+    cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(208, 2, 27)')
+  })
 })
