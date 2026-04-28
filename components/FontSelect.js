@@ -21,9 +21,15 @@ const Font = ({ id, name }) => {
 
 function FontSelect(props) {
   const inputEl = React.useRef(null)
+  const {
+    fonts = FONTS,
+    title = 'Font',
+    uploadLabel = 'Upload font +',
+    allowUpload = true,
+  } = props
 
   function onChange(id) {
-    if (id === 'upload') {
+    if (allowUpload && id === 'upload') {
       inputEl.current?.click()
       return
     }
@@ -47,8 +53,8 @@ function FontSelect(props) {
   return (
     <div className="font-select">
       <ListSetting
-        title="字体"
-        items={[{ id: 'upload', name: '上传字体 +' }, ...FONTS]}
+        title={title}
+        items={allowUpload ? [{ id: 'upload', name: uploadLabel }, ...fonts] : fonts}
         listClassName="font-select-list"
         popoverClassName="font-select-popover"
         {...props}
@@ -56,14 +62,16 @@ function FontSelect(props) {
       >
         {Font}
       </ListSetting>
-      <input
-        hidden
-        ref={inputEl}
-        type="file"
-        multiple
-        accept={EXTENSIONS.join(',')}
-        onChange={onFiles}
-      />
+      {allowUpload ? (
+        <input
+          hidden
+          ref={inputEl}
+          type="file"
+          multiple
+          accept={EXTENSIONS.join(',')}
+          onChange={onFiles}
+        />
+      ) : null}
     </div>
   )
 }

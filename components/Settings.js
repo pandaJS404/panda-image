@@ -1,7 +1,7 @@
 import React from 'react'
 import omitBy from 'lodash.omitby'
 import { SettingOutlined } from '@ant-design/icons'
-import { Modal, Popover, Slider as AntSlider, Tabs } from 'antd'
+import { Modal, Popover, Radio, Slider as AntSlider, Tabs } from 'antd'
 import { useKeyboardListener } from '../src/shared/react/hooks'
 
 import ThemeSelect from './ThemeSelect'
@@ -13,7 +13,13 @@ import ButtonPrimitive from './buttons/ButtonPrimitive'
 import ToolbarIconButton from './buttons/ToolbarIconButton'
 import Presets from './Presets'
 import { DEFAULT_PRESETS, DEFAULT_SETTINGS, DEFAULT_WIDTHS } from '../src/modules/editor/config'
-import { getPresets, savePresets, generateId, fileToJSON, stringifyColor } from '../src/shared/utils'
+import {
+  getPresets,
+  savePresets,
+  generateId,
+  fileToJSON,
+  stringifyColor,
+} from '../src/shared/utils'
 
 function getViewportWidthMax() {
   if (typeof window === 'undefined') {
@@ -28,6 +34,15 @@ const SETTINGS_MENU_LABELS = {
   Editor: '编辑器',
   Watermark: '水印',
   Misc: '其他',
+}
+
+const WATERMARK_MODE_OPTIONS = [
+  { id: 'logo', name: 'Panda' },
+  { id: 'text-svg', name: '自定义' },
+]
+
+function serializeNumericValue(value, precision = 2) {
+  return `${Number.parseFloat(value.toFixed(precision))}`
 }
 
 function formatSliderDisplay(value, unit) {
@@ -102,9 +117,17 @@ function SettingsSlider({
   )
 }
 
-function SettingsColorField({ className = '', label, value, onChange }) {
+function SettingsColorField({
+  className = '',
+  label,
+  value,
+  onChange,
+  fallbackColor = DEFAULT_SETTINGS.codeMirrorBorderColor,
+  onClear,
+  clearLabel = '复原',
+}) {
   const [open, setOpen] = React.useState(false)
-  const displayColor = value || DEFAULT_SETTINGS.codeMirrorBorderColor
+  const displayColor = value || fallbackColor
 
   const handleChange = React.useCallback(
     nextColor => {
@@ -123,35 +146,51 @@ function SettingsColorField({ className = '', label, value, onChange }) {
   return (
     <div className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}>
       <span className="settings-slider-label">{label}</span>
-      <Popover
-        trigger="click"
-        placement="bottomRight"
-        open={open}
-        onOpenChange={setOpen}
-        classNames={{ root: 'settings-color-popover' }}
-        styles={{ body: { padding: 0 } }}
-        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-        content={
-          <div className="settings-color-popover__content">
-            <ColorPicker color={displayColor} onChange={handleChange} />
-          </div>
-        }
-      >
-        <ButtonPrimitive
-          active={open}
-          className="settings-color-trigger"
-          aria-label={label}
-          aria-tooltip={label}
+      <div className="settings-color-actions">
+        <Popover
+          trigger="click"
+          placement="bottomRight"
+          open={open}
+          onOpenChange={setOpen}
+          classNames={{ root: 'settings-color-popover' }}
+          styles={{ body: { padding: 0 } }}
+          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
+          content={
+            <div className="settings-color-popover__content">
+              <ColorPicker color={displayColor} onChange={handleChange} />
+            </div>
+          }
         >
-          <span className="settings-color-trigger__alpha" aria-hidden="true" />
-          <span
-            className="settings-color-trigger__swatch"
-            aria-hidden="true"
-            style={{ background: displayColor }}
-          />
-        </ButtonPrimitive>
-      </Popover>
+          <ButtonPrimitive
+            active={open}
+            className="settings-color-trigger"
+            aria-label={label}
+            aria-tooltip={label}
+          >
+            <span className="settings-color-trigger__alpha" aria-hidden="true" />
+            <span
+              className="settings-color-trigger__swatch"
+              aria-hidden="true"
+              style={{ background: displayColor }}
+            />
+          </ButtonPrimitive>
+        </Popover>
+        {onClear ? (
+          <ButtonPrimitive className="settings-color-clear" onClick={onClear}>
+            {clearLabel}
+          </ButtonPrimitive>
+        ) : null}
+      </div>
     </div>
+  )
+}
+
+function SettingsSection({ title, children }) {
+  return (
+    <section className="settings-section">
+      <h4 className="settings-section__title">{title}</h4>
+      <div className="settings-section__body">{children}</div>
+    </section>
   )
 }
 
@@ -194,11 +233,11 @@ function WindowSettings({
         onChange={onChange}
       />
       {windowTheme === '__never__' ? (
-      <SettingsColorField
-        label="编辑器边框颜色"
-        value={codeMirrorBorderColor}
-        onChange={onChange.bind(null, 'codeMirrorBorderColor')}
-      />
+        <SettingsColorField
+          label="编辑器边框颜色"
+          value={codeMirrorBorderColor}
+          onChange={onChange.bind(null, 'codeMirrorBorderColor')}
+        />
       ) : null}
       <div className="settings-split-row">
         <SettingsSlider
@@ -284,6 +323,8 @@ function EditorSettings({
   return (
     <div className="settings-content">
       <FontSelect
+        title="字体"
+        uploadLabel="上传字体 +"
         selected={font}
         onUpload={onUpload}
         onChange={onChange.bind(null, 'fontFamily')}
@@ -291,8 +332,8 @@ function EditorSettings({
       <SettingsSlider
         label="字号"
         value={size}
-        minValue={10}
-        maxValue={18}
+        minValue={12}
+        maxValue={24}
         step={0.5}
         onChange={onChange.bind(null, 'fontSize')}
       />
@@ -327,10 +368,164 @@ function EditorSettings({
   )
 }
 
-function WatermarkSettings({ onChange, watermark }) {
+function WatermarkSettings({
+  onChange,
+  onWatermarkFontChange,
+  onWatermarkFontUpload,
+  watermark,
+  watermarkMode,
+  watermarkOpacity,
+  watermarkScale,
+  watermarkOffsetX,
+  watermarkOffsetY,
+  watermarkText,
+  watermarkFontFamily,
+  watermarkTextSize,
+  watermarkTextKerning,
+  watermarkStrokeColor,
+  watermarkStrokeWidth,
+  watermarkFillEnabled,
+  watermarkFillColor,
+}) {
+  const handleTextChange = React.useCallback(
+    event => {
+      onChange('watermarkText', event.target.value.replace(/[\r\n]+/g, ' '))
+    },
+    [onChange],
+  )
+
   return (
     <div className="settings-content">
       <Toggle label="水印" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
+      {watermark ? (
+        <>
+          <SettingsSlider
+            label="透明度"
+            value={serializeNumericValue(Number.parseFloat(watermarkOpacity || '0.75') * 100, 0)}
+            minValue={0}
+            maxValue={100}
+            step={5}
+            unit="%"
+            serializeValue={nextValue => serializeNumericValue(nextValue / 100)}
+            onChange={onChange.bind(null, 'watermarkOpacity')}
+          />
+          <SettingsSlider
+            label="缩放"
+            value={watermarkScale}
+            minValue={0.25}
+            maxValue={4}
+            step={0.05}
+            unit="x"
+            serializeValue={nextValue => serializeNumericValue(nextValue)}
+            onChange={onChange.bind(null, 'watermarkScale')}
+          />
+          <SettingsSlider
+            label="偏移 X"
+            value={watermarkOffsetX}
+            minValue={-240}
+            maxValue={240}
+            step={1}
+            unit="px"
+            onChange={onChange.bind(null, 'watermarkOffsetX')}
+          />
+          <SettingsSlider
+            label="偏移 Y"
+            value={watermarkOffsetY}
+            minValue={-240}
+            maxValue={240}
+            step={1}
+            unit="px"
+            onChange={onChange.bind(null, 'watermarkOffsetY')}
+          />
+          <div className="settings-row settings-radio-row">
+            <span className="settings-slider-label">模式</span>
+            <Radio.Group
+              className="settings-radio-group"
+              optionType="button"
+              buttonStyle="solid"
+              value={watermarkMode || 'logo'}
+              onChange={event => onChange('watermarkMode', event.target.value)}
+            >
+              {WATERMARK_MODE_OPTIONS.map(({ id, name }) => (
+                <Radio.Button key={id} value={id}>
+                  {name}
+                </Radio.Button>
+              ))}
+            </Radio.Group>
+          </div>
+          {watermarkMode === 'text-svg' ? (
+            <>
+              <SettingsSection title="文字设置">
+                <div className="settings-row first-line-number-row">
+                  <Input
+                    label="文字"
+                    value={watermarkText}
+                    onChange={handleTextChange}
+                    align="left"
+                    fieldClassName="settings-inline-field settings-inline-field--wide"
+                  />
+                </div>
+                <FontSelect
+                  title="字体"
+                  uploadLabel="上传字体 +"
+                  selected={watermarkFontFamily}
+                  onChange={onWatermarkFontChange}
+                  onUpload={onWatermarkFontUpload}
+                />
+                <SettingsSlider
+                  label="文字尺寸"
+                  value={watermarkTextSize}
+                  minValue={24}
+                  maxValue={160}
+                  step={1}
+                  unit="px"
+                  onChange={onChange.bind(null, 'watermarkTextSize')}
+                />
+                <Toggle
+                  label="字距 / 连字"
+                  enabled={watermarkTextKerning}
+                  onChange={onChange.bind(null, 'watermarkTextKerning')}
+                />
+              </SettingsSection>
+              <SettingsSection title="描边">
+                <SettingsColorField
+                  label="描边颜色"
+                  value={watermarkStrokeColor}
+                  fallbackColor="rgba(255,255,255,1)"
+                  onChange={onChange.bind(null, 'watermarkStrokeColor')}
+                  onClear={onChange.bind(null, 'watermarkStrokeColor', 'rgba(255,255,255,1)')}
+                />
+                <SettingsSlider
+                  label="描边宽度"
+                  value={watermarkStrokeWidth}
+                  minValue={0}
+                  maxValue={12}
+                  step={0.5}
+                  unit="px"
+                  serializeValue={nextValue => `${nextValue}px`}
+                  onChange={onChange.bind(null, 'watermarkStrokeWidth')}
+                />
+              </SettingsSection>
+              <SettingsSection title="填充">
+                <Toggle
+                  label="启用填充"
+                  enabled={watermarkFillEnabled !== false}
+                  onChange={onChange.bind(null, 'watermarkFillEnabled')}
+                />
+                {watermarkFillEnabled !== false ? (
+                  <SettingsColorField
+                    label="填充颜色"
+                    value={watermarkFillColor}
+                    fallbackColor="rgba(255, 174, 0, 1)"
+                    onChange={onChange.bind(null, 'watermarkFillColor')}
+                    onClear={onChange.bind(null, 'watermarkFillColor', 'rgba(255, 174, 0, 1)')}
+                  />
+                ) : null}
+              </SettingsSection>
+            </>
+          ) : null}
+        </>
+      ) : null}
     </div>
   )
 }
@@ -479,6 +674,24 @@ function Settings(props) {
     (id, url) => {
       props.onChange('fontFamily', id)
       props.onChange('fontUrl', url)
+      setPreviousSettings(null)
+      setOpen(false)
+    },
+    [props],
+  )
+
+  const handleWatermarkFontChange = React.useCallback(
+    fontFamily => {
+      props.onWatermarkFontChange(fontFamily)
+      setPreviousSettings(null)
+    },
+    [props],
+  )
+
+  const handleWatermarkFontUpload = React.useCallback(
+    (id, url) => {
+      props.onWatermarkFontUpload(id, url)
+      setPreviousSettings(null)
       setOpen(false)
     },
     [props],
@@ -584,7 +797,27 @@ function Settings(props) {
     {
       key: 'Watermark',
       label: SETTINGS_MENU_LABELS.Watermark,
-      children: <WatermarkSettings onChange={handleChange} watermark={props.watermark} />,
+      children: (
+        <WatermarkSettings
+          onChange={handleChange}
+          onWatermarkFontChange={handleWatermarkFontChange}
+          onWatermarkFontUpload={handleWatermarkFontUpload}
+          watermark={props.watermark}
+          watermarkMode={props.watermarkMode}
+          watermarkOpacity={props.watermarkOpacity}
+          watermarkScale={props.watermarkScale}
+          watermarkOffsetX={props.watermarkOffsetX}
+          watermarkOffsetY={props.watermarkOffsetY}
+          watermarkText={props.watermarkText}
+          watermarkFontFamily={props.watermarkFontFamily}
+          watermarkTextSize={props.watermarkTextSize}
+          watermarkTextKerning={props.watermarkTextKerning}
+          watermarkStrokeColor={props.watermarkStrokeColor}
+          watermarkStrokeWidth={props.watermarkStrokeWidth}
+          watermarkFillEnabled={props.watermarkFillEnabled}
+          watermarkFillColor={props.watermarkFillColor}
+        />
+      ),
     },
     {
       key: 'Misc',

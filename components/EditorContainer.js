@@ -4,7 +4,14 @@ import Editor from './Editor'
 
 import { THEMES } from '../src/modules/editor/config'
 import { updateRouteState } from '../src/modules/editor/state/routing'
-import { clearSettings, getThemes, saveSettings, saveThemes } from '../src/shared/utils'
+import {
+  clearSettings,
+  clearWatermarkFontAsset,
+  getThemes,
+  saveSettings,
+  saveThemes,
+  saveWatermarkFontAsset,
+} from '../src/shared/utils'
 
 function onReset() {
   clearSettings()
@@ -34,12 +41,22 @@ function EditorContainer(props) {
     saveSettings(state)
   }
 
+  function onWatermarkFontAssetChange(nextValue) {
+    if (nextValue == null) {
+      clearWatermarkFontAsset()
+      return
+    }
+
+    saveWatermarkFontAsset(nextValue)
+  }
+
   return (
     <Editor
       {...props}
       themes={themes}
       updateThemes={updateThemes}
       onUpdate={onEditorUpdate}
+      onWatermarkFontAssetChange={onWatermarkFontAssetChange}
       onReset={onReset}
     />
   )

@@ -5,6 +5,7 @@ import { htmlUnescape } from 'escape-goat'
 const SETTINGS_KEY = 'PANDA_STATE'
 const PRESETS_KEY = 'PANDA_PRESETS'
 const THEMES_KEY = 'PANDA_THEMES'
+const WATERMARK_FONT_ASSET_KEY = 'PANDA_WATERMARK_FONT_ASSET'
 
 const createAssigner = key => {
   const assign = morph.assign(key)
@@ -24,6 +25,7 @@ export const saveSettings = morph.compose(
     'themes',
     'highlights',
     'fontUrl',
+    'watermarkFontUrl',
     'selectedLines',
     'name',
   ])
@@ -62,8 +64,18 @@ export const getSettings = morph.compose(parse, escapeHtml, morph.get(SETTINGS_K
 export const getPresets = morph.compose(parse, morph.get(PRESETS_KEY))
 
 export const getThemes = morph.compose(parse, morph.get(THEMES_KEY))
+export const getWatermarkFontAsset = morph.compose(parse, morph.get(WATERMARK_FONT_ASSET_KEY))
 
 export const clearSettings = () => localStorage.removeItem(SETTINGS_KEY)
+export const clearWatermarkFontAsset = () => localStorage.removeItem(WATERMARK_FONT_ASSET_KEY)
+export const saveWatermarkFontAsset = value => {
+  if (value == null) {
+    clearWatermarkFontAsset()
+    return
+  }
+
+  return createAssigner(WATERMARK_FONT_ASSET_KEY)(value)
+}
 
 export const fileToDataURL = blob =>
   new Promise(res => {

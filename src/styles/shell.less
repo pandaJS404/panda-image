@@ -486,11 +486,24 @@
   padding: var(--panda-padding, 0);
 
   .watermark {
-    fill-opacity: 0.75;
     position: absolute;
     z-index: 2;
     bottom: var(--panda-watermark-bottom, auto);
     right: var(--panda-watermark-right, auto);
+    opacity: var(--panda-watermark-opacity, 0.75);
+    pointer-events: none;
+    transform-origin: bottom right;
+    transform: var(--panda-watermark-transform, translate(0px, 0px) scale(1));
+  }
+
+  .watermark svg {
+    display: block;
+    overflow: visible;
+  }
+
+  .watermark.watermark--text-svg {
+    width: max-content;
+    line-height: 0;
   }
 
   .panda-container-bg,

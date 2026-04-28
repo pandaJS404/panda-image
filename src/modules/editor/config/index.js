@@ -1,19 +1,106 @@
 import toHash from 'tohash'
 
 export const FONTS = [
-  { id: 'Anonymous Pro', name: 'Anonymous Pro' },
-  { id: 'Cascadia Code', name: 'Cascadia Code' },
-  { id: 'Droid Sans Mono', name: 'Droid Sans Mono' },
-  { id: 'Fantasque Sans Mono', name: 'Fantasque Sans Mono' },
-  { id: 'Fira Code', name: 'Fira Code' },
-  { id: 'Hack', name: 'Hack' },
-  { id: 'IBM Plex Mono', name: 'IBM Plex Mono' },
-  { id: 'Inconsolata', name: 'Inconsolata' },
-  { id: 'JetBrains Mono', name: 'JetBrains Mono' },
-  { id: 'Monoid', name: 'Monoid' },
-  { id: 'Source Code Pro', name: 'Source Code Pro' },
-  { id: 'Space Mono', name: 'Space Mono' },
-  { id: 'Ubuntu Mono', name: 'Ubuntu Mono' },
+  {
+    id: 'Google Sans Code',
+    name: 'Google Sans Code',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/google-sans-code@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'HarmonyOS Sans',
+    name: 'HarmonyOS Sans',
+    assetUrl:
+      'https://cdn.jsdelivr.net/gh/ajacocks/harmonyos-sans-font@main/HarmonyOS_Sans/HarmonyOS_Sans_Regular.ttf',
+    assetFormat: 'truetype',
+  },
+  {
+    id: 'Cascadia Code',
+    name: 'Cascadia Code',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/cascadia-code@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Hack',
+    name: 'Hack',
+    assetUrl: 'https://cdnjs.cloudflare.com/ajax/libs/hack-font/3.3.0/web/fonts/hack-regular.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Anonymous Pro',
+    name: 'Anonymous Pro',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/anonymous-pro@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Droid Sans Mono',
+    name: 'Droid Sans Mono',
+    assetUrl:
+      'https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/DroidSansMono.ttf?format=TEXT',
+    assetFormat: 'truetype',
+    assetEncoding: 'base64-text',
+  },
+  {
+    id: 'Fantasque Sans Mono',
+    name: 'Fantasque Sans Mono',
+    assetUrl:
+      'https://cdn.jsdelivr.net/npm/@typopro/web-fantasque-sans-mono@3.7.5/TypoPRO-FantasqueSansMono-Regular.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Fira Code',
+    name: 'Fira Code',
+    assetUrl: 'https://cdn.jsdelivr.net/npm/firacode@latest/distr/woff/FiraCode-Regular.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'IBM Plex Mono',
+    name: 'IBM Plex Mono',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Inconsolata',
+    name: 'Inconsolata',
+    assetUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'JetBrains Mono',
+    name: 'JetBrains Mono',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Monoid',
+    name: 'Monoid',
+    assetUrl: 'https://cdn.jsdelivr.net/npm/@typopro/web-monoid@3.7.5/TypoPRO-Monoid-Regular.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Source Code Pro',
+    name: 'Source Code Pro',
+    assetUrl:
+      'https://cdn.jsdelivr.net/fontsource/fonts/source-code-pro@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Space Mono',
+    name: 'Space Mono',
+    assetUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/space-mono@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
+  {
+    id: 'Ubuntu Mono',
+    name: 'Ubuntu Mono',
+    assetUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/ubuntu-mono@latest/latin-400-normal.woff',
+    assetFormat: 'woff',
+  },
 ]
 
 export const HIGHLIGHT_KEYS = [
@@ -730,6 +817,7 @@ export const THEMES = [
 ]
 
 export const THEMES_HASH = toHash(THEMES)
+export const FONTS_HASH = toHash(FONTS)
 
 export const LANGUAGES = [
   {
@@ -1169,6 +1257,7 @@ export const DEFAULT_LANGUAGE = 'auto'
 export const DEFAULT_THEME = THEMES_HASH.seti
 export const DEFAULT_BG_COLOR = 'rgba(171, 184, 195, 1)'
 export const DEFAULT_EXPORT_SIZE = EXPORT_SIZES_HASH['2x']
+export const DEFAULT_FONT_FAMILY = 'Google Sans Code'
 
 export const COLORS = {
   BLACK: 'var(--color-black)',
@@ -1222,8 +1311,8 @@ export const DEFAULT_SETTINGS = {
   codeMirrorBorderColor: 'rgba(255,255,255,1)',
   codeMirrorBorderRadius: '5px',
   language: DEFAULT_LANGUAGE,
-  fontFamily: 'Hack',
-  fontSize: '14px',
+  fontFamily: DEFAULT_FONT_FAMILY,
+  fontSize: '16px',
   lineHeight: '133%',
   windowControls: true,
   widthAdjustment: true,
@@ -1231,6 +1320,20 @@ export const DEFAULT_SETTINGS = {
   firstLineNumber: 1,
   exportSize: '2x',
   watermark: false,
+  watermarkMode: 'logo',
+  watermarkOpacity: '1',
+  watermarkScale: '1',
+  watermarkOffsetX: '0px',
+  watermarkOffsetY: '0px',
+  watermarkText: 'Panda',
+  watermarkFontFamily: DEFAULT_FONT_FAMILY,
+  watermarkTextSize: '96px',
+  watermarkTextKerning: true,
+  watermarkStrokeColor: '',
+  watermarkStrokeWidth: '0px',
+  watermarkFillEnabled: true,
+  watermarkFillColor: '',
+  watermarkFontUrl: null,
   squaredImage: false,
   hiddenCharacters: false,
   name: '',

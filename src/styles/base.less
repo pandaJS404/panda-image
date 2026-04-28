@@ -127,7 +127,6 @@ html {
   color-scheme: var(--color-scheme);
   background: var(--app-bg);
   scrollbar-color: var(--surface-4) var(--app-bg);
-  scrollbar-gutter: stable both-edges;
   overflow-x: clip;
 }
 
@@ -487,6 +486,30 @@ kbd {
   src:
     url('//cdn.jsdelivr.net/npm/firacode@latest/distr/woff2/FiraCode-Regular.woff2') format('woff2'),
     url('//cdn.jsdelivr.net/npm/firacode@latest/distr/woff/FiraCode-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Google Sans Code';
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    local('Google Sans Code'),
+    local('GoogleSansCode-Regular'),
+    url('https://cdn.jsdelivr.net/fontsource/fonts/google-sans-code@latest/latin-400-normal.woff')
+      format('woff');
+}
+
+@font-face {
+  font-family: 'HarmonyOS Sans';
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    local('HarmonyOS Sans'),
+    local('HarmonyOSSans-Regular'),
+    url('https://cdn.jsdelivr.net/gh/ajacocks/harmonyos-sans-font@main/HarmonyOS_Sans/HarmonyOS_Sans_Regular.ttf')
+      format('truetype');
 }
 
 @font-face {

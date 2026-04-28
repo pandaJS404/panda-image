@@ -19,11 +19,13 @@ import FontFace from './FontFace'
 import {
   DEFAULT_CODE,
   DEFAULT_EXPORT_SIZE,
+  DEFAULT_FONT_FAMILY,
   DEFAULT_LANGUAGE,
   DEFAULT_SETTINGS,
   DEFAULT_THEME,
   EXPORT_SIZES_HASH,
   FONTS,
+  FONTS_HASH,
   LANGUAGES,
   LANGUAGE_MIME_HASH,
   LANGUAGE_MODE_HASH,
@@ -35,7 +37,14 @@ import {
   isStaticGradientActive,
 } from '../src/modules/editor/background'
 import { getRouteState } from '../src/modules/editor/state/routing'
-import { fileToDataURL, formatCode, getSettings, omit, unescapeHtml } from '../src/shared/utils'
+import {
+  fileToDataURL,
+  formatCode,
+  getSettings,
+  getWatermarkFontAsset,
+  omit,
+  unescapeHtml,
+} from '../src/shared/utils'
 
 const languageIcon = <AimOutlined />
 const getConfig = omit(['code', 'titleBar'])
@@ -98,9 +107,11 @@ class Editor extends React.Component {
 
   async componentDidMount() {
     const { queryState } = getRouteState(this.props.router)
+    const storedSettings = getSettings(localStorage) || {}
+    const storedWatermarkFontUrl = getWatermarkFontAsset(localStorage)
 
     const newState = {
-      ...getSettings(localStorage),
+      ...storedSettings,
       ...queryState,
       loading: false,
     }
@@ -111,6 +122,27 @@ class Editor extends React.Component {
 
     if (newState.fontFamily && !FONTS.find(({ id }) => id === newState.fontFamily)) {
       newState.fontFamily = DEFAULT_SETTINGS.fontFamily
+    }
+
+    const isBuiltInWatermarkFont = Boolean(FONTS_HASH[newState.watermarkFontFamily])
+    const shouldRestoreStoredWatermarkFont =
+      storedWatermarkFontUrl &&
+      !isBuiltInWatermarkFont &&
+      newState.watermarkFontFamily &&
+      newState.watermarkFontFamily === storedSettings.watermarkFontFamily
+
+    if (shouldRestoreStoredWatermarkFont) {
+      newState.watermarkFontUrl = storedWatermarkFontUrl
+    }
+
+    if (newState.watermarkFontFamily && !FONTS_HASH[newState.watermarkFontFamily]) {
+      if (!newState.watermarkFontUrl) {
+        newState.watermarkFontFamily = DEFAULT_SETTINGS.watermarkFontFamily
+      }
+    }
+
+    if (newState.watermarkFontUrl && !newState.watermarkFontFamily) {
+      newState.watermarkFontFamily = DEFAULT_FONT_FAMILY
     }
 
     this.setState(newState)
@@ -348,8 +380,42 @@ class Editor extends React.Component {
     }
   }
 
+  setWatermarkFontAsset = nextValue => {
+    this.props.onWatermarkFontAssetChange?.(nextValue || null)
+  }
+
+  updateWatermarkFontFamily = fontFamily => {
+    const isBuiltInFont = Boolean(FONTS_HASH[fontFamily])
+    const nextState = {
+      watermarkFontFamily: fontFamily,
+      preset: null,
+    }
+
+    if (isBuiltInFont) {
+      nextState.watermarkFontUrl = null
+    }
+
+    this.updateState(nextState)
+
+    if (isBuiltInFont) {
+      this.setWatermarkFontAsset(null)
+    }
+  }
+
+  uploadWatermarkFont = (fontFamily, watermarkFontUrl) => {
+    const normalizedFontFamily = FONTS_HASH[fontFamily] ? `${fontFamily} (Uploaded)` : fontFamily
+
+    this.updateState({
+      watermarkFontFamily: normalizedFontFamily,
+      watermarkFontUrl,
+      preset: null,
+    })
+    this.setWatermarkFontAsset(watermarkFontUrl)
+  }
+
   resetDefaultSettings = () => {
     this.updateState(DEFAULT_SETTINGS)
+    this.setWatermarkFontAsset(null)
     this.props.onReset()
   }
 
@@ -413,7 +479,10 @@ class Editor extends React.Component {
     }
   }
 
-  applyPreset = ({ id: preset, ...settings }) => this.updateState({ preset, ...settings })
+  applyPreset = ({ id: preset, ...settings }) => {
+    this.updateState({ preset, ...settings })
+    this.setWatermarkFontAsset(settings.watermarkFontUrl || null)
+  }
 
   format = async () => {
     const resolvedLanguage = resolveFormatLanguage(
@@ -491,6 +560,8 @@ class Editor extends React.Component {
               <Settings
                 {...config}
                 onChange={this.updateSetting}
+                onWatermarkFontChange={this.updateWatermarkFontFamily}
+                onWatermarkFontUpload={this.uploadWatermarkFont}
                 resetDefaultSettings={this.resetDefaultSettings}
                 format={this.format}
                 applyPreset={this.applyPreset}
@@ -536,6 +607,7 @@ class Editor extends React.Component {
 
 Editor.defaultProps = {
   onUpdate: () => {},
+  onWatermarkFontAssetChange: () => {},
   onReset: () => {},
 }
 

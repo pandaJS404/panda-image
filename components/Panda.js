@@ -4,6 +4,7 @@ import hljs from 'highlight.js/lib/common'
 import { Spin } from 'antd'
 
 import WindowControls from './WindowControls'
+import Watermark from './Watermark'
 import WidthHandler from './WidthHandler'
 
 import {
@@ -19,10 +20,8 @@ import {
   isCodeMirrorModeLoaded,
 } from '../src/modules/editor/codemirror/loaders'
 import { getCanvasBackgroundStyle } from '../src/modules/editor/background'
-import SvgAsset from './svg/SvgAsset'
 
 const SelectionEditor = React.lazy(() => import('./SelectionEditor'))
-const WatermarkAsset = React.lazy(() => import('./svg/assets/watermark.svg?react'))
 const LANGUAGE_MASK_DELAY = 100
 
 function searchLanguage(l) {
@@ -451,17 +450,7 @@ class Panda extends React.PureComponent {
                 />
               )}
               {config.watermark && (
-                <React.Suspense fallback={null}>
-                  <SvgAsset
-                    component={WatermarkAsset}
-                    className="watermark"
-                    style={{
-                      '--watermark-shadow-color': light ? '#9E9E9E' : '#616161',
-                      '--watermark-foreground-color': light ? '#080808' : '#F7F7F7',
-                      '--watermark-text-color': light ? '#000000' : '#FFFFFF',
-                    }}
-                  />
-                </React.Suspense>
+                <Watermark config={config} light={light} />
               )}
               <div className="panda-loading-mask eliminateOnRender">
                 {showLanguageMask ? (
