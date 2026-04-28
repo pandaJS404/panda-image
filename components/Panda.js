@@ -405,6 +405,7 @@ class Panda extends React.PureComponent {
             <div
               className="container panda-container"
               data-language-loading={showLanguageMask || undefined}
+              data-glass-effect={config.glassEffect || undefined}
               style={{
                 '--panda-min-width': config.widthAdjustment ? '90px' : 'auto',
                 '--panda-max-width': '90vw',
@@ -412,6 +413,7 @@ class Panda extends React.PureComponent {
                 '--panda-padding': `${config.paddingVertical} ${config.paddingHorizontal}`,
                 '--panda-watermark-bottom': `calc(${config.paddingVertical} + 16px)`,
                 '--panda-watermark-right': `calc(${config.paddingHorizontal} + 16px)`,
+                '--panda-glass-blur-radius': config.glassBlurRadius,
                 '--panda-drop-shadow': config.dropShadow
                   ? `0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
                   : 'none',

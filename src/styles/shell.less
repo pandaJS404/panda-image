@@ -565,6 +565,15 @@
     }
   }
 
+  &[data-glass-effect='true'] {
+    .CodeMirror__container > .CodeMirror.CodeMirror-wrap {
+      overflow: hidden;
+      background-color: color-mix(in srgb, var(--cm-background) 78%, transparent) !important;
+      backdrop-filter: blur(var(--panda-glass-blur-radius, 18px)) saturate(1.08);
+      -webkit-backdrop-filter: blur(var(--panda-glass-blur-radius, 18px)) saturate(1.08);
+    }
+  }
+
   .CodeMirror__container--bordered > .CodeMirror {
     border: 2px solid var(--panda-code-border-color, #fff);
   }

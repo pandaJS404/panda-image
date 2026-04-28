@@ -12,6 +12,9 @@ export const HIGHLIGHTS_ONLY = [
   'a11y-dark',
   'slate-dark',
   'slate-light',
+  'panda-Gradation',
+  'Panda-Gradation',
+  'vscode-Gradation',
 ]
 const LOCAL_STYLESHEETS = ['one-light', 'one-dark', 'verminal', 'night-owl', 'nord', 'synthwave-84']
 const CDN_STYLESHEETS = THEMES.filter(

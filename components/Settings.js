@@ -163,6 +163,8 @@ function WindowSettings({
   windowTheme,
   paddingHorizontal,
   paddingVertical,
+  glassEffect,
+  glassBlurRadius,
   dropShadow,
   dropShadowBlurRadius,
   dropShadowOffsetY,
@@ -235,6 +237,18 @@ function WindowSettings({
             onChange={onChange.bind(null, 'dropShadowBlurRadius')}
           />
         </div>
+      ) : null}
+      <Toggle label="毛玻璃" enabled={glassEffect} onChange={onChange.bind(null, 'glassEffect')} />
+      {glassEffect ? (
+        <SettingsSlider
+          label="模糊强度"
+          value={glassBlurRadius}
+          minValue={4}
+          maxValue={40}
+          step={1}
+          unit="px"
+          onChange={onChange.bind(null, 'glassBlurRadius')}
+        />
       ) : null}
       <Toggle
         label="自动适配宽度"
@@ -540,6 +554,8 @@ function Settings(props) {
           windowTheme={props.windowTheme}
           paddingHorizontal={props.paddingHorizontal}
           paddingVertical={props.paddingVertical}
+          glassEffect={props.glassEffect}
+          glassBlurRadius={props.glassBlurRadius}
           dropShadow={props.dropShadow}
           dropShadowBlurRadius={props.dropShadowBlurRadius}
           dropShadowOffsetY={props.dropShadowOffsetY}
