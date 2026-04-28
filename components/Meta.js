@@ -6,7 +6,13 @@ import { useUiTheme } from '../src/ui-theme'
 
 const CODEMIRROR_VERSION = '5.65.5'
 
-export const HIGHLIGHTS_ONLY = ['shades-of-purple', 'vscode', 'a11y-dark']
+export const HIGHLIGHTS_ONLY = [
+  'shades-of-purple',
+  'vscode',
+  'a11y-dark',
+  'slate-dark',
+  'slate-light',
+]
 const LOCAL_STYLESHEETS = ['one-light', 'one-dark', 'verminal', 'night-owl', 'nord', 'synthwave-84']
 const CDN_STYLESHEETS = THEMES.filter(
   t => LOCAL_STYLESHEETS.indexOf(t.id) < 0 && HIGHLIGHTS_ONLY.indexOf(t.id) < 0,
