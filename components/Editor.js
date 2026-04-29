@@ -1,7 +1,6 @@
 import React from 'react'
 import debounce from 'lodash.debounce'
 import { snapdom } from '@zumer/snapdom'
-import hljs from 'highlight.js/lib/common'
 import { App as AntdApp } from 'antd'
 import { AimOutlined } from '@ant-design/icons'
 
@@ -37,6 +36,7 @@ import {
   getSquareExportBackgroundStyle,
   isStaticGradientActive,
 } from '../src/modules/editor/background'
+import { getDroppedFileLanguage, resolveLanguageMode } from '../src/modules/editor/language'
 import { getRouteState } from '../src/modules/editor/state/routing'
 import {
   fileToDataURL,
@@ -136,33 +136,8 @@ function getStoredBackgroundImageValue(source, image) {
   return image || source || null
 }
 
-function searchLanguage(language) {
-  return (
-    LANGUAGE_NAME_HASH[language] || LANGUAGE_MIME_HASH[language] || LANGUAGE_MODE_HASH[language]
-  )
-}
-
 function resolveFormatLanguage(code, language) {
-  if (language === 'auto') {
-    const detectedLanguage = hljs.highlightAuto(code || '').language
-    const matchedLanguage = searchLanguage(detectedLanguage)
-
-    if (matchedLanguage) {
-      return matchedLanguage.mime || matchedLanguage.mode
-    }
-
-    if (detectedLanguage) {
-      return detectedLanguage
-    }
-  }
-
-  const matchedLanguage = searchLanguage(language)
-
-  if (matchedLanguage) {
-    return matchedLanguage.mime || matchedLanguage.mode
-  }
-
-  return language
+  return resolveLanguageMode(code, language).mode
 }
 
 class Editor extends React.Component {
@@ -581,7 +556,11 @@ class Editor extends React.Component {
   }
 
   onDrop = ([file]) => {
-    if (file.type.split('/')[0] === 'image') {
+    const isImageFile =
+      file.type.split('/')[0] === 'image' ||
+      (typeof file.content === 'string' && file.content.startsWith('data:image/'))
+
+    if (isImageFile) {
       this.updateState({
         backgroundImage: file.content,
         backgroundImageSource: null,
@@ -594,7 +573,10 @@ class Editor extends React.Component {
       return
     }
 
-    this.updateState({ code: file.content, language: 'auto' })
+    this.updateState({
+      code: file.content,
+      language: getDroppedFileLanguage(file),
+    })
   }
 
   updateLanguage = language => {

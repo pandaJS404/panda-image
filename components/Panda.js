@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import hljs from 'highlight.js/lib/common'
 import { Spin } from 'antd'
 
 import WindowControls from './WindowControls'
@@ -9,12 +8,10 @@ import WidthHandler from './WidthHandler'
 
 import {
   COLORS,
-  LANGUAGE_MODE_HASH,
-  LANGUAGE_NAME_HASH,
-  LANGUAGE_MIME_HASH,
   DEFAULT_SETTINGS,
   THEMES_HASH,
 } from '../src/modules/editor/config'
+import { resolveLanguageMode } from '../src/modules/editor/language'
 import {
   ensureCodeMirrorMode,
   isCodeMirrorModeLoaded,
@@ -24,41 +21,12 @@ import { getCanvasBackgroundStyle } from '../src/modules/editor/background'
 const SelectionEditor = React.lazy(() => import('./SelectionEditor'))
 const LANGUAGE_MASK_DELAY = 100
 
-function searchLanguage(l) {
-  return LANGUAGE_NAME_HASH[l] || LANGUAGE_MODE_HASH[l] || LANGUAGE_MIME_HASH[l]
-}
-
-function resolveRequestedLanguageMode(code, language) {
-  if (language === 'auto') {
-    const detectedLanguage = hljs.highlightAuto(code || '').language
-    const languageMode = searchLanguage(detectedLanguage)
-
-    if (languageMode) {
-      return languageMode.mime || languageMode.mode
-    }
-  }
-
-  const languageMode = searchLanguage(language)
-
-  if (languageMode) {
-    return languageMode.mime || languageMode.mode
-  }
-
-  return language
-}
-
 function getResolvedLanguageModeFromProps(props) {
   const config = { ...DEFAULT_SETTINGS, ...props.config }
-  const requestedMode = resolveRequestedLanguageMode(
+  return resolveLanguageMode(
     props.children,
     config.language && config.language.toLowerCase(),
   )
-  const languageMode = searchLanguage(requestedMode)
-
-  return {
-    mode: languageMode ? languageMode.mime || languageMode.mode : requestedMode || 'plaintext',
-    modeKey: languageMode ? languageMode.mode : requestedMode || 'text',
-  }
 }
 
 function noop() {}

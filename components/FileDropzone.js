@@ -1,10 +1,15 @@
 import React from 'react'
+import { isDroppedTextFile } from '../src/modules/editor/language'
 
 const DATA_URL = 'DATA_URL'
 const TEXT = 'TEXT'
 const style = { outline: 'none' }
 
 function getReadMode(file) {
+  if (isDroppedTextFile(file)) {
+    return TEXT
+  }
+
   if (file.type === '') {
     return DATA_URL
   }
