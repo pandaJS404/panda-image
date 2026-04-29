@@ -1,12 +1,5 @@
 # Project Agent Rules
 
-## Ant Design Rules
-
-- When writing, refactoring, or reviewing any Ant Design code in this project, always consult the local reference file first:
-  - `E:\code\carbon-main\docs\references\antd-llms-full-cn.txt`
-- Use this quick notes file as the first-entry summary, then fall back to the full reference when needed:
-  - `E:\code\carbon-main\docs\references\antd-usage-notes.md`
-
 ## Required Ant Design Practices
 
 - Prefer official Ant Design APIs and current recommended props over deprecated props.

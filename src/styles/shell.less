@@ -580,10 +580,31 @@
 
   &[data-glass-effect='true'] {
     .CodeMirror__container > .CodeMirror.CodeMirror-wrap {
+      position: relative;
       overflow: hidden;
-      background-color: color-mix(in srgb, var(--cm-background) 78%, transparent) !important;
+      background-color: transparent !important;
+    }
+
+    .CodeMirror__container > .CodeMirror.CodeMirror-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--panda-code-border-radius, 5px);
+      background-color: color-mix(in srgb, var(--cm-background) 78%, transparent);
       backdrop-filter: blur(var(--panda-glass-blur-radius, 18px)) saturate(1.08);
       -webkit-backdrop-filter: blur(var(--panda-glass-blur-radius, 18px)) saturate(1.08);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .CodeMirror__container--bordered > .CodeMirror.CodeMirror-wrap::before {
+      inset: 2px;
+      border-radius: max(0px, calc(var(--panda-code-border-radius, 5px) - 2px));
+    }
+
+    .CodeMirror__container > .CodeMirror.CodeMirror-wrap > * {
+      position: relative;
+      z-index: 1;
     }
   }
 

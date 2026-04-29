@@ -33,6 +33,7 @@ import {
 } from '../src/modules/editor/config'
 import {
   applyBackgroundStyle,
+  getBackgroundImageSource,
   getSquareExportBackgroundStyle,
   isStaticGradientActive,
 } from '../src/modules/editor/background'
@@ -138,6 +139,44 @@ function getStoredBackgroundImageValue(source, image) {
 
 function resolveFormatLanguage(code, language) {
   return resolveLanguageMode(code, language).mode
+}
+
+function waitForAnimationFrame() {
+  return new Promise(resolve => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      resolve()
+      return
+    }
+
+    window.requestAnimationFrame(() => resolve())
+  })
+}
+
+function waitForImageReady(image) {
+  if (!image) {
+    return Promise.resolve()
+  }
+
+  const finalize = () => waitForAnimationFrame()
+
+  if (image.complete && image.naturalWidth > 0) {
+    if (typeof image.decode === 'function') {
+      return image.decode().catch(() => {}).then(finalize)
+    }
+
+    return finalize()
+  }
+
+  return new Promise(resolve => {
+    const handleDone = () => {
+      image.onload = null
+      image.onerror = null
+      finalize().then(resolve)
+    }
+
+    image.onload = handleDone
+    image.onerror = handleDone
+  })
 }
 
 class Editor extends React.Component {
@@ -308,6 +347,48 @@ class Editor extends React.Component {
     return !className.includes('eliminateOnRender') && !className.includes('CodeMirror-cursors')
   }
 
+  prepareExportBackgroundImage = async clone => {
+    const backgroundImage = getBackgroundImageSource(this.state)
+
+    if (!backgroundImage) {
+      return
+    }
+
+    const backgroundLayer = clone.querySelector('.panda-container-bg-layer')
+
+    if (!backgroundLayer) {
+      return
+    }
+
+    const image = document.createElement('img')
+
+    backgroundLayer.style.background = 'transparent'
+    backgroundLayer.style.backgroundImage = 'none'
+    backgroundLayer.style.backgroundSize = ''
+    backgroundLayer.style.backgroundRepeat = ''
+    backgroundLayer.style.backgroundBlendMode = ''
+
+    image.alt = ''
+    image.decoding = 'sync'
+    image.loading = 'eager'
+    image.setAttribute('aria-hidden', 'true')
+    image.src = backgroundImage
+    Object.assign(image.style, {
+      position: 'absolute',
+      inset: '0',
+      width: '100%',
+      height: '100%',
+      display: 'block',
+      objectFit: 'cover',
+      objectPosition: 'left top',
+      pointerEvents: 'none',
+      userSelect: 'none',
+    })
+
+    backgroundLayer.replaceChildren(image)
+    await waitForImageReady(image)
+  }
+
   createExportTarget = ({ squared }) => {
     const sourceNode = this.pandaNode.current
     const clone = sourceNode.cloneNode(true)
@@ -349,6 +430,10 @@ class Editor extends React.Component {
     const backgroundColor = this.getExportBackgroundColor({ format, squared })
 
     try {
+      if (this.state.backgroundMode === 'image') {
+        await this.prepareExportBackgroundImage(exportTarget.node)
+      }
+
       return await snapdom(exportTarget.node, {
         scale: exportSize,
         dpr: 1,

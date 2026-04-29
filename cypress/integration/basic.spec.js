@@ -9,6 +9,30 @@ function blobToDataURL(win, blob) {
   })
 }
 
+const LOCAL_BACKGROUND_DATA_URL =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="36"><rect width="64" height="36" fill="%23ff8a00"/></svg>'
+
+function loadImage(win, src) {
+  return new Promise((resolve, reject) => {
+    const image = new win.Image()
+
+    image.onload = () => resolve(image)
+    image.onerror = reject
+    image.src = src
+  })
+}
+
+function getImagePixel(win, image, x, y) {
+  const canvas = win.document.createElement('canvas')
+  const context = canvas.getContext('2d')
+
+  canvas.width = image.naturalWidth
+  canvas.height = image.naturalHeight
+  context.drawImage(image, 0, 0)
+
+  return Array.from(context.getImageData(x, y, 1, 1).data)
+}
+
 function installClipboardStub(win, { supportsWebp }) {
   const clipboardWrite = cy.stub().callsFake(() => Promise.resolve()).as('clipboardWrite')
 
@@ -242,6 +266,63 @@ describe('Basic', () => {
     cy.window({ timeout: 30000 }).should(win => {
       expect(win.__exportBlob).to.be.instanceof(win.Blob)
       expect(win.__exportBlob.type).to.eq('image/webp')
+    })
+  })
+
+  it('Should keep local uploaded background images in PNG exports', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_STATE',
+          JSON.stringify({
+            backgroundMode: 'image',
+            backgroundImageSource: null,
+            windowControls: false,
+            watermark: false,
+            dropShadow: false,
+          })
+        )
+        win.localStorage.setItem(
+          'PANDA_BACKGROUND_IMAGE_ASSET',
+          JSON.stringify({
+            source: null,
+            image: LOCAL_BACKGROUND_DATA_URL,
+            selection: null,
+          })
+        )
+      },
+    })
+    editorVisible()
+
+    cy.window().then(win => {
+      win.__exportBlob = null
+
+      cy.stub(win.URL, 'createObjectURL').callsFake(blob => {
+        win.__exportBlob = blob
+        return 'blob:panda-export'
+      })
+
+      cy.stub(win.HTMLAnchorElement.prototype, 'click').callsFake(() => {})
+    })
+
+    cy.get('#export-menu').click()
+    cy.get('.export-menu-modal').should('be.visible')
+    cy.get('#export-png').click()
+
+    cy.window({ timeout: 30000 }).should(win => {
+      expect(win.__exportBlob).to.be.instanceof(win.Blob)
+      expect(win.__exportBlob.type).to.eq('image/png')
+    })
+
+    cy.window().then({ timeout: 40000 }, async win => {
+      const exportedDataUrl = await blobToDataURL(win, win.__exportBlob)
+      const image = await loadImage(win, exportedDataUrl)
+      const [red, green, blue, alpha] = getImagePixel(win, image, 20, 20)
+
+      expect(alpha).to.eq(255)
+      expect(red).to.be.greaterThan(240)
+      expect(green).to.be.within(120, 160)
+      expect(blue).to.be.lessThan(25)
     })
   })
 
