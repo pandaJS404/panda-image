@@ -16,6 +16,7 @@ import ExportMenu from './ExportMenu'
 import CopyMenu from './CopyMenu'
 import Themes from './Themes'
 import FontFace from './FontFace'
+import { resolveBuiltInBackgroundImageSource } from '../src/bg-image'
 import {
   DEFAULT_CODE,
   DEFAULT_EXPORT_SIZE,
@@ -67,6 +68,57 @@ const EXPORT_STAGE_STYLES = {
   pointerEvents: 'none',
   zIndex: '-1',
   contain: 'layout style paint',
+}
+
+function hasConfiguredBackgroundImage(config = {}) {
+  return Boolean(
+    config.backgroundImageSelection || config.backgroundImage || config.backgroundImageSource
+  )
+}
+
+function clearImageBackgroundFields(config) {
+  config.backgroundImage = null
+  config.backgroundImageSource = null
+  config.backgroundImageSelection = null
+}
+
+function clearGradientBackgroundFields(config) {
+  config.backgroundGradient = null
+  config.backgroundGradientBlendMode = null
+}
+
+function normalizeRestoredBackgroundState(config = {}) {
+  if (!config.backgroundGradient) {
+    config.backgroundGradientBlendMode = null
+  }
+
+  if (config.backgroundMode === 'image') {
+    if (hasConfiguredBackgroundImage(config)) {
+      clearGradientBackgroundFields(config)
+      return config
+    }
+
+    clearImageBackgroundFields(config)
+    config.backgroundMode = 'color'
+    return config
+  }
+
+  clearImageBackgroundFields(config)
+  return config
+}
+
+function resolveBackgroundImageValue(source) {
+  return resolveBuiltInBackgroundImageSource(source) || source || null
+}
+
+function getStoredBackgroundImageValue(source, image) {
+  const resolvedBuiltInBackgroundImage = resolveBuiltInBackgroundImageSource(source)
+
+  if (resolvedBuiltInBackgroundImage) {
+    return resolvedBuiltInBackgroundImage
+  }
+
+  return image || source || null
 }
 
 function searchLanguage(language) {
@@ -134,19 +186,30 @@ class Editor extends React.Component {
     if (canRestoreMatchingBackgroundAsset) {
       newState.backgroundMode = 'image'
       newState.backgroundImage =
-        storedBackgroundImageAsset.image || storedBackgroundImageAsset.source || null
+        getStoredBackgroundImageValue(
+          storedBackgroundImageAsset.source,
+          storedBackgroundImageAsset.image
+        )
       newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
     } else if (canRestoreStoredBackgroundAsset) {
       newState.backgroundMode = 'image'
       newState.backgroundImageSource = storedBackgroundImageAsset.source || null
       newState.backgroundImage =
-        storedBackgroundImageAsset.image || storedBackgroundImageAsset.source || null
+        getStoredBackgroundImageValue(
+          storedBackgroundImageAsset.source,
+          storedBackgroundImageAsset.image
+        )
       newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
-    } else if (newState.backgroundImageSource && (hasQueryBackgroundImageSource || newState.backgroundMode === 'image')) {
+    } else if (
+      newState.backgroundImageSource &&
+      (hasQueryBackgroundImageSource || newState.backgroundMode === 'image')
+    ) {
       newState.backgroundMode = 'image'
-      newState.backgroundImage = newState.backgroundImageSource
+      newState.backgroundImage = resolveBackgroundImageValue(newState.backgroundImageSource)
       newState.backgroundImageSelection = null
     }
+
+    normalizeRestoredBackgroundState(newState)
 
     if (newState.language) {
       newState.language = unescapeHtml(newState.language)
@@ -370,39 +433,90 @@ class Editor extends React.Component {
     const link = document.createElement('a')
     const prefix = options.filename || this.state.name || 'panda'
 
-    return this.getPandaImage({ format, exportSize: options.exportSize })
-      .then(exportResult => {
-        const { url, revoke } = this.getExportUrl(exportResult)
+    return this.getPandaImage({ format, exportSize: options.exportSize }).then(exportResult => {
+      const { url, revoke } = this.getExportUrl(exportResult)
 
-        if (!options.open) {
-          link.download = `${prefix}.${this.getExportExtension(format)}`
-        }
+      if (!options.open) {
+        link.download = `${prefix}.${this.getExportExtension(format)}`
+      }
 
-        if (
-          window.navigator.userAgent.indexOf('Firefox') !== -1 &&
-          window.navigator.userAgent.indexOf('Chrome') === -1
-        ) {
-          link.target = '_blank'
-        }
+      if (
+        window.navigator.userAgent.indexOf('Firefox') !== -1 &&
+        window.navigator.userAgent.indexOf('Chrome') === -1
+      ) {
+        link.target = '_blank'
+      }
 
-        link.href = url
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        if (revoke) {
-          window.setTimeout(() => revoke(), 30000)
-        }
-      })
+      link.href = url
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      if (revoke) {
+        window.setTimeout(() => revoke(), 30000)
+      }
+    })
   }
 
-  copyImage = () =>
-    this.getPandaImage({ format: 'blob' }).then(blob =>
-      navigator.clipboard.write([
-        new window.ClipboardItem({
-          [blob.type]: blob,
-        }),
-      ]),
-    )
+  copyClipboardImage = async ({ format, exportSize = 2 }) => {
+    const blob = await this.getPandaImage({ format, exportSize })
+
+    await navigator.clipboard.write([
+      new window.ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ])
+
+    return {
+      exportSize,
+      mimeType: blob.type,
+    }
+  }
+
+  copyImage = async () => {
+    const requestedMimeType = 'image/webp'
+    const exportSize = 2
+    const clipboardItemSupports =
+      typeof window.ClipboardItem?.supports === 'function'
+        ? window.ClipboardItem.supports.bind(window.ClipboardItem)
+        : null
+
+    if (clipboardItemSupports && !clipboardItemSupports(requestedMimeType)) {
+      const fallbackResult = await this.copyClipboardImage({
+        format: 'blob',
+        exportSize,
+      })
+
+      return {
+        ...fallbackResult,
+        requestedMimeType,
+        fallbackUsed: true,
+      }
+    }
+
+    try {
+      const webpResult = await this.copyClipboardImage({
+        format: 'webp',
+        exportSize,
+      })
+
+      return {
+        ...webpResult,
+        requestedMimeType,
+        fallbackUsed: false,
+      }
+    } catch (error) {
+      const fallbackResult = await this.copyClipboardImage({
+        format: 'blob',
+        exportSize,
+      })
+
+      return {
+        ...fallbackResult,
+        requestedMimeType,
+        fallbackUsed: true,
+      }
+    }
+  }
 
   updateSetting = (key, value) => {
     this.updateState({ [key]: value })
@@ -457,6 +571,8 @@ class Editor extends React.Component {
         backgroundImage: file.content,
         backgroundImageSource: null,
         backgroundImageSelection: null,
+        backgroundGradient: null,
+        backgroundGradientBlendMode: null,
         backgroundMode: 'image',
         preset: null,
       })
@@ -473,11 +589,23 @@ class Editor extends React.Component {
   }
 
   updateBackground = ({ photographer, ...changes } = {}) => {
+    const nextBackgroundChanges =
+      changes.backgroundMode === 'image' &&
+      (changes.backgroundImage != null ||
+        changes.backgroundImageSource != null ||
+        changes.backgroundImageSelection != null)
+        ? {
+            ...changes,
+            backgroundGradient: null,
+            backgroundGradientBlendMode: null,
+          }
+        : changes
+
     if (photographer) {
       const sourceName = photographer.sourceName || '图片来源'
 
       this.updateState(({ code = DEFAULT_CODE }) => ({
-        ...changes,
+        ...nextBackgroundChanges,
         code:
           code.replace(backgroundPhotographerCredit, '') +
           `\n\n// 图片来源：${photographer.name} · ${sourceName}`,
@@ -486,7 +614,7 @@ class Editor extends React.Component {
       return
     }
 
-    this.updateState({ ...changes, preset: null })
+    this.updateState({ ...nextBackgroundChanges, preset: null })
   }
 
   updateTheme = theme => this.updateState({ theme, highlights: null })

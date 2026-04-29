@@ -58,9 +58,6 @@ describe('Antd overlays smoke', () => {
     cy.get('.settings-modal .ant-modal-close').click()
     cy.get('.settings-modal').should('not.exist')
 
-    cy.get('.copy-trigger-button').click()
-    cy.get('.copy-menu-popover').should('be.visible')
-
     cy.get('[data-cy="export-button"]').click()
     cy.get('.export-menu-modal').should('be.visible')
   })

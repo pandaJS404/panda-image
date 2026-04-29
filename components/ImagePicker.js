@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactCrop, { makeAspectCrop } from 'react-image-crop'
 
+import { BUILT_IN_BACKGROUND_IMAGES, resolveBuiltInBackgroundImageSource } from '../src/bg-image'
 import { useLocalStorage } from '../src/shared/react/hooks'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import RandomImage from './RandomImage'
@@ -70,9 +71,22 @@ export default class ImagePicker extends React.Component {
   state = INITIAL_STATE
 
   getSelectedImagePreview = () =>
-    this.props.imageSelection || this.props.image || this.props.imageSource || null
+    this.props.imageSelection ||
+    this.props.image ||
+    resolveBuiltInBackgroundImageSource(this.props.imageSource) ||
+    this.props.imageSource ||
+    null
 
   selectMode = mode => this.setState({ mode })
+
+  selectBuiltInImage = image => {
+    this.setState({ error: null })
+    this.handleImageChange({
+      source: image.id,
+      image: image.url,
+      dataURL: image.url,
+    })
+  }
 
   onDragEnd = async () => {
     if (this.state.pixelCrop) {
@@ -258,6 +272,31 @@ export default class ImagePicker extends React.Component {
     )
   }
 
+  renderBuiltInGallery() {
+    return (
+      <div className="image-picker-builtin">
+        <span className="image-picker-copy">{'\u5185\u7f6e\u56fe\u7247\uff1a'}</span>
+        <div className="image-picker-builtin-grid">
+          {BUILT_IN_BACKGROUND_IMAGES.map(image => (
+            <ButtonPrimitive
+              key={image.id}
+              selected={this.props.imageSource === image.id}
+              className="image-picker-builtin-button"
+              data-cy="background-builtin-item"
+              onClick={() => this.selectBuiltInImage(image)}
+            >
+              <span
+                className="image-picker-builtin-preview"
+                style={{ backgroundImage: `url(${image.url})` }}
+              />
+              <span className="image-picker-builtin-name">{image.name}</span>
+            </ButtonPrimitive>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   render() {
     const content = (
       <div>
@@ -281,7 +320,7 @@ export default class ImagePicker extends React.Component {
           {this.state.mode === 'file' ? (
             <Input
               type="file"
-              accept="image/png,image/x-png,image/jpeg,image/jpg"
+              accept="image/png,image/x-png,image/jpeg,image/jpg,image/webp"
               onChange={this.uploadImage}
             />
           ) : (
@@ -294,6 +333,8 @@ export default class ImagePicker extends React.Component {
           )}
           {this.state.error ? <span className="image-picker-error">{this.state.error}</span> : null}
         </div>
+        <hr className="image-picker-divider" />
+        {this.renderBuiltInGallery()}
         <hr className="image-picker-divider" />
         <div className="image-picker-random">
           <span className="image-picker-copy">

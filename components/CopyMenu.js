@@ -1,14 +1,9 @@
 import React from 'react'
-import { CopyOutlined } from '@ant-design/icons'
-import { App as AntdApp, Popover } from 'antd'
+import { CheckOutlined, CopyOutlined, LoadingOutlined } from '@ant-design/icons'
+import { App as AntdApp } from 'antd'
 import { useAsyncCallback, useKeyboardListener } from '../src/shared/react/hooks'
 
-import ButtonPrimitive from './buttons/ButtonPrimitive'
 import ToolbarIconButton from './buttons/ToolbarIconButton'
-
-function CopyButton(props) {
-  return <ButtonPrimitive {...props} fullWidth className="copy-action-button" />
-}
 
 function useClipboardSupport() {
   const [isClipboardSupported, setClipboardSupport] = React.useState(false)
@@ -20,14 +15,44 @@ function useClipboardSupport() {
   return isClipboardSupported
 }
 
+function getCopySuccessMessage(result) {
+  if (result?.mimeType === 'image/webp' && result?.fallbackUsed !== true) {
+    return '已复制 2x WebP'
+  }
+
+  return '当前剪贴板不支持 WebP，已复制 2x PNG'
+}
+
 function CopyMenu({ copyImage }) {
   const { message } = AntdApp.useApp()
   const clipboardSupported = useClipboardSupport()
-  const [open, setOpen] = React.useState(false)
+  const copiedTimeoutRef = React.useRef(null)
+  const [copied, setCopied] = React.useState(false)
 
-  const [showCopied, { loading: copied }] = useAsyncCallback(
-    () => new Promise(resolve => setTimeout(resolve, 1000)),
+  React.useEffect(
+    () => () => {
+      if (copiedTimeoutRef.current) {
+        window.clearTimeout(copiedTimeoutRef.current)
+      }
+    },
+    [],
   )
+
+  const showCopiedState = React.useCallback(() => {
+    if (copiedTimeoutRef.current) {
+      window.clearTimeout(copiedTimeoutRef.current)
+    }
+
+    setCopied(true)
+    copiedTimeoutRef.current = window.setTimeout(() => {
+      copiedTimeoutRef.current = null
+      setCopied(false)
+    }, 1200)
+  }, [])
+
+  const handleCopyFailure = React.useCallback(() => {
+    message.error('复制失败，请重试')
+  }, [message])
 
   const [copy, { loading }] = useAsyncCallback(async event => {
     if (event?.preventDefault) {
@@ -35,58 +60,50 @@ function CopyMenu({ copyImage }) {
     }
 
     if (!clipboardSupported) {
-      message.warning('当前浏览器不支持剪贴板图片复制')
+      message.warning('当前浏览器不支持复制图片')
       return
     }
 
-    await copyImage()
-    message.success('已复制图片')
-    await showCopied()
+    const result = await copyImage()
+    message.success(getCopySuccessMessage(result))
+    showCopiedState()
   })
+
+  const handleCopy = React.useCallback(
+    event => {
+      copy(event).catch(handleCopyFailure)
+    },
+    [copy, handleCopyFailure],
+  )
 
   useKeyboardListener('cmd-shift-c', event => {
     event.preventDefault()
-    copy(event).catch(() => {
-      message.error('复制失败，请重试')
-    })
+    handleCopy(event)
   })
 
-  const handleCopyClick = event => {
-    copy(event).catch(() => {
-      message.error('复制失败，请重试')
-    })
-  }
+  const tooltipLabel = loading ? '复制中' : copied ? '复制成功' : '复制图片'
+  const icon = loading ? (
+    <LoadingOutlined spin />
+  ) : copied ? (
+    <CheckOutlined />
+  ) : (
+    <CopyOutlined />
+  )
 
   return (
     <div className="copy-menu-container copy-menu-container--contrast tools-item">
       <div className="copy-trigger">
-        <Popover
-          trigger="click"
-          placement="bottomRight"
-          open={open}
-          onOpenChange={setOpen}
-          classNames={{ root: 'copy-menu-popover' }}
-          styles={{ body: { padding: 0 } }}
-          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-          content={
-            <div className="copy-menu-panel">
-              <div className="copy-row copy-row--contrast">
-                <span>复制图片</span>
-                {clipboardSupported ? (
-                  <CopyButton id="export-clipboard" onClick={handleCopyClick} disabled={loading}>
-                    {loading ? '复制中…' : copied ? '已复制' : '复制'}
-                  </CopyButton>
-                ) : (
-                  <span className="copy-row__hint">当前浏览器不支持</span>
-                )}
-              </div>
-            </div>
-          }
+        <ToolbarIconButton
+          tone="muted"
+          active={copied || loading}
+          disabled={loading}
+          className="copy-trigger-button"
+          data-cy="copy-image-button"
+          aria-tooltip={tooltipLabel}
+          onClick={handleCopy}
         >
-          <ToolbarIconButton tone="muted" className="copy-trigger-button" aria-tooltip="复制菜单">
-            <CopyOutlined />
-          </ToolbarIconButton>
-        </Popover>
+          {icon}
+        </ToolbarIconButton>
       </div>
     </div>
   )

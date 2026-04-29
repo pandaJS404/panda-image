@@ -9,6 +9,28 @@ function blobToDataURL(win, blob) {
   })
 }
 
+function installClipboardStub(win, { supportsWebp }) {
+  const clipboardWrite = cy.stub().callsFake(() => Promise.resolve()).as('clipboardWrite')
+
+  Object.defineProperty(win.navigator, 'clipboard', {
+    configurable: true,
+    value: {
+      write: clipboardWrite,
+    },
+  })
+
+  function ClipboardItem(data) {
+    this.data = data
+  }
+
+  ClipboardItem.supports = type => (type === 'image/webp' ? supportsWebp : type === 'image/png')
+
+  Object.defineProperty(win, 'ClipboardItem', {
+    configurable: true,
+    value: ClipboardItem,
+  })
+}
+
 describe('Basic', () => {
   it('Should open editor with the correct text encoding', () => {
     cy.visit(
@@ -76,6 +98,76 @@ describe('Basic', () => {
 
     cy.get('.CodeMirror').then(([element]) => {
       expect(element.CodeMirror.getValue()).to.eq(typedValue)
+    })
+  })
+
+  it('Should copy image as 2x WEBP when the clipboard supports it', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        installClipboardStub(win, { supportsWebp: true })
+      },
+    })
+    editorVisible()
+
+    cy.get('[data-cy="copy-image-button"]').click()
+    cy.get('@clipboardWrite', { timeout: 30000 }).should('have.been.calledOnce')
+    cy.contains('.ant-message-notice', '已复制 2x WebP').should('be.visible')
+
+    cy.get('@clipboardWrite').then(clipboardWrite => {
+      cy.window().then({ timeout: 40000 }, async win => {
+        const exportNode = win.document.getElementById('export-container')
+        const clipboardItem = clipboardWrite.firstCall.args[0][0]
+        const webpBlob = clipboardItem.data['image/webp']
+        const exportedDataUrl = await blobToDataURL(win, webpBlob)
+        const image = await new Promise((resolve, reject) => {
+          const exportedImage = new win.Image()
+
+          exportedImage.onload = () => resolve(exportedImage)
+          exportedImage.onerror = reject
+          exportedImage.src = exportedDataUrl
+        })
+
+        expect(webpBlob).to.be.instanceof(win.Blob)
+        expect(webpBlob.type).to.eq('image/webp')
+        expect(image.naturalWidth).to.eq(exportNode.offsetWidth * 2)
+        expect(image.naturalHeight).to.eq(exportNode.offsetHeight * 2)
+      })
+    })
+  })
+
+  it('Should fall back to 2x PNG when the clipboard does not support WEBP', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        installClipboardStub(win, { supportsWebp: false })
+      },
+    })
+    editorVisible()
+
+    cy.get('[data-cy="copy-image-button"]').click()
+    cy.get('@clipboardWrite', { timeout: 30000 }).should('have.been.calledOnce')
+    cy.contains('.ant-message-notice', '当前剪贴板不支持 WebP，已复制 2x PNG').should(
+      'be.visible',
+    )
+
+    cy.get('@clipboardWrite').then(clipboardWrite => {
+      cy.window().then({ timeout: 40000 }, async win => {
+        const exportNode = win.document.getElementById('export-container')
+        const clipboardItem = clipboardWrite.firstCall.args[0][0]
+        const pngBlob = clipboardItem.data['image/png']
+        const exportedDataUrl = await blobToDataURL(win, pngBlob)
+        const image = await new Promise((resolve, reject) => {
+          const exportedImage = new win.Image()
+
+          exportedImage.onload = () => resolve(exportedImage)
+          exportedImage.onerror = reject
+          exportedImage.src = exportedDataUrl
+        })
+
+        expect(pngBlob).to.be.instanceof(win.Blob)
+        expect(pngBlob.type).to.eq('image/png')
+        expect(image.naturalWidth).to.eq(exportNode.offsetWidth * 2)
+        expect(image.naturalHeight).to.eq(exportNode.offsetHeight * 2)
+      })
     })
   })
 

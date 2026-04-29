@@ -745,6 +745,7 @@
 }
 
 .image-picker-chooser,
+.image-picker-builtin,
 .image-picker-random,
 .image-picker-image-container {
   padding: 8px;
@@ -828,6 +829,58 @@
 
 .image-picker-generate-palette-toggle {
   padding: 8px 0 0;
+}
+
+.image-picker-builtin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 12px;
+}
+
+.image-picker-builtin-button {
+  height: auto;
+  padding: 0;
+  overflow: hidden;
+  justify-content: stretch;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-1);
+  box-shadow: none;
+}
+
+.image-picker-builtin-button .panda-button__content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+}
+
+.image-picker-builtin-button[data-selected='true'] {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.image-picker-builtin-button:focus-visible {
+  border-color: var(--focus-ring);
+}
+
+.image-picker-builtin-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.image-picker-builtin-name {
+  display: block;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: left;
 }
 
 .font-option-label {
@@ -1106,7 +1159,8 @@
   display: none;
 }
 
-.settings-radio-group.ant-radio-group .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+.settings-radio-group.ant-radio-group
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
   background: var(--accent);
   color: #fff;
 }
@@ -1115,7 +1169,8 @@
   color: var(--text-primary);
 }
 
-.settings-radio-group.ant-radio-group .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+.settings-radio-group.ant-radio-group
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
   color: #fff;
 }
 
@@ -1311,10 +1366,10 @@
 
   .toolbar-group.toolbar-group--leading > .themes,
   .toolbar-group.toolbar-group--leading > .dropdown-container {
-    flex: 0 0 200px;
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
+    flex: 0 0 300px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
     box-sizing: border-box;
   }
 

@@ -14,6 +14,50 @@ describe('background image persistence', () => {
     cy.clearLocalStorage()
   })
 
+  it('persists builtin image source in the route and restores the current preview after refresh', () => {
+    cy.visit('/')
+    editorVisible()
+
+    cy.get('[data-cy="display"]').click()
+    cy.get('.bg-select-modal').should('be.visible')
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
+    cy.get('[data-cy="background-builtin-item"]').its('length').should('be.gte', 22)
+    cy.get('[data-cy="background-builtin-item"]').first().click()
+    cy.get('.image-picker-image-container .ReactCrop').should('be.visible')
+    cy.wait(1000)
+
+    cy.url().should(url =>
+      expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01')
+    )
+    cy.window().then(win => {
+      const asset = JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)
+
+      expect(asset.source).to.eq('builtin:panda-bg-01')
+      expect(asset.image).to.match(/panda-bg-01.*\.webp|assets\/.*\.webp/)
+      expect(asset.selection).to.eq(null)
+    })
+
+    cy.reload()
+    editorVisible()
+
+    cy.url().should(url =>
+      expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01')
+    )
+    cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
+    cy.get('.bg-color-container .bg-color')
+      .invoke('attr', 'style')
+      .should('contain', 'url(')
+      .and('not.contain', 'gradient')
+
+    cy.get('[data-cy="display"]').click()
+    cy.get('.bg-select-modal').should('be.visible')
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
+    cy.get('[data-cy="background-builtin-item"]').first().should('have.attr', 'data-selected')
+    cy.get('.image-picker-image-container .image-picker-static-preview__image')
+      .invoke('attr', 'style')
+      .should('contain', 'url(')
+  })
+
   it('persists remote image source in the route and restores the current preview after refresh', () => {
     cy.intercept('GET', '/api/random-image', [
       {
@@ -43,15 +87,21 @@ describe('background image persistence', () => {
 
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-modal').should('be.visible')
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
+    cy.get('[data-cy="background-gradient-item"][data-gradient-name="Warm Flame"]').click()
+    cy.url().should('contain', 'bgg=')
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
     cy.wait('@randomImageList')
     cy.get('.random-image-controls .random-image-action').first().click()
     cy.wait('@randomImageDownload')
     cy.wait(1000)
 
-    cy.url().should(url =>
-      expect(decodeURIComponent(url)).to.contain(`bgi=${REMOTE_IMAGE_URL}`)
-    )
+    cy.url().should(url => {
+      const decodedUrl = decodeURIComponent(url)
+      expect(decodedUrl).to.contain(`bgi=${REMOTE_IMAGE_URL}`)
+      expect(decodedUrl).not.to.contain('bgg=')
+      expect(decodedUrl).not.to.contain('bgbm=')
+    })
     cy.window().then(win => {
       expect(JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)).to.deep.equal({
         source: REMOTE_IMAGE_URL,
@@ -65,6 +115,11 @@ describe('background image persistence', () => {
     cy.url().should(url =>
       expect(decodeURIComponent(url)).to.contain(`bgi=${REMOTE_IMAGE_URL}`)
     )
+    cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
+    cy.get('.bg-color-container .bg-color')
+      .invoke('attr', 'style')
+      .should('contain', 'remote-preview')
+      .and('not.contain', 'gradient')
 
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-modal').should('be.visible')
@@ -104,5 +159,33 @@ describe('background image persistence', () => {
     cy.get('.image-picker-image-container .image-picker-static-preview__image')
       .invoke('attr', 'style')
       .should('contain', 'selection-image')
+  })
+
+  it('falls back to the stored gradient when image mode is restored without a usable image asset', () => {
+    const gradient = 'linear-gradient(135deg, #96F8D6 0%, #44D8F8 100%)'
+
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_STATE',
+          JSON.stringify({
+            backgroundMode: 'image',
+            backgroundGradient: gradient,
+            backgroundGradientBlendMode: null,
+            backgroundImageSource: null,
+          })
+        )
+      },
+    })
+
+    editorVisible()
+
+    cy.get('.container-bg .bg')
+      .invoke('css', 'background-image')
+      .should('match', /gradient/i)
+    cy.get('.bg-color-container .bg-color')
+      .invoke('attr', 'style')
+      .should('contain', 'linear-gradient')
+      .and('not.contain', 'url(')
   })
 })
