@@ -21,9 +21,16 @@ describe('background image persistence', () => {
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-modal').should('be.visible')
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
-    cy.get('[data-cy="background-builtin-item"]').its('length').should('be.gte', 22)
-    cy.get('[data-cy="background-builtin-item"]').first().click()
+    cy.get('[data-cy="background-builtin-group-trigger"]').its('length').should('be.gte', 3)
+    cy.get('[data-cy="background-builtin-group-trigger"][data-category="panda"]').click()
+    cy.get('[data-cy="background-builtin-item"][data-category="panda"]')
+      .its('length')
+      .should('be.gte', 1)
+    cy.get('[data-cy="background-builtin-item"][data-category="panda"]').first().click()
     cy.get('.image-picker-image-container .ReactCrop').should('be.visible')
+    cy.get('.CodeMirror').should(([element]) => {
+      expect(element.CodeMirror.getValue()).to.contain('// 图片来源：Panda')
+    })
     cy.wait(1000)
 
     cy.url().should(url =>
@@ -33,7 +40,7 @@ describe('background image persistence', () => {
       const asset = JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)
 
       expect(asset.source).to.eq('builtin:panda-bg-01')
-      expect(asset.image).to.match(/panda-bg-01.*\.webp|assets\/.*\.webp/)
+      expect(asset.image).to.eq(null)
       expect(asset.selection).to.eq(null)
     })
 
@@ -52,7 +59,15 @@ describe('background image persistence', () => {
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-modal').should('be.visible')
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
-    cy.get('[data-cy="background-builtin-item"]').first().should('have.attr', 'data-selected')
+    cy.get('[data-cy="background-builtin-group-trigger"][data-category="panda"]')
+      .closest('.ant-collapse-item')
+      .should('have.class', 'ant-collapse-item-active')
+    cy.get('[data-cy="background-builtin-item"][data-category="panda"]')
+      .first()
+      .should('have.attr', 'data-selected')
+    cy.get('.CodeMirror').should(([element]) => {
+      expect(element.CodeMirror.getValue()).to.contain('// 图片来源：Panda')
+    })
     cy.get('.image-picker-image-container .image-picker-static-preview__image')
       .invoke('attr', 'style')
       .should('contain', 'url(')
@@ -105,7 +120,7 @@ describe('background image persistence', () => {
     cy.window().then(win => {
       expect(JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)).to.deep.equal({
         source: REMOTE_IMAGE_URL,
-        image: REMOTE_IMAGE_DATA_URL,
+        image: null,
         selection: null,
       })
     })
@@ -118,7 +133,7 @@ describe('background image persistence', () => {
     cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
     cy.get('.bg-color-container .bg-color')
       .invoke('attr', 'style')
-      .should('contain', 'remote-preview')
+      .should('contain', REMOTE_IMAGE_URL)
       .and('not.contain', 'gradient')
 
     cy.get('[data-cy="display"]').click()
@@ -126,7 +141,7 @@ describe('background image persistence', () => {
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
     cy.get('.image-picker-image-container .image-picker-static-preview__image')
       .invoke('attr', 'style')
-      .should('contain', 'remote-preview')
+      .should('contain', REMOTE_IMAGE_URL)
   })
 
   it('restores local background assets and prefers the cropped selection after refresh', () => {

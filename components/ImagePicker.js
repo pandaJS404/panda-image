@@ -1,7 +1,11 @@
 import React from 'react'
 import ReactCrop, { makeAspectCrop } from 'react-image-crop'
+import { Card, Collapse } from 'antd'
 
-import { BUILT_IN_BACKGROUND_IMAGES, resolveBuiltInBackgroundImageSource } from '../src/bg-image'
+import {
+  BUILT_IN_BACKGROUND_IMAGE_GROUPS,
+  resolveBuiltInBackgroundImageSource,
+} from '../src/bg-image'
 import { useLocalStorage } from '../src/shared/react/hooks'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import RandomImage from './RandomImage'
@@ -47,6 +51,26 @@ const INITIAL_STATE = {
   photographer: null,
   dataURL: null,
   error: null,
+  activeBuiltInGroups: [],
+}
+
+const getBuiltInImageGroup = source =>
+  BUILT_IN_BACKGROUND_IMAGE_GROUPS.find(group =>
+    group.images.some(image => image.id === source)
+  ) || null
+
+const getDefaultActiveBuiltInGroups = source => {
+  const group = getBuiltInImageGroup(source)
+
+  return group ? [group.id] : []
+}
+
+const normalizeCollapseKeys = activeKeys => {
+  if (Array.isArray(activeKeys)) {
+    return activeKeys
+  }
+
+  return activeKeys ? [activeKeys] : []
 }
 
 export default class ImagePicker extends React.Component {
@@ -68,7 +92,36 @@ export default class ImagePicker extends React.Component {
     return null
   }
 
-  state = INITIAL_STATE
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      ...INITIAL_STATE,
+      activeBuiltInGroups: getDefaultActiveBuiltInGroups(props.imageSource),
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.imageSource === this.props.imageSource) {
+      return
+    }
+
+    const nextGroup = getBuiltInImageGroup(this.props.imageSource)
+
+    if (!nextGroup) {
+      return
+    }
+
+    this.setState(currentState => {
+      if (currentState.activeBuiltInGroups.includes(nextGroup.id)) {
+        return null
+      }
+
+      return {
+        activeBuiltInGroups: [...currentState.activeBuiltInGroups, nextGroup.id],
+      }
+    })
+  }
 
   getSelectedImagePreview = () =>
     this.props.imageSelection ||
@@ -79,12 +132,26 @@ export default class ImagePicker extends React.Component {
 
   selectMode = mode => this.setState({ mode })
 
+  handleBuiltInImageKeyDown = (event, image) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      this.selectBuiltInImage(image)
+    }
+  }
+
+  handleBuiltInCollapseChange = activeBuiltInGroups => {
+    this.setState({
+      activeBuiltInGroups: normalizeCollapseKeys(activeBuiltInGroups),
+    })
+  }
+
   selectBuiltInImage = image => {
     this.setState({ error: null })
     this.handleImageChange({
       source: image.id,
       image: image.url,
       dataURL: image.url,
+      photographer: image.photographer,
     })
   }
 
@@ -206,13 +273,18 @@ export default class ImagePicker extends React.Component {
   }
 
   removeImage = () => {
-    this.setState(INITIAL_STATE, () => {
-      this.props.onChange({
-        backgroundImage: null,
-        backgroundImageSource: null,
-        backgroundImageSelection: null,
-      })
-    })
+    this.setState(
+      {
+        ...INITIAL_STATE,
+      },
+      () => {
+        this.props.onChange({
+          backgroundImage: null,
+          backgroundImageSource: null,
+          backgroundImageSelection: null,
+        })
+      }
+    )
   }
 
   renderSelectedPreview() {
@@ -273,26 +345,57 @@ export default class ImagePicker extends React.Component {
   }
 
   renderBuiltInGallery() {
+    const items = BUILT_IN_BACKGROUND_IMAGE_GROUPS.map(group => ({
+      key: group.id,
+      label: (
+        <div
+          className="image-picker-builtin-group__title"
+          data-cy="background-builtin-group-trigger"
+          data-category={group.id}
+        >
+          <span>{group.name}</span>
+          <span className="image-picker-builtin-group__count">{group.images.length}</span>
+        </div>
+      ),
+      children: (
+        <div className="image-picker-builtin-grid">
+          {group.images.map(image => (
+            <Card
+              key={image.id}
+              hoverable
+              role="button"
+              tabIndex={0}
+              aria-pressed={this.props.imageSource === image.id}
+              className="image-picker-builtin-card"
+              data-cy="background-builtin-item"
+              data-category={group.id}
+              data-selected={this.props.imageSource === image.id || undefined}
+              onClick={() => this.selectBuiltInImage(image)}
+              onKeyDown={event => this.handleBuiltInImageKeyDown(event, image)}
+              cover={
+                <div
+                  className="image-picker-builtin-preview"
+                  style={{ backgroundImage: `url(${image.url})` }}
+                />
+              }
+            >
+              <div className="image-picker-builtin-name">{image.name}</div>
+            </Card>
+          ))}
+        </div>
+      ),
+    }))
+
     return (
       <div className="image-picker-builtin">
         <span className="image-picker-copy">{'\u5185\u7f6e\u56fe\u7247\uff1a'}</span>
-        <div className="image-picker-builtin-grid">
-          {BUILT_IN_BACKGROUND_IMAGES.map(image => (
-            <ButtonPrimitive
-              key={image.id}
-              selected={this.props.imageSource === image.id}
-              className="image-picker-builtin-button"
-              data-cy="background-builtin-item"
-              onClick={() => this.selectBuiltInImage(image)}
-            >
-              <span
-                className="image-picker-builtin-preview"
-                style={{ backgroundImage: `url(${image.url})` }}
-              />
-              <span className="image-picker-builtin-name">{image.name}</span>
-            </ButtonPrimitive>
-          ))}
-        </div>
+        <Collapse
+          items={items}
+          activeKey={this.state.activeBuiltInGroups}
+          className="image-picker-builtin-collapse"
+          expandIconPlacement="end"
+          onChange={this.handleBuiltInCollapseChange}
+        />
       </div>
     )
   }

@@ -30,6 +30,29 @@ function isSameBackgroundAsset(left, right) {
   )
 }
 
+function getPersistedBackgroundImageAsset(state) {
+  const hasBackgroundImage =
+    state.backgroundMode === 'image' &&
+    (state.backgroundImage || state.backgroundImageSelection || state.backgroundImageSource)
+
+  if (!hasBackgroundImage) {
+    return null
+  }
+
+  const source = state.backgroundImageSource || null
+  const selection = state.backgroundImageSelection || null
+  const image =
+    selection || source
+      ? null
+      : state.backgroundImage || null
+
+  return {
+    source,
+    image,
+    selection,
+  }
+}
+
 function EditorContainer(props) {
   const [themes, updateThemes] = React.useState(THEMES)
   const backgroundAssetRef = React.useRef(null)
@@ -61,19 +84,17 @@ function EditorContainer(props) {
     updateRouteState(props.router, state)
     saveSettings(state)
 
-    const nextBackgroundAsset =
-      state.backgroundMode === 'image' &&
-      (state.backgroundImage || state.backgroundImageSelection || state.backgroundImageSource)
-        ? {
-            source: state.backgroundImageSource || null,
-            image: state.backgroundImage || null,
-            selection: state.backgroundImageSelection || null,
-          }
-        : null
+    const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
     if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
       if (nextBackgroundAsset) {
-        saveBackgroundImageAsset(nextBackgroundAsset)
+        const didPersistBackgroundAsset = saveBackgroundImageAsset(nextBackgroundAsset)
+
+        if (!didPersistBackgroundAsset) {
+          clearBackgroundImageAsset()
+          backgroundAssetRef.current = nextBackgroundAsset
+          return
+        }
       } else {
         clearBackgroundImageAsset()
       }

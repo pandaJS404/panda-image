@@ -7,6 +7,7 @@ const PRESETS_KEY = 'PANDA_PRESETS'
 const THEMES_KEY = 'PANDA_THEMES'
 const WATERMARK_FONT_ASSET_KEY = 'PANDA_WATERMARK_FONT_ASSET'
 const BACKGROUND_IMAGE_ASSET_KEY = 'PANDA_BACKGROUND_IMAGE_ASSET'
+const STORAGE_QUOTA_ERROR_PATTERN = /quota/iu
 
 const createAssigner = key => {
   const assign = morph.assign(key)
@@ -43,6 +44,16 @@ const parse = v => {
   } catch (e) {
     // pass
   }
+}
+
+function isQuotaExceededError(error) {
+  return Boolean(
+    error &&
+      (error.name === 'QuotaExceededError' ||
+        error.code === 22 ||
+        error.code === 1014 ||
+        STORAGE_QUOTA_ERROR_PATTERN.test(error.message || ''))
+  )
 }
 
 export const toggle = stateField => state => ({ [stateField]: !state[stateField] })
@@ -83,10 +94,19 @@ export const saveWatermarkFontAsset = value => {
 export const saveBackgroundImageAsset = value => {
   if (value == null) {
     clearBackgroundImageAsset()
-    return
+    return true
   }
 
-  return createAssigner(BACKGROUND_IMAGE_ASSET_KEY)(value)
+  try {
+    createAssigner(BACKGROUND_IMAGE_ASSET_KEY)(value)
+    return true
+  } catch (error) {
+    if (isQuotaExceededError(error)) {
+      return false
+    }
+
+    throw error
+  }
 }
 
 export const fileToDataURL = blob =>

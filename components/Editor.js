@@ -50,7 +50,7 @@ import {
 
 const languageIcon = <AimOutlined />
 const getConfig = omit(['code', 'titleBar'])
-const backgroundPhotographerCredit = /\n\n\/\/ (?:Photo by.+?on .+|图片来源：.+?· .+)/
+const backgroundPhotographerCredit = /\n\n\/\/ (?:Photo by.+?on .+|图片来源：.+)/
 const EXPORT_EXTENSIONS = {
   blob: 'png',
   jpg: 'jpg',
@@ -68,6 +68,21 @@ const EXPORT_STAGE_STYLES = {
   pointerEvents: 'none',
   zIndex: '-1',
   contain: 'layout style paint',
+}
+
+function formatBackgroundPhotographerCredit(photographer) {
+  const name = photographer?.name || ''
+  const sourceName = photographer?.sourceName || ''
+
+  if (!sourceName || sourceName === name) {
+    return name
+  }
+
+  if (!name) {
+    return sourceName
+  }
+
+  return `${name} · ${sourceName}`
 }
 
 function hasConfiguredBackgroundImage(config = {}) {
@@ -602,13 +617,13 @@ class Editor extends React.Component {
         : changes
 
     if (photographer) {
-      const sourceName = photographer.sourceName || '图片来源'
+      const backgroundCredit = formatBackgroundPhotographerCredit(photographer)
 
       this.updateState(({ code = DEFAULT_CODE }) => ({
         ...nextBackgroundChanges,
         code:
           code.replace(backgroundPhotographerCredit, '') +
-          `\n\n// 图片来源：${photographer.name} · ${sourceName}`,
+          `\n\n// 图片来源：${backgroundCredit}`,
         preset: null,
       }))
       return

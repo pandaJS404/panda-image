@@ -26,16 +26,29 @@ function getCreditHref(photographer) {
   }
 }
 
+function formatCreditLabel(photographer) {
+  const name = photographer?.name || ''
+  const sourceName = photographer?.sourceName || ''
+
+  if (!sourceName || sourceName === name) {
+    return name
+  }
+
+  if (!name) {
+    return sourceName
+  }
+
+  return `${name} · ${sourceName}`
+}
+
 export default function PhotoCredit({ photographer }) {
   const href = getCreditHref(photographer)
-  const sourceName = photographer.sourceName || '图片来源'
+  const creditLabel = formatCreditLabel(photographer)
 
   return (
     <div className="photo-credit">
       {'图片来源：'}{' '}
-      {href ? <a href={href}>{photographer.name}</a> : <span>{photographer.name}</span>}
-      {' · '}
-      {sourceName}
+      {href && photographer.name ? <a href={href}>{creditLabel}</a> : <span>{creditLabel}</span>}
     </div>
   )
 }
