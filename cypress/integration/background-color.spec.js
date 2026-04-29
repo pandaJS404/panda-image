@@ -7,21 +7,21 @@ import { editorVisible } from '../support'
 
 describe('background color', () => {
   const bgColor = '.bg-color-container .bg-color'
-  const picker = '#bg-select-pickers'
+  const modal = '.bg-select-modal'
+  const picker = `${modal} #bg-select-pickers`
 
   const openPicker = () => {
     cy.get(bgColor).click()
     return cy.get(picker).should('be.visible')
   }
 
-  // clicking anywhere else closes it
-  const closePicker = () => cy.get('body').click()
+  const closePicker = () => cy.get(`${modal} .ant-modal-close`).click()
 
   it('opens BG color pick', () => {
     cy.visit('/')
     openPicker()
-    cy.get('body').click(5, 5, { force: true })
-    cy.get(picker).should('not.exist')
+    closePicker()
+    cy.get(modal).should('not.exist')
   })
 
   it('changes background color to dark red', () => {

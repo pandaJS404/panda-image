@@ -34,12 +34,14 @@ describe('Antd overlays smoke', () => {
     cy.get('.theme-create-modal').should('not.exist')
 
     cy.get('[data-cy="display"]').click()
-    cy.get('.bg-select-popover').should('be.visible')
+    cy.get('.bg-select-modal').should('be.visible')
     cy.get('.bg-select-panel .ant-tabs-tab').should('have.length', 3)
     cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
     cy.get('[data-cy="background-gradient-item"]').its('length').should('be.gt', 0)
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
     cy.get('.bg-select-panel').should('be.visible')
+    cy.get('.bg-select-modal .ant-modal-close').click()
+    cy.get('.bg-select-modal').should('not.exist')
 
     cy.get('[data-cy="settings-button"]').click()
     cy.get('.settings-modal').should('be.visible')

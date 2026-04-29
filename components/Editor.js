@@ -39,6 +39,7 @@ import {
 import { getRouteState } from '../src/modules/editor/state/routing'
 import {
   fileToDataURL,
+  getBackgroundImageAsset,
   formatCode,
   getSettings,
   getWatermarkFontAsset,
@@ -108,12 +109,43 @@ class Editor extends React.Component {
   async componentDidMount() {
     const { queryState } = getRouteState(this.props.router)
     const storedSettings = getSettings(localStorage) || {}
+    const storedBackgroundImageAsset = getBackgroundImageAsset(localStorage)
     const storedWatermarkFontUrl = getWatermarkFontAsset(localStorage)
 
     const newState = {
       ...storedSettings,
       ...queryState,
       loading: false,
+    }
+    const hasQueryBackgroundImageSource = queryState.backgroundImageSource != null
+    const hasRequestedBackgroundImageSource = newState.backgroundImageSource != null
+    const canRestoreMatchingBackgroundAsset =
+      storedBackgroundImageAsset &&
+      (hasQueryBackgroundImageSource || newState.backgroundMode === 'image') &&
+      hasRequestedBackgroundImageSource &&
+      storedBackgroundImageAsset.source === newState.backgroundImageSource
+    const canRestoreStoredBackgroundAsset =
+      storedBackgroundImageAsset &&
+      !hasQueryBackgroundImageSource &&
+      newState.backgroundMode === 'image' &&
+      (newState.backgroundImageSource == null ||
+        storedBackgroundImageAsset.source === newState.backgroundImageSource)
+
+    if (canRestoreMatchingBackgroundAsset) {
+      newState.backgroundMode = 'image'
+      newState.backgroundImage =
+        storedBackgroundImageAsset.image || storedBackgroundImageAsset.source || null
+      newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
+    } else if (canRestoreStoredBackgroundAsset) {
+      newState.backgroundMode = 'image'
+      newState.backgroundImageSource = storedBackgroundImageAsset.source || null
+      newState.backgroundImage =
+        storedBackgroundImageAsset.image || storedBackgroundImageAsset.source || null
+      newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
+    } else if (newState.backgroundImageSource && (hasQueryBackgroundImageSource || newState.backgroundMode === 'image')) {
+      newState.backgroundMode = 'image'
+      newState.backgroundImage = newState.backgroundImageSource
+      newState.backgroundImageSelection = null
     }
 
     if (newState.language) {
@@ -423,6 +455,7 @@ class Editor extends React.Component {
     if (file.type.split('/')[0] === 'image') {
       this.updateState({
         backgroundImage: file.content,
+        backgroundImageSource: null,
         backgroundImageSelection: null,
         backgroundMode: 'image',
         preset: null,
@@ -441,7 +474,7 @@ class Editor extends React.Component {
 
   updateBackground = ({ photographer, ...changes } = {}) => {
     if (photographer) {
-      const sourceName = photographer.sourceName || 'Unsplash'
+      const sourceName = photographer.sourceName || '图片来源'
 
       this.updateState(({ code = DEFAULT_CODE }) => ({
         ...changes,
@@ -504,6 +537,7 @@ class Editor extends React.Component {
       backgroundGradient,
       backgroundGradientBlendMode,
       backgroundImage,
+      backgroundImageSource,
       backgroundImageSelection,
       backgroundMode,
       code,
@@ -554,6 +588,7 @@ class Editor extends React.Component {
                 gradient={backgroundGradient}
                 gradientBlendMode={backgroundGradientBlendMode}
                 image={backgroundImage}
+                imageSource={backgroundImageSource}
                 imageSelection={backgroundImageSelection}
                 pandaRef={this.pandaNode.current}
               />

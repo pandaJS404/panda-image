@@ -1,5 +1,5 @@
 import React from 'react'
-import { Popover, Tabs } from 'antd'
+import { Modal, Tabs } from 'antd'
 
 import ImagePicker from './ImagePicker'
 import ColorPicker from './ColorPicker'
@@ -137,6 +137,7 @@ function BackgroundSelect({
   gradientBlendMode,
   mode,
   image,
+  imageSource,
   imageSelection,
   onChange,
   pandaRef,
@@ -219,6 +220,9 @@ function BackgroundSelect({
       backgroundColor: stringifyColor(nextColor),
       backgroundGradient: null,
       backgroundGradientBlendMode: null,
+      backgroundImage: null,
+      backgroundImageSource: null,
+      backgroundImageSelection: null,
     })
   }
 
@@ -227,20 +231,37 @@ function BackgroundSelect({
       backgroundMode: 'color',
       backgroundGradient: nextGradient.background,
       backgroundGradientBlendMode: nextGradient.backgroundBlendMode,
+      backgroundImage: null,
+      backgroundImageSource: null,
+      backgroundImageSelection: null,
     })
   }
 
   return (
     <div className="bg-select-container tools-item">
-      <Popover
-        trigger="click"
-        placement="bottomLeft"
+      <ButtonPrimitive
+        aria-tooltip="背景菜单"
+        fullWidth
+        active={open}
+        className="bg-color-container bg-select-display"
+        data-cy="display"
+        onClick={() => setOpen(true)}
+      >
+        <div className="bg-color-alpha" />
+        <div className="bg-color" style={previewStyle} />
+      </ButtonPrimitive>
+      <Modal
         open={open}
-        onOpenChange={setOpen}
-        classNames={{ root: 'bg-select-popover' }}
+        title="背景"
+        footer={null}
+        centered
+        destroyOnHidden
+        width="calc(100vw - 24px)"
+        rootClassName="bg-select-modal"
+        onCancel={() => setOpen(false)}
         styles={{ body: { padding: 0 } }}
-        getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-        content={
+      >
+        {open ? (
           <div id="bg-select-pickers" className="bg-select-panel">
             <Tabs
               activeKey={activeTab}
@@ -278,7 +299,9 @@ function BackgroundSelect({
                     <div className="picker-tabs-contents">
                       <ImagePicker
                         onChange={onChange}
-                        imageDataURL={image}
+                        image={image}
+                        imageSource={imageSource}
+                        imageSelection={imageSelection}
                         aspectRatio={aspectRatio}
                         updateHighlights={updateHighlights}
                       />
@@ -289,19 +312,8 @@ function BackgroundSelect({
               onChange={selectTab}
             />
           </div>
-        }
-      >
-        <ButtonPrimitive
-          aria-tooltip="背景菜单"
-          fullWidth
-          active={open}
-          className="bg-color-container bg-select-display"
-          data-cy="display"
-        >
-          <div className="bg-color-alpha" />
-          <div className="bg-color" style={previewStyle} />
-        </ButtonPrimitive>
-      </Popover>
+        ) : null}
+      </Modal>
     </div>
   )
 }

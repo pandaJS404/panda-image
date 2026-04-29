@@ -22,11 +22,11 @@
 }
 
 .copy-menu-popover,
-.bg-select-popover,
 .selection-editor-popover {
   max-width: calc(100vw - 24px);
 }
 
+.bg-select-modal,
 .export-menu-modal,
 .settings-modal,
 .theme-create-modal {
@@ -35,6 +35,14 @@
     margin: 12px auto;
     padding-bottom: 0;
   }
+}
+
+.bg-select-modal .ant-modal {
+  max-width: 420px;
+}
+
+.bg-select-modal .ant-modal-content {
+  overflow: hidden;
 }
 
 .export-menu-modal .ant-modal {
@@ -248,11 +256,24 @@
 }
 
 .bg-select-panel {
+  --bg-select-panel-max-height: min(560px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
   width: min(396px, calc(100vw - 24px));
+  max-width: 100%;
+  max-height: var(--bg-select-panel-max-height);
 }
 
 .bg-select-tabs {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  max-height: var(--bg-select-panel-max-height);
+}
+
+.bg-select-tabs .ant-tabs-nav {
+  margin: 0;
+  padding: 8px 8px 0;
 }
 
 .bg-select-tabs .ant-tabs-content-holder,
@@ -260,13 +281,20 @@
   min-width: 0;
 }
 
+.bg-select-tabs .ant-tabs-content-holder {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .picker-tabs-contents {
   min-width: 0;
+  padding-bottom: 8px;
 }
 
 .picker-tabs-contents--gradient {
-  max-height: min(360px, calc(100vh - 240px));
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
   padding: 10px;
 }
 

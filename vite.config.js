@@ -1,6 +1,7 @@
 const fs = require('node:fs')
 const { defineConfig, transformWithEsbuild } = require('vite')
 const react = require('@vitejs/plugin-react')
+const { randomImageApiMiddleware } = require('./bin/random-image-proxy')
 
 const jsxDirectoriesPattern = /[\\/](components|src)[\\/].+\.js$/
 const svgReactPattern = /\.svg\?react$/u
@@ -92,9 +93,20 @@ const svgReactAssetPlugin = {
   },
 }
 
+const randomImageApiPlugin = {
+  name: 'panda-random-image-api',
+  configureServer(server) {
+    server.middlewares.use(randomImageApiMiddleware)
+  },
+  configurePreviewServer(server) {
+    server.middlewares.use(randomImageApiMiddleware)
+  },
+}
+
 module.exports = defineConfig({
   plugins: [
     svgReactAssetPlugin,
+    randomImageApiPlugin,
     {
       name: 'panda-js-as-jsx',
       enforce: 'pre',

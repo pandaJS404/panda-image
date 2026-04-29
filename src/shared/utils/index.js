@@ -6,6 +6,7 @@ const SETTINGS_KEY = 'PANDA_STATE'
 const PRESETS_KEY = 'PANDA_PRESETS'
 const THEMES_KEY = 'PANDA_THEMES'
 const WATERMARK_FONT_ASSET_KEY = 'PANDA_WATERMARK_FONT_ASSET'
+const BACKGROUND_IMAGE_ASSET_KEY = 'PANDA_BACKGROUND_IMAGE_ASSET'
 
 const createAssigner = key => {
   const assign = morph.assign(key)
@@ -65,9 +66,11 @@ export const getPresets = morph.compose(parse, morph.get(PRESETS_KEY))
 
 export const getThemes = morph.compose(parse, morph.get(THEMES_KEY))
 export const getWatermarkFontAsset = morph.compose(parse, morph.get(WATERMARK_FONT_ASSET_KEY))
+export const getBackgroundImageAsset = morph.compose(parse, morph.get(BACKGROUND_IMAGE_ASSET_KEY))
 
 export const clearSettings = () => localStorage.removeItem(SETTINGS_KEY)
 export const clearWatermarkFontAsset = () => localStorage.removeItem(WATERMARK_FONT_ASSET_KEY)
+export const clearBackgroundImageAsset = () => localStorage.removeItem(BACKGROUND_IMAGE_ASSET_KEY)
 export const saveWatermarkFontAsset = value => {
   if (value == null) {
     clearWatermarkFontAsset()
@@ -75,6 +78,15 @@ export const saveWatermarkFontAsset = value => {
   }
 
   return createAssigner(WATERMARK_FONT_ASSET_KEY)(value)
+}
+
+export const saveBackgroundImageAsset = value => {
+  if (value == null) {
+    clearBackgroundImageAsset()
+    return
+  }
+
+  return createAssigner(BACKGROUND_IMAGE_ASSET_KEY)(value)
 }
 
 export const fileToDataURL = blob =>

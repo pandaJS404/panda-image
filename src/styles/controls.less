@@ -750,6 +750,22 @@
   padding: 8px;
 }
 
+.image-picker-static-preview {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-1);
+}
+
+.image-picker-static-preview__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .image-picker-url-form {
   display: flex;
   justify-content: space-between;

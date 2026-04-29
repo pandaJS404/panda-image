@@ -45,6 +45,7 @@ const INITIAL_STATE = {
   pixelCrop: null,
   photographer: null,
   dataURL: null,
+  error: null,
 }
 
 export default class ImagePicker extends React.Component {
@@ -68,12 +69,18 @@ export default class ImagePicker extends React.Component {
 
   state = INITIAL_STATE
 
+  getSelectedImagePreview = () =>
+    this.props.imageSelection || this.props.image || this.props.imageSource || null
+
   selectMode = mode => this.setState({ mode })
 
   onDragEnd = async () => {
     if (this.state.pixelCrop) {
       const croppedImg = await getCroppedImg(this.state.dataURL, this.state.pixelCrop)
-      this.props.onChange({ backgroundImageSelection: croppedImg })
+      this.props.onChange({
+        backgroundMode: 'image',
+        backgroundImageSelection: croppedImg,
+      })
     }
   }
 
@@ -99,11 +106,13 @@ export default class ImagePicker extends React.Component {
     })
   }
 
-  handleImageChange = (url, dataURL, photographer) => {
+  handleImageChange = ({ source, image, dataURL, photographer }) => {
     this.setState({ dataURL, photographer }, () => {
       this.props.onChange({
-        backgroundImage: url,
+        backgroundImage: image,
+        backgroundImageSource: source,
         backgroundImageSelection: null,
+        backgroundMode: 'image',
         photographer,
       })
     })
@@ -116,12 +125,17 @@ export default class ImagePicker extends React.Component {
     return this.context
       .downloadThumbnailImage({ url })
       .then(result => result.dataURL)
-      .then(dataURL => this.handleImageChange(url, dataURL))
+      .then(dataURL =>
+        this.handleImageChange({
+          source: url,
+          image: dataURL,
+          dataURL,
+        })
+      )
       .catch(error => {
         if (error.message.indexOf('Network Error') > -1) {
           this.setState({
-            error:
-              '图片抓取失败，可能是 CORS 限制造成。你可以在浏览器中启用 CORS，或改用其他图片。',
+            error: '图片抓取失败，可能是链接源限制导致。你可以改用本地上传，或换一张图片重试。',
           })
         }
       })
@@ -129,16 +143,25 @@ export default class ImagePicker extends React.Component {
 
   uploadImage = async event => {
     const dataURL = await fileToDataURL(event.target.files[0])
-    return this.handleImageChange(dataURL, dataURL)
+
+    return this.handleImageChange({
+      source: null,
+      image: dataURL,
+      dataURL,
+    })
   }
 
   selectImage = async image => {
     try {
-      const dataURL =
-        image.dataURL || (await this.context.downloadThumbnailImage(image)).dataURL
+      const dataURL = image.dataURL || (await this.context.downloadThumbnailImage(image)).dataURL
 
       this.setState({ error: null })
-      this.handleImageChange(image.dataURL || image.url, dataURL, image.photographer)
+      this.handleImageChange({
+        source: image.url || null,
+        image: dataURL,
+        dataURL,
+        photographer: image.photographer,
+      })
 
       if (image.palette && image.palette.length && this.generateColorPalette) {
         const palette = image.palette.map(color => color.hex)
@@ -172,14 +195,73 @@ export default class ImagePicker extends React.Component {
     this.setState(INITIAL_STATE, () => {
       this.props.onChange({
         backgroundImage: null,
+        backgroundImageSource: null,
         backgroundImageSelection: null,
       })
     })
   }
 
+  renderSelectedPreview() {
+    const selectedImagePreview = this.getSelectedImagePreview()
+
+    if (!selectedImagePreview || this.state.dataURL) {
+      return null
+    }
+
+    return (
+      <div className="image-picker-settings-container">
+        <div className="image-picker-image-container">
+          <div className="image-picker-label">
+            <span>当前使用图片</span>
+            <ButtonPrimitive className="image-picker-remove-button" onClick={this.removeImage}>
+              &times;
+            </ButtonPrimitive>
+          </div>
+          <div className="image-picker-static-preview">
+            <div
+              className="image-picker-static-preview__image"
+              style={{ backgroundImage: `url(${selectedImagePreview})` }}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  renderCropPreview() {
+    if (!this.state.dataURL) {
+      return null
+    }
+
+    return (
+      <div className="image-picker-settings-container">
+        <div className="image-picker-image-container">
+          <div className="image-picker-label">
+            <span>背景图片</span>
+            <ButtonPrimitive className="image-picker-remove-button" onClick={this.removeImage}>
+              &times;
+            </ButtonPrimitive>
+          </div>
+          <ReactCrop
+            src={this.state.dataURL}
+            onImageLoaded={this.onImageLoaded}
+            crop={this.state.crop}
+            onChange={this.onCropChange}
+            onDragEnd={this.onDragEnd}
+            minHeight={10}
+            minWidth={10}
+            keepSelection
+          />
+          {this.state.photographer ? <PhotoCredit photographer={this.state.photographer} /> : null}
+        </div>
+      </div>
+    )
+  }
+
   render() {
-    let content = (
+    const content = (
       <div>
+        {this.renderCropPreview() || this.renderSelectedPreview()}
         <div className="image-picker-chooser">
           <span className="image-picker-copy">上传背景图：</span>
           <ButtonPrimitive
@@ -204,14 +286,9 @@ export default class ImagePicker extends React.Component {
             />
           ) : (
             <form className="image-picker-url-form" onSubmit={this.handleURLInput}>
-              <Input
-                type="text"
-                title="背景图片"
-                placeholder="输入图片 URL"
-                align="left"
-              />
+              <Input type="text" title="背景图片" placeholder="输入图片 URL" align="left" />
               <ButtonPrimitive className="image-picker-submit" htmlType="submit">
-                上传
+                使用
               </ButtonPrimitive>
             </form>
           )}
@@ -220,41 +297,13 @@ export default class ImagePicker extends React.Component {
         <hr className="image-picker-divider" />
         <div className="image-picker-random">
           <span className="image-picker-copy">
-            使用一张来自 <a href="https://unsplash.com/">Unsplash</a> 的随机图片。
+            使用一张来自 <a href="https://www.bing.com/?mkt=zh-CN">Bing 壁纸</a> 的随机图片。
           </span>
           <RandomImage onChange={this.selectImage} />
           <GeneratePaletteSetting onChange={value => (this.generateColorPalette = value)} />
         </div>
       </div>
     )
-
-    if (this.state.dataURL) {
-      content = (
-        <div className="image-picker-settings-container">
-          <div className="image-picker-image-container">
-            <div className="image-picker-label">
-              <span>背景图片</span>
-              <ButtonPrimitive className="image-picker-remove-button" onClick={this.removeImage}>
-                &times;
-              </ButtonPrimitive>
-            </div>
-            <ReactCrop
-              src={this.state.dataURL}
-              onImageLoaded={this.onImageLoaded}
-              crop={this.state.crop}
-              onChange={this.onCropChange}
-              onDragEnd={this.onDragEnd}
-              minHeight={10}
-              minWidth={10}
-              keepSelection
-            />
-            {this.state.photographer ? (
-              <PhotoCredit photographer={this.state.photographer} />
-            ) : null}
-          </div>
-        </div>
-      )
-    }
 
     return (
       <div className="image-picker-container">

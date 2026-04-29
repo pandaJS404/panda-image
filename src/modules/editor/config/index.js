@@ -1295,6 +1295,7 @@ export const DEFAULT_SETTINGS = {
   paddingVertical: '56px',
   paddingHorizontal: '56px',
   backgroundImage: null,
+  backgroundImageSource: null,
   backgroundImageSelection: null,
   backgroundMode: 'color',
   backgroundColor: DEFAULT_BG_COLOR,

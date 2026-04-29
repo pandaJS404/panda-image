@@ -5,27 +5,38 @@ import Editor from './Editor'
 import { THEMES } from '../src/modules/editor/config'
 import { updateRouteState } from '../src/modules/editor/state/routing'
 import {
+  clearBackgroundImageAsset,
   clearSettings,
   clearWatermarkFontAsset,
+  getBackgroundImageAsset,
   getThemes,
+  saveBackgroundImageAsset,
   saveSettings,
   saveThemes,
   saveWatermarkFontAsset,
 } from '../src/shared/utils'
 
-function onReset() {
-  clearSettings()
-
-  if (window.location.search) {
-    window.history.replaceState(null, '', window.location.pathname)
+function isSameBackgroundAsset(left, right) {
+  if (left === right) {
+    return true
   }
+
+  if (!left || !right) {
+    return false
+  }
+
+  return (
+    left.source === right.source && left.image === right.image && left.selection === right.selection
+  )
 }
 
 function EditorContainer(props) {
   const [themes, updateThemes] = React.useState(THEMES)
+  const backgroundAssetRef = React.useRef(null)
 
   React.useEffect(() => {
     const storedThemes = getThemes(localStorage) || []
+    backgroundAssetRef.current = getBackgroundImageAsset(localStorage) || null
 
     if (storedThemes.length) {
       updateThemes(currentThemes => [...storedThemes, ...currentThemes])
@@ -36,9 +47,39 @@ function EditorContainer(props) {
     saveThemes(themes.filter(({ custom }) => custom))
   }, [themes])
 
+  function onReset() {
+    clearSettings()
+    clearBackgroundImageAsset()
+    backgroundAssetRef.current = null
+
+    if (window.location.search) {
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }
+
   function onEditorUpdate(state) {
     updateRouteState(props.router, state)
     saveSettings(state)
+
+    const nextBackgroundAsset =
+      state.backgroundMode === 'image' &&
+      (state.backgroundImage || state.backgroundImageSelection || state.backgroundImageSource)
+        ? {
+            source: state.backgroundImageSource || null,
+            image: state.backgroundImage || null,
+            selection: state.backgroundImageSelection || null,
+          }
+        : null
+
+    if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
+      if (nextBackgroundAsset) {
+        saveBackgroundImageAsset(nextBackgroundAsset)
+      } else {
+        clearBackgroundImageAsset()
+      }
+
+      backgroundAssetRef.current = nextBackgroundAsset
+    }
   }
 
   function onWatermarkFontAssetChange(nextValue) {

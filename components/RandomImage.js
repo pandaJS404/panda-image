@@ -22,7 +22,7 @@ function RandomImage(props) {
     let nextImage = image
 
     try {
-      const data = await api.unsplash.download(image.id)
+      const data = await api.randomImage.download(image.id)
       nextImage = { ...image, ...data }
     } catch {
       nextImage = image
@@ -34,7 +34,7 @@ function RandomImage(props) {
   })
 
   const [updateCache, { loading: updating, error, data: imgs }] = useAsyncCallback(
-    api.unsplash.random
+    api.randomImage.random
   )
 
   const needsFetch = !error && !updating && (!imgs || cacheIndex > cacheRef.current.length - 2)
@@ -56,7 +56,7 @@ function RandomImage(props) {
   const cache = cacheRef.current
   const currentImage = cache[cacheIndex] || null
   const photographer = currentImage && currentImage.photographer
-  const bgImage = currentImage && currentImage.dataURL
+  const bgImage = currentImage && (currentImage.dataURL || currentImage.url)
   const canSelect = Boolean(currentImage) && !loading
   const canAdvance = !loading && (Boolean(currentImage) || Boolean(error))
 
