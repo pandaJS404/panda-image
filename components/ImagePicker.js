@@ -15,6 +15,7 @@ import Toggle from './Toggle'
 import { Link } from './Meta'
 import { fileToDataURL } from '../src/shared/utils'
 import ApiContext from './ApiContext'
+import { getAssetUrl } from '../src/shared/assets'
 
 const getCroppedImg = (imageDataURL, pixelCrop) => {
   const canvas = document.createElement('canvas')
@@ -451,7 +452,7 @@ export default class ImagePicker extends React.Component {
 
     return (
       <div className="image-picker-container">
-        <Link href="/static/react-crop.css" />
+        <Link href={getAssetUrl('static/react-crop.css')} />
         {content}
       </div>
     )

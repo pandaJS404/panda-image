@@ -5,16 +5,16 @@
   "theme_color": "#121212",
   "description": "Panda is the easiest way to create beautiful images of your source code.",
   "display": "standalone",
-  "start_url": "/",
+  "start_url": "./",
   "icons": [
     {
-      "src": "/static/brand/icon.png",
+      "src": "./static/brand/icon.png",
       "type": "image/png",
       "sizes": "448x448",
       "purpose": "any maskable"
     },
     {
-      "src": "/static/brand/desktop.png",
+      "src": "./static/brand/desktop.png",
       "type": "image/png",
       "sizes": "512x512"
     }

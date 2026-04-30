@@ -5,6 +5,7 @@ const { randomImageApiMiddleware } = require('./bin/random-image-proxy')
 
 const jsxDirectoriesPattern = /[\\/](components|src)[\\/].+\.js$/
 const svgReactPattern = /\.svg\?react$/u
+const basePath = process.env.VITE_BASE_PATH || '/'
 const normalizeApiOrigin = value => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
 const apiProxyTarget = normalizeApiOrigin(
   process.env.VITE_API_PROXY_TARGET || process.env.VITE_API_URL || process.env.NEXT_PUBLIC_API_URL || ''
@@ -104,6 +105,7 @@ const randomImageApiPlugin = {
 }
 
 module.exports = defineConfig({
+  base: basePath,
   plugins: [
     svgReactAssetPlugin,
     randomImageApiPlugin,

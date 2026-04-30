@@ -248,4 +248,4 @@ npm run test:e2e
 
 ## 致谢
 
-Panda 当前版本建立在 React、Vite、Ant Design、CodeMirror 与 Cypress 这套前端工具链之上。README 本次重构重点围绕仓库当前已实现的能力组织内容与样例，不额外引入未确认的上游背景或发布信息。
+Panda 当前版本建立在 React、Vite、Ant Design、CodeMirror 与 Cypress 这套前端工具链之上。

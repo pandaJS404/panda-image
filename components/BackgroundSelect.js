@@ -6,6 +6,7 @@ import ColorPicker from './ColorPicker'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import { DEFAULT_BG_COLOR } from '../src/modules/editor/config'
 import { getBackgroundPreviewStyle } from '../src/modules/editor/background'
+import { getAssetUrl } from '../src/shared/assets'
 import { stringifyColor } from '../src/shared/utils'
 
 const GRADIENT_BLOCK_PATTERN = /\/\*(\d+)\s+([^*]+)\*\/\s*\.([A-Za-z0-9_-]+)\s*\{([\s\S]*?)\}/gu
@@ -49,7 +50,7 @@ function parseGradientCatalog(source) {
 
 function loadGradientCatalog() {
   if (!gradientCatalogPromise) {
-    gradientCatalogPromise = fetch('/static/webgradients.css')
+    gradientCatalogPromise = fetch(getAssetUrl('static/webgradients.css'))
       .then(response => {
         if (!response.ok) {
           throw new Error(`Unable to load gradients: ${response.status}`)

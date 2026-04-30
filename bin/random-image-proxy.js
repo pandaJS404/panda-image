@@ -10,6 +10,9 @@ const DATA_URL_CACHE_TTL = 60 * 60 * 1000
 const PICSUM_FALLBACK_WIDTH = 1600
 const PICSUM_FALLBACK_HEIGHT = 1200
 const FALLBACKABLE_RANDOM_IMAGE_STATUSES = new Set([401, 403, 404, 405])
+const CORS_ALLOW_ORIGIN = '*'
+const CORS_ALLOW_METHODS = 'GET, OPTIONS'
+const CORS_ALLOW_HEADERS = 'Content-Type'
 
 const bingClient = axios.create({
   baseURL: BING_ORIGIN,
@@ -233,9 +236,21 @@ async function fetchRandomImageById(id) {
 
 function sendJson(res, statusCode, data) {
   res.statusCode = statusCode
+  res.setHeader('Access-Control-Allow-Origin', CORS_ALLOW_ORIGIN)
+  res.setHeader('Access-Control-Allow-Methods', CORS_ALLOW_METHODS)
+  res.setHeader('Access-Control-Allow-Headers', CORS_ALLOW_HEADERS)
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
   res.setHeader('Cache-Control', 'no-store')
   res.end(JSON.stringify(data))
+}
+
+function sendNoContent(res) {
+  res.statusCode = 204
+  res.setHeader('Access-Control-Allow-Origin', CORS_ALLOW_ORIGIN)
+  res.setHeader('Access-Control-Allow-Methods', CORS_ALLOW_METHODS)
+  res.setHeader('Access-Control-Allow-Headers', CORS_ALLOW_HEADERS)
+  res.setHeader('Cache-Control', 'no-store')
+  res.end()
 }
 
 function sendMethodNotAllowed(res) {
@@ -245,6 +260,11 @@ function sendMethodNotAllowed(res) {
 }
 
 async function handleRandomImageListRequest(req, res) {
+  if (req.method === 'OPTIONS') {
+    sendNoContent(res)
+    return
+  }
+
   if (req.method !== 'GET') {
     sendMethodNotAllowed(res)
     return
@@ -262,6 +282,11 @@ async function handleRandomImageListRequest(req, res) {
 }
 
 async function handleRandomImageDownloadRequest(req, res) {
+  if (req.method === 'OPTIONS') {
+    sendNoContent(res)
+    return
+  }
+
   if (req.method !== 'GET') {
     sendMethodNotAllowed(res)
     return

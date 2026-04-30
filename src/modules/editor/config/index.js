@@ -1,4 +1,5 @@
 import toHash from 'tohash'
+import { getAssetUrl } from '../../../shared/assets'
 
 export const FONTS = [
   {
@@ -1359,7 +1360,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda01.webp',
+    icon: getAssetUrl('static/presets/panda01.webp'),
     id: 'preset:panda01',
   },
   {
@@ -1375,7 +1376,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorderColor: 'rgba(246,238,220,0.92)',
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda02.webp',
+    icon: getAssetUrl('static/presets/panda02.webp'),
     id: 'preset:panda02',
   },
   {
@@ -1390,7 +1391,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda03.webp',
+    icon: getAssetUrl('static/presets/panda03.webp'),
     id: 'preset:panda03',
   },
   {
@@ -1405,7 +1406,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda04.webp',
+    icon: getAssetUrl('static/presets/panda04.webp'),
     id: 'preset:panda04',
   },
   {
@@ -1420,7 +1421,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda05.webp',
+    icon: getAssetUrl('static/presets/panda05.webp'),
     id: 'preset:panda05',
   },
   {
@@ -1435,7 +1436,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda06.webp',
+    icon: getAssetUrl('static/presets/panda06.webp'),
     id: 'preset:panda06',
   },
   {
@@ -1450,7 +1451,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda07.webp',
+    icon: getAssetUrl('static/presets/panda07.webp'),
     id: 'preset:panda07',
   },
   {
@@ -1465,7 +1466,7 @@ export const DEFAULT_PRESETS = [
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
     windowControls: true,
-    icon: '/static/presets/panda08.webp',
+    icon: getAssetUrl('static/presets/panda08.webp'),
     id: 'preset:panda08',
   },
 ]

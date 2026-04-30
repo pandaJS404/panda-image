@@ -1,6 +1,7 @@
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { THEMES, THEMES_HASH } from '../src/modules/editor/config'
+import { getAssetUrl } from '../src/shared/assets'
 import { getThemeStatusBarStyle } from '../src/theme'
 import { useUiTheme } from '../src/ui-theme'
 
@@ -16,6 +17,7 @@ export const HIGHLIGHTS_ONLY = [
   'Panda-Gradation',
   'vscode-Gradation',
 ]
+
 const LOCAL_STYLESHEETS = ['one-light', 'one-dark', 'verminal', 'night-owl', 'nord', 'synthwave-84']
 const CDN_STYLESHEETS = THEMES.filter(
   t => LOCAL_STYLESHEETS.indexOf(t.id) < 0 && HIGHLIGHTS_ONLY.indexOf(t.id) < 0,
@@ -33,7 +35,7 @@ export function Link({ href }) {
 export const StylesheetLink = ({ theme }) => {
   let href
   if (LOCAL_STYLESHEETS.indexOf(theme) > -1) {
-    href = `/static/themes/${theme}.min.css`
+    href = getAssetUrl(`static/themes/${theme}.min.css`)
   } else {
     const themeDef = THEMES_HASH[theme]
     href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/${CODEMIRROR_VERSION}/theme/${
@@ -51,22 +53,24 @@ export const CodeMirrorLink = () => (
 )
 
 const title = 'Panda'
-const description = 'Panda 是一个将源码快速生成精美图片的单页编辑器。'
+const description = 'Panda 是一个将源码快速生成为精美图片的单页编辑器。'
 const normalizeOrigin = value => value.replace(/\/$/u, '')
 const configuredSiteOrigin = normalizeOrigin(
   import.meta.env.VITE_SITE_URL || import.meta.env.NEXT_PUBLIC_SITE_URL || '',
 )
 
 function getAbsoluteAssetUrl(path) {
+  const normalizedPath = path.replace(/^\/+/u, '')
+
   if (configuredSiteOrigin) {
-    return `${configuredSiteOrigin}${path}`
+    return new URL(normalizedPath, `${configuredSiteOrigin}/`).toString()
   }
 
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    return `${window.location.origin}${path}`
+  if (typeof window !== 'undefined' && window.location && window.location.href) {
+    return new URL(normalizedPath, window.location.href).toString()
   }
 
-  return path
+  return getAssetUrl(normalizedPath)
 }
 
 export const MetaTags = React.memo(() => {
@@ -91,9 +95,9 @@ export const MetaTags = React.memo(() => {
         content={getThemeStatusBarStyle(uiTheme)}
       />
       <title>{`${title} | 将源码生成精美图片`}</title>
-      <link rel="shortcut icon" href="/favicon.ico" />
-      <link rel="manifest" href="/manifest.json" />
-      <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png" />
+      <link rel="shortcut icon" href={getAssetUrl('favicon.ico')} />
+      <link rel="manifest" href={getAssetUrl('manifest.json')} />
+      <link rel="apple-touch-icon" href={getAbsoluteAssetUrl('static/brand/apple-touch-icon.png')} />
     </Helmet>
   )
 })
@@ -106,7 +110,7 @@ export const MetaLinks = React.memo(() => {
       />
       <CodeMirrorLink />
       {LOCAL_STYLESHEETS.map(id => (
-        <Link key={id} href={`/static/themes/${id}.min.css`} />
+        <Link key={id} href={getAssetUrl(`static/themes/${id}.min.css`)} />
       ))}
       {CDN_STYLESHEETS.map(themeDef => {
         const href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/${CODEMIRROR_VERSION}/theme/${
