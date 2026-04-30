@@ -38,8 +38,8 @@ function RandomImage(props) {
     return nextImage
   })
 
-  const [updateCache, { loading: updating, error, data: imgs }] = useAsyncCallback(
-    api.randomImage.random,
+  const [updateCache, { loading: updating, error, data: imgs }] = useAsyncCallback(() =>
+    api.randomImage.random(),
   )
 
   const needsFetch =

@@ -24,7 +24,7 @@ const mapper = new Morph({
       try {
         const x = JSON.parse(v)
         return x
-      } catch (e) {
+      } catch {
         return v
       }
     },
@@ -32,7 +32,7 @@ const mapper = new Morph({
       if (v == null) return undefined
       try {
         return decodeURIComponent(v)
-      } catch (e) {
+      } catch {
         return v
       }
     },
@@ -45,7 +45,7 @@ const mapper = new Morph({
           return encodeURIComponent(v.slice(0, URL_LIMIT / 2))
         }
         return encoded
-      } catch (e) {
+      } catch {
         return v
       }
     },
@@ -166,7 +166,7 @@ export const deserializeState = serializedState => {
     }
 
     return JSON.parse(decodeURIComponent(stateString))
-  } catch (e) {
+  } catch {
     return {}
   }
 }
@@ -195,7 +195,7 @@ function fixAsPathEncoding(asPath) {
 
   try {
     return new URL(asPath, base)
-  } catch (e) {
+  } catch {
     return new URL(encodeURI(asPath), base)
   }
 }

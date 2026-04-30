@@ -70,7 +70,7 @@ function FileDropzone({ children, filter = file => file, onDrop }) {
         return
       }
 
-      Promise.all(files.filter(filter).map(readFile)).then(content => {
+      void Promise.all(files.filter(filter).map(readFile)).then(content => {
         if (!content.length) {
           return
         }

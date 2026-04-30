@@ -1,6 +1,6 @@
-const { defineConfig } = require('cypress')
+const cypress = require('cypress')
 
-module.exports = defineConfig({
+module.exports = cypress.defineConfig({
   video: false,
   e2e: {
     baseUrl: 'http://127.0.0.1:3000',

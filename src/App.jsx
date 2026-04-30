@@ -5,29 +5,33 @@ import Page from '../components/Page'
 import { MetaLinks } from '../components/Meta'
 import { useRouter } from './router'
 
-function clearLegacyServiceWorkerState() {
+async function clearLegacyServiceWorkerState() {
+  const cleanupTasks = []
+
   if (window.navigator && navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(registration => {
-        registration.unregister()
-      })
-    })
+    cleanupTasks.push(
+      navigator.serviceWorker
+        .getRegistrations()
+        .then(registrations =>
+          Promise.all(registrations.map(registration => registration.unregister())),
+        ),
+    )
   }
 
   if (window.caches) {
-    window.caches.keys().then(keys => {
-      keys.forEach(key => {
-        window.caches.delete(key)
-      })
-    })
+    cleanupTasks.push(
+      window.caches.keys().then(keys => Promise.all(keys.map(key => window.caches.delete(key)))),
+    )
   }
+
+  await Promise.all(cleanupTasks)
 }
 
 export default function App() {
   const router = useRouter()
 
   React.useEffect(() => {
-    clearLegacyServiceWorkerState()
+    void clearLegacyServiceWorkerState().catch(() => {})
   }, [])
 
   return (

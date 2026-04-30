@@ -414,7 +414,11 @@ CodeMirror.defineMode('solidity', function (config) {
       if (ch == '.') {
         stream.match(/^[0-9]+([eE][-+]?[0-9]+)?/)
       } else if (ch == '0') {
-        stream.match(/^[xX][0-9a-fA-F]+/) || stream.match(/^0[0-7]+/)
+        const hasHexPrefix = stream.match(/^[xX][0-9a-fA-F]+/)
+
+        if (!hasHexPrefix) {
+          stream.match(/^0[0-7]+/)
+        }
       } else {
         stream.match(/^[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?/)
       }

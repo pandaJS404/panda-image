@@ -192,7 +192,11 @@ async function fetchImageAsDataUrl(url) {
   const response = await axios.get(url, {
     responseType: 'arraybuffer',
   })
-  const contentType = response.headers['content-type'] || 'image/jpeg'
+  const responseContentType = response.headers['content-type']
+  const contentType =
+    typeof responseContentType === 'string' && responseContentType
+      ? responseContentType
+      : 'image/jpeg'
   const dataURL = `data:${contentType};base64,${Buffer.from(response.data).toString('base64')}`
 
   setCachedDataUrl(url, dataURL)

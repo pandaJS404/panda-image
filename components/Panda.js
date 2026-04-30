@@ -323,7 +323,7 @@ class Panda extends React.PureComponent {
   }
 
   render() {
-    const { CodeMirror, activeLanguageMode, isLanguageLoading, showLanguageMask } = this.state
+    const { CodeMirror, activeLanguageMode, showLanguageMask } = this.state
     const config = { ...DEFAULT_SETTINGS, ...this.props.config }
 
     const options = {

@@ -27,7 +27,7 @@ function readStoredUiTheme() {
 
   try {
     return normalizeUiTheme(window.localStorage.getItem(UI_THEME_STORAGE_KEY))
-  } catch (error) {
+  } catch {
     return DEFAULT_UI_THEME
   }
 }
@@ -64,7 +64,7 @@ export function UiThemeProvider({ children }) {
 
     try {
       window.localStorage.setItem(UI_THEME_STORAGE_KEY, uiTheme)
-    } catch (error) {
+    } catch {
       // Ignore storage failures and keep the in-memory preference.
     }
   }, [uiTheme])

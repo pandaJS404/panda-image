@@ -5,6 +5,7 @@ dist
 out
 cypress/videos
 cypress/screenshots
+cypress/tmp
 .arts
 .codeartsdoer
 .idea

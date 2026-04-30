@@ -3,7 +3,7 @@ import React from 'react'
 const parseJSON = value => {
   try {
     return JSON.parse(value)
-  } catch (error) {
+  } catch {
     return value
   }
 }
@@ -305,7 +305,7 @@ export const useCopyTextHandler = (text, { interval = 1000 } = {}) => {
       try {
         await copyText(text)
         setCopied(true)
-      } catch (error) {
+      } catch {
         setCopied(false)
       }
     },

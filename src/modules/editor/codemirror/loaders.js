@@ -77,7 +77,7 @@ function ensureCodeMirrorAddons() {
     ])
   }
 
-  return addonsPromise
+  return Promise.resolve(addonsPromise)
 }
 
 export function isCodeMirrorModeLoaded(mode) {

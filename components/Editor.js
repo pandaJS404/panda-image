@@ -177,7 +177,7 @@ function waitForImageReady(image) {
     const handleDone = () => {
       image.onload = null
       image.onerror = null
-      finalize().then(resolve)
+      void finalize().then(resolve)
     }
 
     image.onload = handleDone
@@ -590,7 +590,7 @@ class Editor extends React.Component {
         requestedMimeType,
         fallbackUsed: false,
       }
-    } catch (error) {
+    } catch {
       const fallbackResult = await this.copyClipboardImage({
         format: 'blob',
         exportSize,
@@ -746,7 +746,7 @@ class Editor extends React.Component {
     try {
       const formattedCode = await formatCode(this.state.code, resolvedLanguage)
       this.updateCode(formattedCode)
-    } catch (error) {
+    } catch {
       this.props.messageApi?.warning('当前语言或代码内容暂时无法美化')
     }
   }

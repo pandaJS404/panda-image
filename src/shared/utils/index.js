@@ -41,7 +41,7 @@ export const saveThemes = createAssigner(THEMES_KEY)
 const parse = v => {
   try {
     return JSON.parse(v)
-  } catch (e) {
+  } catch {
     // pass
   }
 }

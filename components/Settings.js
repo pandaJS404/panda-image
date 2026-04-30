@@ -536,7 +536,7 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
 
   try {
     download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(settings))}`
-  } catch (error) {
+  } catch {
     download = undefined
   }
 

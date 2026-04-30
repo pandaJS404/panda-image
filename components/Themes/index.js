@@ -4,7 +4,6 @@ import { Modal } from 'antd'
 
 import GlobalHighlights from './GlobalHighlights'
 import Dropdown from '../Dropdown'
-import ButtonPrimitive from '../buttons/ButtonPrimitive'
 
 const ThemeCreate = React.lazy(() => import('./ThemeCreate'))
 
