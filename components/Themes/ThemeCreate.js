@@ -29,7 +29,7 @@ const getHighlightLabel = key => HIGHLIGHT_LABELS[key] || key
 const HighlightPicker = ({ title, onChange, color }) => (
   <div className="theme-create-highlight-picker">
     <div className="theme-create-color-picker-header">
-      <span>{getHighlightLabel(title)}</span>
+      <span className="theme-create-color-picker-title">{getHighlightLabel(title)}</span>
     </div>
     <ColorPicker key={title} color={color} onChange={onChange} presets={colorPresets} />
   </div>
@@ -58,71 +58,79 @@ const ThemeCreate = ({
     <div className="theme-create-panel">
       <div className="theme-create-popup__body">
         <div className="theme-create-settings">
-          <div className="theme-create-field theme-create-name-field">
-            <span style={{ width: '50px' }}>名称</span>
-            <Input
-              title="名称"
-              name="name"
-              placeholder="自定义主题"
-              value={name}
-              onChange={onInputChange}
-              maxLength="32"
-              fieldClassName="theme-create-name-input"
-            />
-          </div>
-          <div className="theme-create-select">
-            <ListSetting
-              title="基础主题"
-              items={themes}
-              selected={preset}
-              onOpen={() => selectHighlight(null)}
-              onChange={id => {
-                updatePreset(id)
-                updateHighlights(themes.find(currentTheme => currentTheme.id === id).highlights)
-              }}
-            >
-              {({ name: themeName }) => <span>{themeName}</span>}
-            </ListSetting>
-          </div>
-          <div className="theme-create-colors">
-            {HIGHLIGHT_KEYS.map(key => (
-              <div className="theme-create-field" key={key}>
-                <p
-                  role="button"
-                  tabIndex={0}
-                  data-active={highlight === key || undefined}
-                  className="theme-create-field-button"
-                  onClick={() => selectHighlight(key)}
-                  onKeyDown={handleHighlightKeyDown(() => selectHighlight(key))}
+          <div className="theme-create-form">
+            <div className="theme-create-field theme-create-name-field">
+              <span className="theme-create-field-label">名称</span>
+              <Input
+                title="名称"
+                name="name"
+                placeholder="自定义主题"
+                value={name}
+                onChange={onInputChange}
+                maxLength="32"
+                fieldClassName="theme-create-name-input"
+              />
+            </div>
+            <div className="theme-create-field theme-create-base-field">
+              <div className="theme-create-select">
+                <ListSetting
+                  title="基础主题"
+                  items={themes}
+                  selected={preset}
+                  onOpen={() => selectHighlight(null)}
+                  onChange={id => {
+                    updatePreset(id)
+                    updateHighlights(themes.find(currentTheme => currentTheme.id === id).highlights)
+                  }}
                 >
-                  <div className="theme-create-button-row">
-                    <span>{getHighlightLabel(key)}</span>
-                    <span
-                      className="theme-create-color-circle"
-                      style={{
-                        backgroundColor: highlights[key],
-                      }}
-                    />
-                  </div>
-                </p>
+                  {({ name: themeName }) => <span>{themeName}</span>}
+                </ListSetting>
               </div>
-            ))}
+            </div>
           </div>
-          <ButtonPrimitive
-            fullWidth
-            disabled={!name}
-            className="theme-create-submit"
-            onClick={() =>
-              create({
-                id: `theme:${generateId()}`,
-                name,
-                highlights,
-                custom: true,
-              })
-            }
-          >
-            创建主题 +
-          </ButtonPrimitive>
+          <div className="theme-create-color-section">
+            <div className="theme-create-colors">
+              {HIGHLIGHT_KEYS.map(key => (
+                <div className="theme-create-field theme-create-color-field" key={key}>
+                  <p
+                    role="button"
+                    tabIndex={0}
+                    data-active={highlight === key || undefined}
+                    className="theme-create-field-button"
+                    onClick={() => selectHighlight(key)}
+                    onKeyDown={handleHighlightKeyDown(() => selectHighlight(key))}
+                  >
+                    <span className="theme-create-button-row">
+                      <span className="theme-create-color-label">{getHighlightLabel(key)}</span>
+                      <span
+                        className="theme-create-color-circle"
+                        style={{
+                          backgroundColor: highlights[key],
+                        }}
+                      />
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="theme-create-submit-row">
+            <ButtonPrimitive
+              fullWidth
+              disabled={!name}
+              className="theme-create-submit"
+              onClick={() =>
+                create({
+                  id: `theme:${generateId()}`,
+                  name,
+                  highlights,
+                  custom: true,
+                })
+              }
+            >
+              创建主题 +
+            </ButtonPrimitive>
+          </div>
         </div>
         {highlight ? (
           <HighlightPicker

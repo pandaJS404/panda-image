@@ -577,7 +577,8 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
         fullWidth
         onClick={format}
         className="settings-misc-button"
-        data-layout="divider"
+        data-layout="stacked"
+        data-tone="accent"
         data-cy="format-code-button"
       >
         美化代码
@@ -586,8 +587,8 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
         fullWidth
         onClick={reset}
         className="settings-misc-button"
-        data-layout="divider"
-        style={{ color: 'var(--status-danger)' }}
+        data-layout="stacked"
+        data-tone="danger"
       >
         重置设置
       </ButtonPrimitive>
