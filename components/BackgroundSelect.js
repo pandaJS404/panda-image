@@ -257,6 +257,8 @@ function BackgroundSelect({
         footer={null}
         centered
         destroyOnHidden
+        maskTransitionName=""
+        transitionName=""
         width="calc(100vw - 24px)"
         rootClassName="bg-select-modal"
         onCancel={() => setOpen(false)}

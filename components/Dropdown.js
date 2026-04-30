@@ -121,6 +121,7 @@ const Dropdown = React.memo(
           filterOption={false}
           popupMatchSelectWidth={false}
           options={options}
+          transitionName=""
           onSearch={setSearchValue}
           onChange={handleChange}
           onOpenChange={handleOpenChange}

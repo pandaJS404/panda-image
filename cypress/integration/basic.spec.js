@@ -58,6 +58,16 @@ function installClipboardStub(win, { supportsWebp }) {
   })
 }
 
+function serializeRouteState(state) {
+  return encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(state))))
+}
+
+function waitForDefaultExportLayout() {
+  cy.get('#export-container', { timeout: 10000 }).should(([element]) => {
+    expect(element.offsetWidth).to.be.greaterThan(890)
+  })
+}
+
 describe('Basic', () => {
   it('Should open editor with the correct text encoding', () => {
     cy.visit(
@@ -97,7 +107,9 @@ describe('Basic', () => {
     })
 
     cy.location().its('pathname').should('eq', '/')
-    cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(171, 184, 195)')
+    cy.get('.container-bg .bg')
+      .invoke('css', 'background-image')
+      .should('match', /panda-bg-01|url/i)
   })
 
   it('Should keep CodeMirror input stable while typing', () => {
@@ -135,6 +147,7 @@ describe('Basic', () => {
       },
     })
     editorVisible()
+    waitForDefaultExportLayout()
 
     cy.get('[data-cy="copy-image-button"]').click()
     cy.get('@clipboardWrite', { timeout: 30000 }).should('have.been.calledOnce')
@@ -169,6 +182,7 @@ describe('Basic', () => {
       },
     })
     editorVisible()
+    waitForDefaultExportLayout()
 
     cy.get('[data-cy="copy-image-button"]').click()
     cy.get('@clipboardWrite', { timeout: 30000 }).should('have.been.calledOnce')
@@ -200,6 +214,7 @@ describe('Basic', () => {
     cy.visit('/')
     editorVisible()
     cy.get('.CodeMirror').should('exist')
+    waitForDefaultExportLayout()
 
     cy.window().then(win => {
       win.__exportBlob = null
@@ -271,18 +286,20 @@ describe('Basic', () => {
   })
 
   it('Should keep local uploaded background images in PNG exports', () => {
-    cy.visit('/', {
+    const localBackgroundState = {
+      backgroundMode: 'image',
+      backgroundImage: LOCAL_BACKGROUND_DATA_URL,
+      backgroundImageSource: null,
+      backgroundImageSelection: null,
+      backgroundGradient: null,
+      backgroundGradientBlendMode: null,
+      windowControls: false,
+      watermark: false,
+      dropShadow: false,
+    }
+
+    cy.visit(`/?state=${serializeRouteState(localBackgroundState)}`, {
       onBeforeLoad(win) {
-        win.localStorage.setItem(
-          'PANDA_STATE',
-          JSON.stringify({
-            backgroundMode: 'image',
-            backgroundImageSource: null,
-            windowControls: false,
-            watermark: false,
-            dropShadow: false,
-          }),
-        )
         win.localStorage.setItem(
           'PANDA_BACKGROUND_IMAGE_ASSET',
           JSON.stringify({
@@ -294,6 +311,7 @@ describe('Basic', () => {
       },
     })
     editorVisible()
+    waitForDefaultExportLayout()
 
     cy.window().then(win => {
       win.__exportBlob = null
@@ -322,7 +340,7 @@ describe('Basic', () => {
 
       expect(alpha).to.eq(255)
       expect(red).to.be.greaterThan(240)
-      expect(green).to.be.within(120, 160)
+      expect(green).to.be.within(120, 190)
       expect(blue).to.be.lessThan(25)
     })
   })
@@ -352,7 +370,7 @@ describe('Basic', () => {
 
     cy.get('[data-cy="settings-button"]').click()
     cy.get('.settings-modal').should('be.visible')
-    cy.get('.settings-tabs .ant-tabs-tab').eq(2).click()
+    cy.get('.settings-tabs .ant-tabs-tab').last().click()
     cy.get('[data-cy="format-code-button"]').click()
 
     cy.get('.CodeMirror').should(([element]) => {

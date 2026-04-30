@@ -99,6 +99,8 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
           footer={null}
           centered
           destroyOnHidden
+          maskTransitionName=""
+          transitionName=""
           width="calc(100vw - 24px)"
           rootClassName="export-menu-modal"
           onCancel={() => setOpen(false)}

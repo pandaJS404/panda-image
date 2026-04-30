@@ -15,7 +15,30 @@ describe('background color', () => {
     return cy.get(picker).should('be.visible')
   }
 
+  const openColorPicker = () => {
+    openPicker()
+    cy.get('.bg-select-panel .ant-tabs-tab').eq(0).click()
+    return cy.get(picker).should('be.visible')
+  }
+
   const closePicker = () => cy.get(`${modal} .ant-modal-close`).click()
+
+  it('starts with Panda Gradation and the first Panda image', () => {
+    cy.visit('/')
+    editorVisible()
+
+    cy.get('[data-cy="themes-container"] .dropdown-display-text')
+      .should('contain', 'Panda')
+      .and('contain', 'Gradation')
+    cy.get('.container-bg .bg')
+      .invoke('attr', 'style')
+      .should('contain', 'panda-bg-01')
+      .and('contain', 'url(')
+    cy.get('.bg-color-container .bg-color')
+      .invoke('attr', 'style')
+      .should('contain', 'panda-bg-01')
+      .and('contain', 'url(')
+  })
 
   it('opens BG color pick', () => {
     cy.visit('/')
@@ -28,7 +51,7 @@ describe('background color', () => {
     cy.visit('/')
     const darkRed = '#D0021B'
     const darkRedTile = `[title="${darkRed}"]`
-    openPicker()
+    openColorPicker()
     cy.get(picker).find(darkRedTile).click()
     closePicker()
 
@@ -50,7 +73,7 @@ describe('background color', () => {
     editorVisible()
 
     const pink = 'ff00ff'
-    openPicker().find(`input[value="FF0000"]`).clear().type(`${pink}{enter}`)
+    openColorPicker().find(`input[value="FF0000"]`).clear().type(`${pink}{enter}`)
     closePicker()
 
     cy.url().should(url => expect(decodeURIComponent(url)).to.contain(`?bg=rgba(255,0,255,1)`))

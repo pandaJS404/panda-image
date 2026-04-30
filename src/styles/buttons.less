@@ -30,7 +30,7 @@
 }
 
 .panda-button[data-icon-only='true'] {
-  min-width: 40px;
+  min-width: var(--control-height);
 }
 
 .panda-button[data-disabled='true'] {
@@ -46,6 +46,7 @@
 
   .toolbar-button {
     min-height: var(--toolbar-control-height);
+    border-radius: var(--control-radius);
   }
 
   .toolbar-button .panda-button__content {
@@ -73,7 +74,8 @@
   }
 
   .toolbar-button[data-active='true'] {
-    box-shadow: inset 0 0 0 1px var(--toolbar-control-border-strong);
+    background: var(--control-surface-active);
+    box-shadow: inset 0 0 0 1px var(--control-selected-border);
   }
 
   .toolbar-button[data-tone='brand'] {
@@ -88,11 +90,11 @@
 
   .toolbar-group--export {
     .export-trigger-button--quick {
-      min-width: 124px;
+      min-width: 112px;
     }
 
     .export-trigger-button--menu {
-      min-width: 104px;
+      min-width: 92px;
     }
 
     .export-trigger-button__label,
@@ -103,7 +105,7 @@
     }
 
     .export-trigger-button__icon {
-      color: var(--brand-purple);
+      color: var(--accent);
     }
   }
 
@@ -194,16 +196,37 @@
       border-color: transparent;
       box-shadow: inset 0 0 0 1px var(--toolbar-tools-item-shadow-color);
     }
+
+    > .tools-item:hover .toolbar-button,
+    > .tools-item:focus-within .toolbar-button,
+    > .dropdown-container:hover .dropdown-select,
+    > .dropdown-container:focus-within .dropdown-select,
+    > .dropdown-container[data-open='true'] .dropdown-select {
+      color: var(--button-brand-hover-fg);
+    }
+
+    > .tools-item:hover .toolbar-button :where(svg),
+    > .tools-item:focus-within .toolbar-button :where(svg),
+    > .dropdown-container:hover :where(.dropdown-select__prefix, .dropdown-select__suffix),
+    > .dropdown-container:focus-within :where(.dropdown-select__prefix, .dropdown-select__suffix),
+    > .dropdown-container[data-open='true']
+      :where(.dropdown-select__prefix, .dropdown-select__suffix) {
+      color: var(--button-brand-hover-fg);
+    }
   }
 }
 
 .tab-button {
-  border-radius: 0;
-  border-right: 1px solid var(--border-subtle);
+  border: 1px solid transparent;
+  border-radius: var(--control-radius);
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 
 .tab-button[data-active='true'] {
-  background: var(--surface-1);
+  border-color: var(--control-border);
+  background: var(--control-surface-active);
+  color: var(--text-primary);
 }
 
 .copy-action-button {
@@ -259,7 +282,7 @@
   padding: 10px 12px;
   box-sizing: border-box;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--panel-radius);
   cursor: pointer;
   user-select: none;
   outline: none;
@@ -292,7 +315,7 @@
   justify-content: center;
   min-height: 42px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--control-radius);
   background: color-mix(in srgb, var(--surface-2) 60%, transparent);
   color: var(--accent);
   font-weight: 600;
@@ -385,7 +408,7 @@
   min-height: 42px;
   height: 42px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--control-radius);
   background: color-mix(in srgb, var(--surface-2) 52%, transparent);
   color: var(--text-secondary);
   box-shadow: none;
@@ -450,11 +473,14 @@
 }
 
 .menu-button__control {
-  border-radius: 0;
+  border-radius: var(--control-radius);
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 
 .menu-button__control[data-active='true'] {
-  background: var(--surface-1);
+  background: var(--control-surface-active);
+  color: var(--text-primary);
 }
 
 .preset-preview-button {
@@ -469,7 +495,7 @@
   padding: 0;
   margin-inline-end: 0;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: var(--control-radius);
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
@@ -496,7 +522,7 @@
   min-height: 18px;
   background-color: var(--surface-1);
   border-color: var(--border-subtle);
-  border-radius: 999px;
+  border-radius: var(--control-radius);
   padding: 0;
 }
 
@@ -525,20 +551,20 @@
   justify-content: center;
   flex: 1 1 auto;
   min-height: 56px;
-  color: var(--brand-purple);
+  color: var(--accent);
 }
 
 .export-download-button {
   justify-content: center;
   flex: 1 1 auto;
   min-height: 56px;
-  color: var(--brand-purple);
+  color: var(--accent);
 }
 
 .export-size-option,
 .export-format-button {
   justify-content: center;
-  color: var(--brand-purple-muted);
+  color: var(--text-secondary);
 }
 
 .export-format-actions .export-format-button,
@@ -549,7 +575,7 @@
 .export-size-option[data-selected='true'],
 .export-format-button:hover,
 .export-format-button:focus-visible {
-  color: var(--brand-purple);
+  color: var(--accent);
 }
 
 .export-format-actions .export-format-button:hover,
@@ -567,24 +593,26 @@
   .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
 .export-format-actions
   .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active {
-  border-color: var(--brand-purple);
+  border-color: var(--control-selected-border);
+  background: var(--control-selected-surface);
   box-shadow: none;
 }
 
 .list-setting-display-button.ant-select {
   width: 100%;
-  min-height: 40px;
+  min-height: var(--control-height);
   user-select: none;
   color: var(--text-primary);
-  background: var(--surface-2);
-  border-radius: 0;
+  background: var(--control-surface);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
   transition: var(--interactive-transition);
 }
 
 .list-setting-display-button.ant-select .ant-select-selector {
   display: flex;
   align-items: center;
-  min-height: 40px;
+  min-height: var(--control-height);
   padding: 8px;
   background: transparent !important;
   border: none !important;
@@ -638,13 +666,15 @@
 
 .list-setting-display-button--open.ant-select,
 .list-setting-display-button.ant-select.ant-select-open {
-  background: var(--surface-3);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+  box-shadow: 0 0 0 2px var(--control-focus-ring);
 }
 
 .list-setting-display-button.ant-select.ant-select-focused {
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--focus-ring);
+  border-color: var(--control-border-hover);
+  box-shadow: 0 0 0 2px var(--control-focus-ring);
 }
 
 .list-setting-item-button {
@@ -653,13 +683,13 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 41px;
+  min-height: var(--menu-item-height);
   padding: 8px 16px;
   box-sizing: border-box;
   user-select: none;
   color: var(--text-primary);
-  background: var(--surface-2);
-  border-radius: 0;
+  background: transparent;
+  border-radius: var(--control-radius);
 }
 
 .theme-item-remove-button {

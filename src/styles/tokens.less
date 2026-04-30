@@ -17,6 +17,27 @@
   --panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
   --overlay-backdrop: rgba(5, 10, 16, 0.82);
   --link-underline: rgba(255, 255, 255, 0.36);
+  --surface-panel: rgba(20, 26, 34, 0.96);
+  --surface-panel-muted: rgba(255, 255, 255, 0.03);
+  --surface-panel-raised: rgba(27, 36, 48, 0.98);
+  --control-height: 40px;
+  --control-height-sm: 32px;
+  --control-height-lg: 44px;
+  --control-radius: 8px;
+  --panel-radius: 10px;
+  --overlay-radius: 12px;
+  --popover-radius: 10px;
+  --control-surface: rgba(255, 255, 255, 0.035);
+  --control-surface-hover: rgba(255, 255, 255, 0.065);
+  --control-surface-active: rgba(87, 181, 249, 0.14);
+  --control-border: var(--border-subtle);
+  --control-border-hover: var(--border-strong);
+  --control-selected-border: rgba(87, 181, 249, 0.52);
+  --control-selected-surface: rgba(87, 181, 249, 0.14);
+  --control-danger-surface: rgba(255, 95, 86, 0.12);
+  --menu-item-height: 40px;
+  --panel-padding: 12px;
+  --panel-gap: 10px;
 
   --toolbar-surface: rgba(20, 26, 34, 0.88);
   --toolbar-surface-raised: rgba(27, 36, 48, 0.96);
@@ -26,28 +47,28 @@
     rgba(9, 13, 19, 0.98)
   );
   --toolbar-shell-border: rgba(255, 255, 255, 0.08);
-  --toolbar-group-surface: rgba(255, 255, 255, 0.026);
-  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.04);
-  --toolbar-control-surface: rgba(255, 255, 255, 0.035);
-  --toolbar-control-surface-hover: rgba(255, 255, 255, 0.065);
-  --toolbar-control-border: rgba(255, 255, 255, 0.56);
-  --toolbar-control-border-strong: rgba(255, 255, 255, 0.82);
-  --toolbar-primary-surface: rgba(193, 152, 251, 0.14);
-  --toolbar-primary-surface-hover: rgba(193, 152, 251, 0.2);
-  --toolbar-primary-border: rgba(193, 152, 251, 0.16);
+  --toolbar-group-surface: var(--surface-panel-muted);
+  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.045);
+  --toolbar-control-surface: var(--control-surface);
+  --toolbar-control-surface-hover: var(--control-surface-hover);
+  --toolbar-control-border: var(--control-border);
+  --toolbar-control-border-strong: var(--control-border-hover);
+  --toolbar-primary-surface: rgba(87, 181, 249, 0.1);
+  --toolbar-primary-surface-hover: rgba(87, 181, 249, 0.14);
+  --toolbar-primary-border: rgba(87, 181, 249, 0.24);
   --toolbar-primary-shadow:
-    inset 0 0 0 1px rgba(193, 152, 251, 0.42), 0 10px 24px rgba(110, 76, 155, 0.14);
+    inset 0 0 0 1px rgba(87, 181, 249, 0.3), 0 10px 24px rgba(5, 10, 16, 0.14);
   --toolbar-divider: rgba(255, 255, 255, 0.1);
   --toolbar-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
   --toolbar-hover: rgba(255, 255, 255, 0.06);
   --toolbar-active: rgba(87, 181, 249, 0.14);
-  --toolbar-leading-surface: rgba(100, 195, 213, 0.06);
-  --toolbar-leading-surface-hover: rgba(149, 235, 251, 0.1);
-  --toolbar-leading-border: rgba(128, 224, 240, 0.28);
+  --toolbar-leading-surface: var(--surface-panel-muted);
+  --toolbar-leading-surface-hover: rgba(255, 255, 255, 0.055);
+  --toolbar-leading-border: var(--control-border);
   --toolbar-menu-surface: rgba(255, 255, 255, 0.03);
   --toolbar-menu-surface-hover: rgba(255, 255, 255, 0.08);
-  --toolbar-menu-border: rgba(255, 255, 255, 0.24);
-  --toolbar-tools-item-shadow-color: #fff;
+  --toolbar-menu-border: var(--control-border-hover);
+  --toolbar-tools-item-shadow-color: var(--control-border);
 
   --brand-primary: #f8e81c;
   --brand-primary-contrast: #121212;
@@ -140,7 +161,7 @@
 
 :root[data-ui-theme='light'] {
   --color-scheme: light;
-  --app-bg: #fff;
+  --app-bg: #f4f7fb;
   --surface-1: #ffffff;
   --surface-2: #edf2f7;
   --surface-3: #dbe5f0;
@@ -156,6 +177,15 @@
   --panel-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
   --overlay-backdrop: rgba(241, 245, 249, 0.84);
   --link-underline: rgba(15, 23, 42, 0.28);
+  --surface-panel: rgba(255, 255, 255, 0.98);
+  --surface-panel-muted: rgba(15, 23, 42, 0.03);
+  --surface-panel-raised: rgba(255, 255, 255, 0.98);
+  --control-surface: rgba(15, 23, 42, 0.035);
+  --control-surface-hover: rgba(15, 23, 42, 0.07);
+  --control-surface-active: rgba(87, 181, 249, 0.12);
+  --control-selected-border: rgba(87, 181, 249, 0.42);
+  --control-selected-surface: rgba(87, 181, 249, 0.12);
+  --control-danger-surface: rgba(255, 95, 86, 0.1);
 
   --toolbar-surface: rgba(255, 255, 255, 0.92);
   --toolbar-surface-raised: rgba(255, 255, 255, 0.98);
@@ -165,26 +195,26 @@
     rgba(244, 247, 251, 0.98)
   );
   --toolbar-shell-border: rgba(15, 23, 42, 0.08);
-  --toolbar-group-surface: rgba(15, 23, 42, 0.03);
-  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.72);
-  --toolbar-control-surface: rgba(15, 23, 42, 0.035);
-  --toolbar-control-surface-hover: rgba(15, 23, 42, 0.07);
-  --toolbar-control-border: rgba(15, 23, 42, 0.18);
-  --toolbar-control-border-strong: rgba(15, 23, 42, 0.32);
-  --toolbar-primary-border: rgba(193, 152, 251, 0.24);
+  --toolbar-group-surface: var(--surface-panel-muted);
+  --toolbar-group-surface-raised: rgba(255, 255, 255, 0.78);
+  --toolbar-control-surface: var(--control-surface);
+  --toolbar-control-surface-hover: var(--control-surface-hover);
+  --toolbar-control-border: var(--control-border);
+  --toolbar-control-border-strong: var(--control-border-hover);
+  --toolbar-primary-border: rgba(87, 181, 249, 0.22);
   --toolbar-primary-shadow:
-    inset 0 0 0 1px rgba(193, 152, 251, 0.32), 0 8px 18px rgba(110, 76, 155, 0.12);
+    inset 0 0 0 1px rgba(87, 181, 249, 0.22), 0 8px 18px rgba(15, 23, 42, 0.1);
   --toolbar-divider: rgba(15, 23, 42, 0.12);
   --toolbar-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
   --toolbar-hover: rgba(15, 23, 42, 0.06);
   --toolbar-active: rgba(87, 181, 249, 0.12);
-  --toolbar-leading-surface: rgba(212, 248, 252, 0.08);
-  --toolbar-leading-surface-hover: rgba(235, 255, 255, 0.2);
-  --toolbar-leading-border: rgba(103, 192, 206, 0.34);
+  --toolbar-leading-surface: var(--surface-panel-muted);
+  --toolbar-leading-surface-hover: rgba(15, 23, 42, 0.045);
+  --toolbar-leading-border: var(--control-border);
   --toolbar-menu-surface: rgba(15, 23, 42, 0.04);
   --toolbar-menu-surface-hover: rgba(15, 23, 42, 0.08);
-  --toolbar-menu-border: rgba(15, 23, 42, 0.14);
-  --toolbar-tools-item-shadow-color: #999;
+  --toolbar-menu-border: var(--control-border-hover);
+  --toolbar-tools-item-shadow-color: var(--control-border);
 
   --button-brand-fg: #4f3a71;
   --button-brand-hover-fg: #3f2b62;

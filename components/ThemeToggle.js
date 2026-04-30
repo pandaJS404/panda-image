@@ -18,12 +18,20 @@ export default function ThemeToggle() {
   return (
     <div className="theme-toggle-shell" data-theme={uiTheme}>
       <span className="theme-toggle__label">{currentThemeLabel}</span>
-      <Switch
-        checked={isDark}
-        checkedChildren={<MoonOutlined />}
-        unCheckedChildren={<SunOutlined />}
-        onChange={toggleUiTheme}
-      />
+      <span
+        ref={switchShellRef}
+        className="theme-toggle__switch-shell"
+        data-checked={isDark || undefined}
+      >
+        <Switch
+          checked={isDark}
+          checkedChildren={<MoonOutlined />}
+          className="theme-toggle"
+          data-cy="theme-toggle"
+          unCheckedChildren={<SunOutlined />}
+          onChange={toggleUiTheme}
+        />
+      </span>
     </div>
   )
 }

@@ -42,6 +42,27 @@ function Themes({ themes, theme, highlights, update, create, remove, updateHighl
     }
   }, [themes, isCreateOpen])
 
+  React.useEffect(() => {
+    if (!isCreateOpen || typeof document === 'undefined') {
+      return undefined
+    }
+
+    const handleMaskClick = event => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('.theme-create-modal .ant-modal-mask')
+      ) {
+        setCreateOpen(false)
+      }
+    }
+
+    document.addEventListener('click', handleMaskClick, true)
+
+    return () => {
+      document.removeEventListener('click', handleMaskClick, true)
+    }
+  }, [isCreateOpen])
+
   const mergedHighlights = { ...theme.highlights, ...highlights }
   const dropdownList = [{ id: 'create', name: '新建主题 +' }, ...themes]
 
@@ -82,6 +103,8 @@ function Themes({ themes, theme, highlights, update, create, remove, updateHighl
         footer={null}
         centered
         destroyOnHidden
+        maskTransitionName=""
+        transitionName=""
         width="calc(100vw - 24px)"
         rootClassName="theme-create-modal"
         onCancel={() => setCreateOpen(false)}

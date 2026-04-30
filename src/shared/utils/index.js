@@ -203,7 +203,7 @@ function normalizeExportDefaultObject(code) {
     return code
   }
 
-  const [, prefix, separator, body] = match
+  const [, prefix, , body] = match
   const firstMeaningfulLine = body
     .split(/\r?\n/)
     .map(line => line.trim())
@@ -222,7 +222,9 @@ function normalizeExportDefaultObject(code) {
     return code
   }
 
-  return `${prefix} {${separator}${body.trimEnd()}\n}`
+  const normalizedBody = body.trim().replace(/\n\s*\n+/gu, '\n')
+
+  return `${prefix} {\n${normalizedBody}\n}`
 }
 
 async function loadPrettierRuntime() {
@@ -259,18 +261,20 @@ export const formatCode = async (code, language) => {
   const { prettier, plugins } = await loadPrettierRuntime()
   const parserCandidates = getParserCandidates(language)
   const normalizedCode = normalizeExportDefaultObject(code)
-  const codeCandidates = normalizedCode === code ? [code] : [code, normalizedCode]
+  const codeCandidates = normalizedCode === code ? [code] : [normalizedCode, code]
   let lastError
 
   for (const currentCode of codeCandidates) {
     for (const parser of parserCandidates) {
       try {
-        return await prettier.format(currentCode, {
+        const formattedCode = await prettier.format(currentCode, {
           parser,
           plugins: (PRETTIER_PARSER_PLUGINS[parser] || []).map(pluginName => plugins[pluginName]),
           semi: false,
           singleQuote: true,
         })
+
+        return formattedCode.trimEnd()
       } catch (error) {
         lastError = error
       }

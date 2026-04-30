@@ -1,5 +1,6 @@
 .page-header {
   width: 100%;
+  margin-bottom: 1.25rem;
 
   @media (max-width: 768px) {
     margin-bottom: var(--x3);
@@ -10,9 +11,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(100%, 90vw);
+  width: min(100%, 1120px);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 16px;
 }
 
 .page-header-bar {
@@ -20,13 +21,15 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
-  padding: 12px 0;
+  padding: 14px 0 10px;
 
   a {
-    height: 64px;
-    max-width: min(96vw, 320px);
+    display: inline-flex;
+    align-items: center;
+    height: 54px;
+    max-width: min(88vw, 300px);
     color: var(--text-primary);
   }
 
@@ -38,12 +41,19 @@
 }
 
 .page-header-hero {
+  flex: 1 1 360px;
   max-width: 42rem;
+  margin: 0;
   text-align: center;
   color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
 
   @media (max-width: 768px) {
-    font-size: 13px;
+    flex-basis: 100%;
+    order: 3;
+    font-size: 12px;
   }
 }
 
@@ -51,16 +61,23 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
+  gap: 8px;
+  min-height: var(--control-height);
   min-width: max-content;
-  padding: 6px 10px 6px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--theme-toggle-border);
-  border-radius: 999px;
+  border-radius: var(--control-radius);
   background: var(--theme-toggle-surface);
-  box-shadow: var(--theme-toggle-shadow);
+  box-shadow: none;
   color: var(--theme-toggle-label);
   transition: var(--interactive-transition);
+}
+
+.theme-toggle-shell:hover,
+.theme-toggle-shell:focus-within {
+  border-color: var(--control-border-hover);
+  background: var(--theme-toggle-surface-hover);
+  box-shadow: 0 0 0 2px var(--control-focus-ring);
 }
 
 .theme-toggle__switch-shell {
@@ -110,7 +127,7 @@
 .theme-toggle__label {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   line-height: 1;
 }
 
@@ -163,21 +180,21 @@
 }
 
 .toolbar {
-  --ant-border-radius: 6px;
-  --toolbar-control-height: 42px;
-  --toolbar-shell-gap: 16px;
+  --ant-border-radius: var(--control-radius);
+  --toolbar-control-height: var(--control-height);
+  --toolbar-shell-gap: 12px;
   --toolbar-group-padding: 6px;
-  --toolbar-group-radius: 6px;
-  --toolbar-leading-gap: 10px;
-  --toolbar-tools-gap: 20px;
+  --toolbar-group-radius: var(--control-radius);
+  --toolbar-leading-gap: 8px;
+  --toolbar-tools-gap: 10px;
   position: relative;
   z-index: 10;
   display: inline-flex;
   align-self: center;
   width: auto;
   max-width: min(100%, 90vw);
-  margin-bottom: 1rem;
-  font-size: 14px;
+  margin-bottom: 0.875rem;
+  font-size: 13px;
 
   @media (max-width: 920px) {
     display: flex;
@@ -187,7 +204,7 @@
     .toolbar-cluster {
       flex-direction: column;
       align-items: stretch;
-      gap: 12px;
+      gap: var(--panel-gap);
     }
 
     .toolbar-cluster--side {
@@ -226,7 +243,7 @@
 .toolbar-cluster {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--toolbar-shell-gap);
 
   &.toolbar-cluster--main {
     flex: 0 1 auto;
@@ -259,9 +276,7 @@
     flex: 0 0 auto;
     align-items: center;
     gap: var(--toolbar-leading-gap);
-    background:
-      linear-gradient(180deg, var(--toolbar-leading-surface-hover), var(--toolbar-leading-surface)),
-      var(--toolbar-group-surface-raised);
+    background: var(--toolbar-group-surface-raised);
     box-shadow: inset 0 0 0 1px var(--toolbar-leading-border);
 
     > * {
@@ -293,9 +308,7 @@
   }
 
   &.toolbar-group--export {
-    background:
-      linear-gradient(180deg, var(--toolbar-primary-surface), var(--toolbar-group-surface-raised)),
-      var(--toolbar-group-surface-raised);
+    background: var(--toolbar-primary-surface);
   }
 
   &.toolbar-group--primary {
@@ -327,7 +340,7 @@
     min-height: var(--toolbar-control-height);
     padding: 4px;
     background: var(--toolbar-group-surface);
-    border-radius: 6px;
+    border-radius: var(--toolbar-group-radius);
     box-shadow: inset 0 0 0 1px var(--toolbar-shell-border);
   }
 }

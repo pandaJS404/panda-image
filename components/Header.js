@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react'
 
-import ThemeToggle from "./ThemeToggle";
-import SvgAsset from "./svg/SvgAsset";
-import LogoAsset from "./svg/assets/logo.svg?react";
+import ThemeToggle from './ThemeToggle'
+import SvgAsset from './svg/SvgAsset'
+import LogoAsset from './svg/assets/logo.svg?react'
 
 const Header = ({ enableHeroText }) => (
   <header role="banner" className="page-header mb4">
@@ -12,7 +12,7 @@ const Header = ({ enableHeroText }) => (
           <SvgAsset component={LogoAsset} />
         </a>
         {enableHeroText ? (
-          <h2 className="page-header-hero ">
+          <h2 className="page-header-hero">
             一键把源码生成精美图片。
             <br />
             直接输入代码，或将文件拖进编辑区开始创作。
@@ -22,6 +22,6 @@ const Header = ({ enableHeroText }) => (
       </div>
     </div>
   </header>
-);
+)
 
-export default Header;
+export default Header

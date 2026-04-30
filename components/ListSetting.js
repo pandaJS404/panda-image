@@ -102,6 +102,8 @@ function ListSetting({
         placement="bottomRight"
         popupMatchSelectWidth
         prefix={<span className="label">{title}</span>}
+        transitionName=""
+        virtual={false}
         className={getClassName(
           'list-setting-display-button',
           open && 'list-setting-display-button--open',

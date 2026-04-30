@@ -1256,8 +1256,9 @@ export const LANGUAGE_MODE_HASH = toHash(LANGUAGES, 'mode')
 export const LANGUAGE_NAME_HASH = toHash(LANGUAGES, 'short')
 
 export const DEFAULT_LANGUAGE = 'auto'
-export const DEFAULT_THEME = THEMES_HASH.seti
+export const DEFAULT_THEME = THEMES_HASH['panda-Gradation']
 export const DEFAULT_BG_COLOR = 'rgba(171, 184, 195, 1)'
+export const DEFAULT_BACKGROUND_IMAGE_SOURCE = 'builtin:panda-bg-01'
 export const DEFAULT_EXPORT_SIZE = EXPORT_SIZES_HASH['2x']
 export const DEFAULT_FONT_FAMILY = 'Google Sans Code'
 
@@ -1297,9 +1298,9 @@ export const DEFAULT_SETTINGS = {
   paddingVertical: '56px',
   paddingHorizontal: '56px',
   backgroundImage: null,
-  backgroundImageSource: null,
+  backgroundImageSource: DEFAULT_BACKGROUND_IMAGE_SOURCE,
   backgroundImageSelection: null,
-  backgroundMode: 'color',
+  backgroundMode: 'image',
   backgroundColor: DEFAULT_BG_COLOR,
   backgroundGradient: null,
   backgroundGradientBlendMode: null,

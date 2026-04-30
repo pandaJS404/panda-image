@@ -852,6 +852,8 @@ function Settings(props) {
         footer={null}
         centered
         destroyOnHidden
+        maskTransitionName=""
+        transitionName=""
         width="calc(100vw - 24px)"
         rootClassName="settings-modal"
         onCancel={closeModal}

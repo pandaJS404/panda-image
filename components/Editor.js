@@ -211,10 +211,28 @@ class Editor extends React.Component {
     const storedWatermarkFontUrl = getWatermarkFontAsset(localStorage)
 
     const newState = {
+      ...DEFAULT_SETTINGS,
       ...storedSettings,
       ...queryState,
       loading: false,
     }
+    const shouldUseQueryStaticBackground =
+      queryState.backgroundMode !== 'image' &&
+      queryState.backgroundImageSource == null &&
+      (queryState.backgroundColor != null || queryState.backgroundGradient != null)
+
+    if (shouldUseQueryStaticBackground) {
+      newState.backgroundMode = 'color'
+      newState.backgroundImage = null
+      newState.backgroundImageSource = null
+      newState.backgroundImageSelection = null
+
+      if (queryState.backgroundColor != null && queryState.backgroundGradient == null) {
+        newState.backgroundGradient = null
+        newState.backgroundGradientBlendMode = null
+      }
+    }
+
     const hasQueryBackgroundImageSource = queryState.backgroundImageSource != null
     const hasRequestedBackgroundImageSource = newState.backgroundImageSource != null
     const canRestoreMatchingBackgroundAsset =
@@ -253,7 +271,7 @@ class Editor extends React.Component {
       newState.backgroundImageSelection = null
     }
 
-    normalizeRestoredBackgroundState(newState)
+    Object.assign(newState, normalizeRestoredBackgroundState(newState))
 
     if (newState.language) {
       newState.language = unescapeHtml(newState.language)
