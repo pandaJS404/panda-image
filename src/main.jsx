@@ -7,6 +7,7 @@ import App from './App.jsx'
 import ErrorBoundary from '../components/ErrorBoundary.js'
 import { ANTD_THEME_COMPONENTS } from './theme.js'
 import { UiThemeProvider, useUiTheme } from './ui-theme.js'
+import 'normalize.css/normalize.css'
 import './styles/app.less'
 
 function AppProviders() {
