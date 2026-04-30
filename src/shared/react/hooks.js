@@ -216,16 +216,34 @@ export const useKeyboardListener = (shortcut, handler) => {
 }
 
 export const useLocalStorage = key => {
-  const [value, setValue] = React.useState(null)
-  const [loaded, setLoaded] = React.useState(false)
+  const [value, setValue] = React.useState(() => {
+    if (typeof window === 'undefined') {
+      return null
+    }
+
+    try {
+      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+        return parseJSON(localStorage.getItem(key))
+      }
+    } catch {
+      // localStorage unavailable (e.g. private browsing mode)
+    }
+
+    return null
+  })
+  const [loaded, setLoaded] = React.useState(typeof window !== 'undefined')
 
   React.useEffect(() => {
     if (typeof window === 'undefined') {
       return
     }
 
-    if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-      setValue(parseJSON(localStorage.getItem(key)))
+    try {
+      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+        setValue(parseJSON(localStorage.getItem(key)))
+      }
+    } catch {
+      // ignore storage read failures
     }
 
     setLoaded(true)
@@ -251,12 +269,16 @@ export const useLocalStorage = key => {
       return
     }
 
-    if (value == null) {
-      localStorage.removeItem(key)
-      return
-    }
+    try {
+      if (value == null) {
+        localStorage.removeItem(key)
+        return
+      }
 
-    localStorage.setItem(key, stringify(value))
+      localStorage.setItem(key, stringify(value))
+    } catch {
+      // ignore storage write failures (e.g. quota exceeded)
+    }
   }, [key, loaded, value])
 
   return [value, setValue]

@@ -157,14 +157,18 @@ export const serializeState = state => {
 }
 
 export const deserializeState = serializedState => {
-  let stateString
-  if (typeof window !== 'undefined') {
-    stateString = atob(serializedState)
-  } else {
-    stateString = Buffer.from(serializedState, 'base64').toString()
-  }
+  try {
+    let stateString
+    if (typeof window !== 'undefined') {
+      stateString = atob(serializedState)
+    } else {
+      stateString = Buffer.from(serializedState, 'base64').toString()
+    }
 
-  return JSON.parse(decodeURIComponent(stateString))
+    return JSON.parse(decodeURIComponent(stateString))
+  } catch (e) {
+    return {}
+  }
 }
 
 const getQueryStringObject = query => {
@@ -208,8 +212,6 @@ export const getRouteState = router => {
 
 export const updateRouteState = (router, state) => {
   const mappedState = mapper.map(writeMappings, state)
-  // calls `encodeURIComponent` on each key internally
-  // const query = qs.stringify(mappedState)
 
   router.replace(
     {
@@ -219,6 +221,5 @@ export const updateRouteState = (router, state) => {
       pathname: router.pathname,
       query: mappedState,
     },
-    { shallow: true, scroll: false },
   )
 }

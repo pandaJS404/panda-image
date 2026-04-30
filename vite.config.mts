@@ -15,6 +15,7 @@ const jsxSourcePattern = /(?:^|[\\/])(components|src)[\\/].+\.[jt]sx?$/u
 const svgReactPattern = /\.svg\?react$/u
 const basePath = process.env.VITE_BASE_PATH || '/'
 const isDevToolsEnabled = process.env.VITE_DEVTOOLS === 'true'
+const normalizeModuleId = (id: string) => id.replace(/\\/gu, '/')
 
 const normalizeApiOrigin = (value: string) => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
 const apiProxyTarget = normalizeApiOrigin(
@@ -34,6 +35,58 @@ const svgAttrMap = {
 
 const toSvgPropName = (name: string) =>
   svgAttrMap[name.toLowerCase() as keyof typeof svgAttrMap] || name
+
+const getBuildChunkName = (id: string) => {
+  const moduleId = normalizeModuleId(id)
+
+  if (!moduleId.includes('/node_modules/')) {
+    return undefined
+  }
+
+  // Keep Prettier's on-demand parser/runtime chunks independent so
+  // formatting-only code doesn't get folded back into the main app bundle.
+  if (moduleId.includes('/prettier/')) {
+    return undefined
+  }
+
+  if (
+    moduleId.includes('/react/') ||
+    moduleId.includes('/react-dom/') ||
+    moduleId.includes('/scheduler/')
+  ) {
+    return 'framework'
+  }
+
+  if (
+    moduleId.includes('/antd/') ||
+    moduleId.includes('/@ant-design/') ||
+    moduleId.includes('/rc-')
+  ) {
+    return 'antd'
+  }
+
+  if (
+    moduleId.includes('/codemirror/') ||
+    moduleId.includes('/react-codemirror2/') ||
+    moduleId.includes('/cm-show-invisibles/')
+  ) {
+    return 'editor-core'
+  }
+
+  if (
+    moduleId.includes('/@zumer/snapdom/') ||
+    moduleId.includes('/react-image-crop/') ||
+    moduleId.includes('/react-color/')
+  ) {
+    return 'media-tools'
+  }
+
+  if (moduleId.includes('/graphql/') || moduleId.includes('/codemirror-graphql/')) {
+    return 'graphql-tools'
+  }
+
+  return 'vendor'
+}
 
 const parseSvgRoot = (svgMarkup: string) => {
   const match = svgMarkup.match(svgRootPattern)
@@ -155,13 +208,29 @@ export default defineConfig({
     : undefined,
   fmt: {
     arrowParens: 'avoid',
-    ignorePatterns: ['dist/**', 'docs/**', 'node_modules/**', 'public/**'],
+    ignorePatterns: [
+      '.arts/**',
+      'dist/**',
+      'docs/**',
+      'node_modules/**',
+      'public/**',
+      'review.md',
+      'vite.config.mts',
+    ],
     printWidth: 100,
     semi: false,
     singleQuote: true,
   },
   lint: {
-    ignorePatterns: ['.next/**', 'dist/**', 'docs/**', 'node_modules/**', 'public/**'],
+    ignorePatterns: [
+      '.arts/**',
+      '.next/**',
+      'dist/**',
+      'docs/**',
+      'node_modules/**',
+      'public/**',
+      'review.md',
+    ],
     options: {
       typeAware: true,
       typeCheck: true,
@@ -172,7 +241,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     rolldownOptions: {
-      // Dependency scanning runs before our transform plugin, so teach Rolldown to parse app .js as JSX here too.
+      // Dependency scanning runs before our transform plugin,
+      // so teach Rolldown to parse app .js as JSX here too.
       moduleTypes: {
         '.js': 'jsx',
       },
@@ -196,11 +266,20 @@ export default defineConfig({
       : undefined,
   },
   build: {
-    rolldownOptions: isDevToolsEnabled
-      ? {
-          devtools: {},
-        }
-      : undefined,
+    // This app intentionally ships a large, lazily loaded TypeScript formatter parser.
+    // Raise the warning threshold after splitting synchronous app/vendor code so
+    // only genuinely unexpected regressions bubble up.
+    chunkSizeWarningLimit: 1000,
+    rolldownOptions: {
+      ...(isDevToolsEnabled
+        ? {
+            devtools: {},
+          }
+        : {}),
+      output: {
+        manualChunks: getBuildChunkName,
+      },
+    },
   },
   preview: {
     host: '127.0.0.1',

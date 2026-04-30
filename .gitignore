@@ -5,6 +5,8 @@ dist
 out
 cypress/videos
 cypress/screenshots
+.arts
+.codeartsdoer
 .idea
 .DS_Store
 packaged

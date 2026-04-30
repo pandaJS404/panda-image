@@ -71,7 +71,21 @@ export const unescapeHtml = s => {
   }
 }
 
-export const getSettings = morph.compose(parse, escapeHtml, morph.get(SETTINGS_KEY))
+export const getSettings = storage => {
+  const rawSettings = morph.get(SETTINGS_KEY, storage)
+
+  if (typeof rawSettings !== 'string') {
+    return parse(rawSettings)
+  }
+
+  const parsedSettings = parse(rawSettings)
+
+  if (parsedSettings !== undefined) {
+    return parsedSettings
+  }
+
+  return parse(unescapeHtml(rawSettings))
+}
 
 export const getPresets = morph.compose(parse, morph.get(PRESETS_KEY))
 
@@ -110,16 +124,18 @@ export const saveBackgroundImageAsset = value => {
 }
 
 export const fileToDataURL = blob =>
-  new Promise(res => {
+  new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = e => res(e.target.result)
+    reader.onload = e => resolve(e.target.result)
+    reader.onerror = () => reject(new Error('FileReader failed: unable to read file as DataURL'))
     reader.readAsDataURL(blob)
   })
 
 export const fileToJSON = blob =>
-  new Promise(res => {
+  new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = e => res(parse(e.target.result))
+    reader.onload = e => resolve(parse(e.target.result))
+    reader.onerror = () => reject(new Error('FileReader failed: unable to read file as JSON'))
     reader.readAsText(blob)
   })
 
@@ -266,4 +282,7 @@ export const formatCode = async (code, language) => {
 
 export const stringifyColor = obj => `rgba(${obj.rgb.r},${obj.rgb.g},${obj.rgb.b},${obj.rgb.a})`
 
-export const generateId = () => Math.random().toString(36).slice(2)
+export const generateId = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2)

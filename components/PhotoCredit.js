@@ -48,7 +48,13 @@ export default function PhotoCredit({ photographer }) {
   return (
     <div className="photo-credit">
       {'图片来源：'}{' '}
-      {href && photographer.name ? <a href={href}>{creditLabel}</a> : <span>{creditLabel}</span>}
+      {href && photographer.name ? (
+        <a href={href} rel="noopener noreferrer">
+          {creditLabel}
+        </a>
+      ) : (
+        <span>{creditLabel}</span>
+      )}
     </div>
   )
 }

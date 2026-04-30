@@ -42,16 +42,28 @@ const normalizeRandomImage = image => {
   }
 }
 
+const ensureHttps = url => {
+  try {
+    const u = new URL(url)
+    if (u.protocol === 'http:') {
+      u.protocol = 'https:'
+    }
+    return u.href
+  } catch {
+    return url.replace(/^http:/, 'https:')
+  }
+}
+
 const downloadThumbnailImage = img => {
   if (!img?.url) {
     return Promise.reject(new Error('IMAGE_URL_REQUIRED'))
   }
 
   return client
-    .get(img.url.replace('http://', 'https://'), { responseType: 'blob' })
+    .get(ensureHttps(img.url), { responseType: 'blob' })
     .then(res => res.data)
     .then(fileToDataURL)
-    .then(dataURL => Object.assign(img, { dataURL }))
+    .then(dataURL => ({ ...img, dataURL }))
 }
 
 const randomImage = {

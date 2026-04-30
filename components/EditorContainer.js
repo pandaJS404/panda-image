@@ -67,7 +67,7 @@ function EditorContainer(props) {
     saveThemes(themes.filter(({ custom }) => custom))
   }, [themes])
 
-  function onReset() {
+  const onReset = React.useCallback(() => {
     clearSettings()
     clearBackgroundImageAsset()
     backgroundAssetRef.current = null
@@ -75,39 +75,42 @@ function EditorContainer(props) {
     if (window.location.search) {
       window.history.replaceState(null, '', window.location.pathname)
     }
-  }
+  }, [])
 
-  function onEditorUpdate(state) {
-    updateRouteState(props.router, state)
-    saveSettings(state)
+  const onEditorUpdate = React.useCallback(
+    state => {
+      updateRouteState(props.router, state)
+      saveSettings(state)
 
-    const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
+      const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
-    if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
-      if (nextBackgroundAsset) {
-        const didPersistBackgroundAsset = saveBackgroundImageAsset(nextBackgroundAsset)
+      if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
+        if (nextBackgroundAsset) {
+          const didPersistBackgroundAsset = saveBackgroundImageAsset(nextBackgroundAsset)
 
-        if (!didPersistBackgroundAsset) {
+          if (!didPersistBackgroundAsset) {
+            clearBackgroundImageAsset()
+            backgroundAssetRef.current = nextBackgroundAsset
+            return
+          }
+        } else {
           clearBackgroundImageAsset()
-          backgroundAssetRef.current = nextBackgroundAsset
-          return
         }
-      } else {
-        clearBackgroundImageAsset()
+
+        backgroundAssetRef.current = nextBackgroundAsset
       }
+    },
+    [props.router],
+  )
 
-      backgroundAssetRef.current = nextBackgroundAsset
-    }
-  }
-
-  function onWatermarkFontAssetChange(nextValue) {
+  const onWatermarkFontAssetChange = React.useCallback(nextValue => {
     if (nextValue == null) {
       clearWatermarkFontAsset()
       return
     }
 
     saveWatermarkFontAsset(nextValue)
-  }
+  }, [])
 
   return (
     <Editor

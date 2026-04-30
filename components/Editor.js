@@ -93,34 +93,37 @@ function hasConfiguredBackgroundImage(config = {}) {
 }
 
 function clearImageBackgroundFields(config) {
-  config.backgroundImage = null
-  config.backgroundImageSource = null
-  config.backgroundImageSelection = null
+  return {
+    ...config,
+    backgroundImage: null,
+    backgroundImageSource: null,
+    backgroundImageSelection: null,
+  }
 }
 
 function clearGradientBackgroundFields(config) {
-  config.backgroundGradient = null
-  config.backgroundGradientBlendMode = null
+  return {
+    ...config,
+    backgroundGradient: null,
+    backgroundGradientBlendMode: null,
+  }
 }
 
 function normalizeRestoredBackgroundState(config = {}) {
   if (!config.backgroundGradient) {
-    config.backgroundGradientBlendMode = null
+    config = { ...config, backgroundGradientBlendMode: null }
   }
 
   if (config.backgroundMode === 'image') {
     if (hasConfiguredBackgroundImage(config)) {
-      clearGradientBackgroundFields(config)
-      return config
+      return clearGradientBackgroundFields(config)
     }
 
-    clearImageBackgroundFields(config)
-    config.backgroundMode = 'color'
-    return config
+    config = clearImageBackgroundFields(config)
+    return { ...config, backgroundMode: 'color' }
   }
 
-  clearImageBackgroundFields(config)
-  return config
+  return clearImageBackgroundFields(config)
 }
 
 function resolveBackgroundImageValue(source) {
@@ -190,7 +193,18 @@ class Editor extends React.Component {
 
   pandaNode = React.createRef()
 
-  async componentDidMount() {
+  componentWillUnmount() {
+    this.onUpdate.cancel()
+  }
+
+  componentDidMount() {
+    this._initializeState().catch(error => {
+      console.error('[Editor] componentDidMount error:', error)
+      this.setState({ loading: false })
+    })
+  }
+
+  async _initializeState() {
     const { queryState } = getRouteState(this.props.router)
     const storedSettings = getSettings(localStorage) || {}
     const storedBackgroundImageAsset = getBackgroundImageAsset(localStorage)
@@ -474,15 +488,7 @@ class Editor extends React.Component {
       backgroundColor,
     }
 
-    if (format === 'svg') {
-      return capture.toBlob(exportOptions)
-    }
-
-    if (format === 'blob') {
-      return capture.toBlob(exportOptions)
-    }
-
-    if (format === 'jpg' || format === 'jpeg' || format === 'webp') {
+    if (format !== 'png') {
       return capture.toBlob(exportOptions)
     }
 
@@ -528,12 +534,16 @@ class Editor extends React.Component {
       link.click()
       link.remove()
       if (revoke) {
-        window.setTimeout(() => revoke(), 30000)
+        window.setTimeout(() => revoke(), 3000)
       }
     })
   }
 
   copyClipboardImage = async ({ format, exportSize = 2 }) => {
+    if (!navigator.clipboard?.write || typeof window.ClipboardItem === 'undefined') {
+      throw new Error('CLIPBOARD_API_NOT_SUPPORTED')
+    }
+
     const blob = await this.getPandaImage({ format, exportSize })
 
     await navigator.clipboard.write([

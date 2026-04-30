@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createPortal } from 'react-dom'
 import { Spin } from 'antd'
 
 import WindowControls from './WindowControls'
@@ -61,7 +61,13 @@ class Panda extends React.PureComponent {
     onGutterClick: noop,
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    this._loadCodeMirror().catch(error => {
+      console.error('[Panda] componentDidMount error:', error)
+    })
+  }
+
+  async _loadCodeMirror() {
     this.codeMirrorReady = true
     const resolvedMode = this.getResolvedLanguageMode()
 
@@ -436,7 +442,7 @@ class Panda extends React.PureComponent {
           )}
         </div>
         {selectionNode &&
-          ReactDOM.createPortal(
+          createPortal(
             <React.Suspense fallback={null}>
               <SelectionEditor onChange={this.onSelectionChange} />
             </React.Suspense>,

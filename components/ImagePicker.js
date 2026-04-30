@@ -55,6 +55,21 @@ const INITIAL_STATE = {
   activeBuiltInGroups: [],
 }
 
+const URL_IMPORT_NETWORK_ERROR_MESSAGE =
+  '图片抓取失败，可能是链接源限制导致。你可以改用本地上传，或换一张图片重试。'
+const URL_IMPORT_FALLBACK_ERROR_MESSAGE = '图片抓取失败，请检查链接是否有效后重试。'
+
+const isUrlImportNetworkError = error => {
+  const message = error?.message || ''
+  const errorCode = error?.response?.data?.error || ''
+
+  return (
+    message.indexOf('Network Error') > -1 ||
+    errorCode === 'CORS_ORIGIN_NOT_ALLOWED' ||
+    errorCode === 'RANDOM_IMAGE_DOWNLOAD_FAILED'
+  )
+}
+
 const getBuiltInImageGroup = source =>
   BUILT_IN_BACKGROUND_IMAGE_GROUPS.find(group => group.images.some(image => image.id === source)) ||
   null
@@ -203,22 +218,26 @@ export default class ImagePicker extends React.Component {
     event.preventDefault()
     const url = event.target[0].value
 
+    this.setState({ error: null })
+
     return this.context
       .downloadThumbnailImage({ url })
       .then(result => result.dataURL)
-      .then(dataURL =>
-        this.handleImageChange({
+      .then(dataURL => {
+        this.setState({ error: null })
+
+        return this.handleImageChange({
           source: url,
           image: dataURL,
           dataURL,
-        }),
-      )
+        })
+      })
       .catch(error => {
-        if (error.message.indexOf('Network Error') > -1) {
-          this.setState({
-            error: '图片抓取失败，可能是链接源限制导致。你可以改用本地上传，或换一张图片重试。',
-          })
-        }
+        this.setState({
+          error: isUrlImportNetworkError(error)
+            ? URL_IMPORT_NETWORK_ERROR_MESSAGE
+            : URL_IMPORT_FALLBACK_ERROR_MESSAGE,
+        })
       })
   }
 
@@ -365,7 +384,6 @@ export default class ImagePicker extends React.Component {
               hoverable
               role="button"
               tabIndex={0}
-              aria-pressed={this.props.imageSource === image.id}
               className="image-picker-builtin-card"
               data-cy="background-builtin-item"
               data-category={group.id}

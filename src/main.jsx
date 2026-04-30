@@ -4,7 +4,8 @@ import { App as AntdApp, ConfigProvider, theme as antdTheme } from 'antd'
 import { HelmetProvider } from 'react-helmet-async'
 
 import App from './App.jsx'
-import { ANTD_THEME_COMPONENTS, getAntdThemeTokens } from './theme.js'
+import ErrorBoundary from '../components/ErrorBoundary.js'
+import { ANTD_THEME_COMPONENTS } from './theme.js'
 import { UiThemeProvider, useUiTheme } from './ui-theme.js'
 import './styles/app.less'
 
@@ -30,7 +31,9 @@ function AppProviders() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <UiThemeProvider>
-    <AppProviders />
-  </UiThemeProvider>,
+  <ErrorBoundary>
+    <UiThemeProvider>
+      <AppProviders />
+    </UiThemeProvider>
+  </ErrorBoundary>,
 )

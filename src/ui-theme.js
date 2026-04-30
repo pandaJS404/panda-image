@@ -80,19 +80,15 @@ export function UiThemeProvider({ children }) {
   const toggleUiTheme = () =>
     setUiTheme(currentTheme => (currentTheme === 'dark' ? 'light' : 'dark'))
 
-  return (
-    <UiThemeContext.Provider
-      value={{
-        uiTheme,
-        isDark: uiTheme === 'dark',
-        colors: getAppThemeColors(uiTheme),
-        setUiTheme,
-        toggleUiTheme,
-      }}
-    >
-      {children}
-    </UiThemeContext.Provider>
+  const isDark = uiTheme === 'dark'
+  const colors = React.useMemo(() => getAppThemeColors(uiTheme), [uiTheme])
+
+  const contextValue = React.useMemo(
+    () => ({ uiTheme, isDark, colors, setUiTheme, toggleUiTheme }),
+    [uiTheme, isDark, colors, setUiTheme, toggleUiTheme],
   )
+
+  return <UiThemeContext.Provider value={contextValue}>{children}</UiThemeContext.Provider>
 }
 
 export function useUiTheme() {

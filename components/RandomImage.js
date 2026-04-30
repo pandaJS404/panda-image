@@ -1,13 +1,16 @@
 import React from 'react'
 import { Alert, Spin } from 'antd'
 import { useAsyncCallback } from '../src/shared/react/hooks'
+import LRUCache from '../src/shared/utils/LRUCache'
 
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import { useAPI } from './ApiContext'
 import PhotoCredit from './PhotoCredit'
 
+const MAX_CACHE_SIZE = 50
+
 function RandomImage(props) {
-  const cacheRef = React.useRef([])
+  const cacheRef = React.useRef(new LRUCache(MAX_CACHE_SIZE))
   const [cacheIndex, updateIndex] = React.useState(0)
   const api = useAPI()
   const isAvailable = api?.randomImage?.isAvailable !== false
@@ -15,7 +18,7 @@ function RandomImage(props) {
   const swallowError = React.useCallback(() => {}, [])
 
   const [selectImage, { loading: selecting }] = useAsyncCallback(async () => {
-    const image = cacheRef.current[cacheIndex]
+    const image = cacheRef.current.get(cacheIndex)
 
     if (!image) {
       return null
@@ -40,7 +43,7 @@ function RandomImage(props) {
   )
 
   const needsFetch =
-    isAvailable && !error && !updating && (!imgs || cacheIndex > cacheRef.current.length - 2)
+    isAvailable && !error && !updating && (!imgs || cacheIndex > cacheRef.current.size - 2)
 
   React.useEffect(() => {
     if (needsFetch) {
@@ -50,14 +53,15 @@ function RandomImage(props) {
 
   React.useEffect(() => {
     if (imgs) {
-      cacheRef.current.push(...imgs)
+      for (const img of imgs) {
+        cacheRef.current.set(cacheRef.current.size, img)
+      }
     }
   }, [imgs])
 
   const loading = updating || selecting
 
-  const cache = cacheRef.current
-  const currentImage = cache[cacheIndex] || null
+  const currentImage = cacheRef.current.get(cacheIndex) || null
   const photographer = currentImage && currentImage.photographer
   const bgImage = currentImage && (currentImage.dataURL || currentImage.url)
   const canSelect = Boolean(currentImage) && !loading

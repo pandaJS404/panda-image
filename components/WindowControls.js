@@ -36,6 +36,7 @@ export function TitleBar({ value, onChange }) {
       <input
         type="text"
         spellCheck="false"
+        aria-label="窗口标题栏"
         value={value || ''}
         onChange={e => onChange(e.target.value)}
       />

@@ -7,12 +7,17 @@ const BING_DAILY_API_PATH = '/HPImageArchive.aspx'
 const BING_FALLBACK_INFO_URL = `${BING_ORIGIN}/?mkt=${RANDOM_IMAGE_MARKET}`
 const BING_LIST_CACHE_TTL = 15 * 60 * 1000
 const DATA_URL_CACHE_TTL = 60 * 60 * 1000
+const DATA_URL_CACHE_MAX_SIZE = 100
 const PICSUM_FALLBACK_WIDTH = 1600
 const PICSUM_FALLBACK_HEIGHT = 1200
 const FALLBACKABLE_RANDOM_IMAGE_STATUSES = new Set([401, 403, 404, 405])
-const CORS_ALLOW_ORIGIN = '*'
 const CORS_ALLOW_METHODS = 'GET, OPTIONS'
 const CORS_ALLOW_HEADERS = 'Content-Type'
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://pandajs404.github.io',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+]
 
 const bingClient = axios.create({
   baseURL: BING_ORIGIN,
@@ -35,6 +40,15 @@ let bingListCache = {
 }
 
 const dataUrlCache = new Map()
+const allowedCorsOrigins = new Set(
+  [
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.CORS_ALLOW_ORIGINS || '')
+      .split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean),
+  ].map(origin => origin.replace(/\/$/u, '')),
+)
 
 function shouldUseRandomImageFallback(error) {
   const status = error?.response?.status
@@ -158,6 +172,10 @@ function getCachedDataUrl(url) {
 }
 
 function setCachedDataUrl(url, dataURL) {
+  if (dataUrlCache.size >= DATA_URL_CACHE_MAX_SIZE) {
+    const firstKey = dataUrlCache.keys().next().value
+    dataUrlCache.delete(firstKey)
+  }
   dataUrlCache.set(url, {
     expiresAt: Date.now() + DATA_URL_CACHE_TTL,
     value: dataURL,
@@ -236,59 +254,119 @@ async function fetchRandomImageById(id) {
 
 function sendJson(res, statusCode, data) {
   res.statusCode = statusCode
-  res.setHeader('Access-Control-Allow-Origin', CORS_ALLOW_ORIGIN)
-  res.setHeader('Access-Control-Allow-Methods', CORS_ALLOW_METHODS)
-  res.setHeader('Access-Control-Allow-Headers', CORS_ALLOW_HEADERS)
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
   res.setHeader('Cache-Control', 'no-store')
   res.end(JSON.stringify(data))
 }
 
-function sendNoContent(res) {
-  res.statusCode = 204
-  res.setHeader('Access-Control-Allow-Origin', CORS_ALLOW_ORIGIN)
+function setCorsHeaders(res, origin) {
+  res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', CORS_ALLOW_METHODS)
   res.setHeader('Access-Control-Allow-Headers', CORS_ALLOW_HEADERS)
+  res.setHeader('Vary', 'Origin')
+}
+
+function getRequestOrigin(req) {
+  const origin = req.headers?.origin
+
+  return typeof origin === 'string' ? origin.replace(/\/$/u, '') : null
+}
+
+function getAllowedOrigin(req) {
+  const origin = getRequestOrigin(req)
+
+  if (!origin) {
+    return null
+  }
+
+  return allowedCorsOrigins.has(origin) ? origin : false
+}
+
+function applyCors(req, res) {
+  const allowedOrigin = getAllowedOrigin(req)
+
+  if (allowedOrigin === false) {
+    return false
+  }
+
+  if (allowedOrigin) {
+    setCorsHeaders(res, allowedOrigin)
+  }
+
+  return true
+}
+
+function sendCorsNotAllowed(res) {
+  sendJson(res, 403, {
+    error: 'CORS_ORIGIN_NOT_ALLOWED',
+  })
+}
+
+function sendJsonWithCors(req, res, statusCode, data) {
+  if (!applyCors(req, res)) {
+    sendCorsNotAllowed(res)
+    return
+  }
+
+  sendJson(res, statusCode, data)
+}
+
+function sendNoContent(req, res) {
+  if (!applyCors(req, res)) {
+    sendCorsNotAllowed(res)
+    return
+  }
+
+  res.statusCode = 204
   res.setHeader('Cache-Control', 'no-store')
   res.end()
 }
 
-function sendMethodNotAllowed(res) {
-  sendJson(res, 405, {
+function sendMethodNotAllowed(req, res) {
+  sendJsonWithCors(req, res, 405, {
     error: 'METHOD_NOT_ALLOWED',
+  })
+}
+
+function logRequestError(endpoint, error) {
+  console.error('[random-image-proxy] Request failed:', {
+    endpoint,
+    status: error?.response?.status || null,
+    code: error?.code || null,
+    message: error?.message || 'UNKNOWN_ERROR',
   })
 }
 
 async function handleRandomImageListRequest(req, res) {
   if (req.method === 'OPTIONS') {
-    sendNoContent(res)
+    sendNoContent(req, res)
     return
   }
 
   if (req.method !== 'GET') {
-    sendMethodNotAllowed(res)
+    sendMethodNotAllowed(req, res)
     return
   }
 
   try {
     const images = await fetchRandomImageList()
-    sendJson(res, 200, images)
+    sendJsonWithCors(req, res, 200, images)
   } catch (error) {
-    sendJson(res, 502, {
+    logRequestError('/api/random-image', error)
+    sendJsonWithCors(req, res, 502, {
       error: 'RANDOM_IMAGE_LIST_FAILED',
-      message: error.message,
     })
   }
 }
 
 async function handleRandomImageDownloadRequest(req, res) {
   if (req.method === 'OPTIONS') {
-    sendNoContent(res)
+    sendNoContent(req, res)
     return
   }
 
   if (req.method !== 'GET') {
-    sendMethodNotAllowed(res)
+    sendMethodNotAllowed(req, res)
     return
   }
 
@@ -296,19 +374,26 @@ async function handleRandomImageDownloadRequest(req, res) {
   const id = requestUrl.searchParams.get('id')
 
   if (!id) {
-    sendJson(res, 400, {
+    sendJsonWithCors(req, res, 400, {
       error: 'RANDOM_IMAGE_ID_REQUIRED',
+    })
+    return
+  }
+
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(id)) {
+    sendJsonWithCors(req, res, 400, {
+      error: 'RANDOM_IMAGE_ID_INVALID',
     })
     return
   }
 
   try {
     const image = await fetchRandomImageById(id)
-    sendJson(res, 200, image)
+    sendJsonWithCors(req, res, 200, image)
   } catch (error) {
-    sendJson(res, 502, {
+    logRequestError('/api/random-image-download', error)
+    sendJsonWithCors(req, res, 502, {
       error: 'RANDOM_IMAGE_DOWNLOAD_FAILED',
-      message: error.message,
     })
   }
 }

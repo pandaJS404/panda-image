@@ -87,9 +87,9 @@ const Presets = React.memo(
           <div className="settings-presets-applied">
             <span>已应用预设</span>
 
-            <p onClick={undo} className="settings-presets-undo">
+            <button type="button" onClick={undo} className="settings-presets-undo">
               撤销 <span>&#x21A9;</span>
-            </p>
+            </button>
           </div>
         ) : null}
       </div>
