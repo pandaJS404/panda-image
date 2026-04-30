@@ -10,6 +10,8 @@ function RandomImage(props) {
   const cacheRef = React.useRef([])
   const [cacheIndex, updateIndex] = React.useState(0)
   const api = useAPI()
+  const isAvailable = api?.randomImage?.isAvailable !== false
+  const unavailableReason = api?.randomImage?.unavailableReason
   const swallowError = React.useCallback(() => {}, [])
 
   const [selectImage, { loading: selecting }] = useAsyncCallback(async () => {
@@ -37,7 +39,8 @@ function RandomImage(props) {
     api.randomImage.random
   )
 
-  const needsFetch = !error && !updating && (!imgs || cacheIndex > cacheRef.current.length - 2)
+  const needsFetch =
+    isAvailable && !error && !updating && (!imgs || cacheIndex > cacheRef.current.length - 2)
 
   React.useEffect(() => {
     if (needsFetch) {
@@ -58,7 +61,20 @@ function RandomImage(props) {
   const photographer = currentImage && currentImage.photographer
   const bgImage = currentImage && (currentImage.dataURL || currentImage.url)
   const canSelect = Boolean(currentImage) && !loading
-  const canAdvance = !loading && (Boolean(currentImage) || Boolean(error))
+  const canAdvance = isAvailable && !loading && (Boolean(currentImage) || Boolean(error))
+
+  if (!isAvailable) {
+    return (
+      <div className="random-image-container">
+        <Alert
+          className="random-image-status"
+          showIcon
+          type="info"
+          title={unavailableReason || '当前环境未启用随机图片服务。'}
+        />
+      </div>
+    )
+  }
 
   const handleAdvance = () => {
     if (error) {

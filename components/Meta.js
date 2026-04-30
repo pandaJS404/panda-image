@@ -11,6 +11,7 @@ export const HIGHLIGHTS_ONLY = [
   'shades-of-purple',
   'vscode',
   'a11y-dark',
+  'dracula',
   'slate-dark',
   'slate-light',
   'panda-Gradation',

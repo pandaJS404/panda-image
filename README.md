@@ -3,7 +3,10 @@
 
   <h1>Panda</h1>
   <p>将源码整理成更适合分享、展示与发布的代码海报。</p>
-
+  <p>
+    在线预览：
+    <a href="https://pandajs404.github.io/panda-image">https://pandajs404.github.io/panda-image</a>
+  </p>
   <p>
     <a href="#overview">项目简介</a> ·
     <a href="#showcase">样例展示</a> ·
@@ -22,6 +25,12 @@ Panda 是一个面向技术写作、社交媒体发布、演讲配图和文档�
 
 从当前仓库实现来看，Panda 已经打通了这几类能力：代码输入与高亮、背景系统、窗口样式、导出菜单、剪贴板复制、本地持久化、配置导入导出、自定义预设，以及随机壁纸来源。换句话说，它已经不是单纯的样例页，而是一套比较完整的代码截图美化工作流。
 
+如果你想先看最终效果，再决定是否本地运行，可以直接访问在线预览：[https://pandajs404.github.io/panda-image](https://pandajs404.github.io/panda-image)。
+
+下面这张 `hero-cover.png` 是 README 使用的品牌总览图。它基于 `export-sample` 系列重组，用来把成品气质、风格跨度和导出场景压缩到一张图里，而不是替代真实样例。
+
+![Panda overview](./docs/readme-assets/hero-cover.png)
+
 ---
 
 <a id="showcase"></a>
@@ -34,26 +43,80 @@ Panda 是一个面向技术写作、社交媒体发布、演讲配图和文档�
 
 ![Panda hero sample](./docs/readme-assets/export-sample.webp)
 
-### 样例矩阵
+### 样例列表
 
 这组样例全部来自现有 `export-sample*.webp` 资源。每张图都对应一种不同的视觉侧重点，便于快速理解 Panda 在背景、窗口样式、氛围和品牌呈现上的变化空间。
 
-| 样例                                                        | 说明                                                               |
-| ----------------------------------------------------------- | ------------------------------------------------------------------ |
-| ![Panda sample 1](./docs/readme-assets/export-sample1.webp) | `磨砂花景`：突出图片背景 + 毛玻璃窗口的柔和氛围。                  |
-| ![Panda sample 2](./docs/readme-assets/export-sample2.webp) | `轻盈渐变`：突出高亮代码与低干扰渐变背景的平衡。                   |
-| ![Panda sample 3](./docs/readme-assets/export-sample3.webp) | `深色终端`：突出深色编辑区、清晰边框与适合技术内容发布的稳定观感。 |
-| ![Panda sample 4](./docs/readme-assets/export-sample4.webp) | `多边形背景`：突出几何背景素材与半透明窗口叠加效果。               |
-| ![Panda sample 5](./docs/readme-assets/export-sample6.webp) | `品牌强化`：突出鲜明渐变、发光阴影和右下角品牌露出。               |
-| ![Panda sample 6](./docs/readme-assets/export-sample5.webp) | `自然景深`：突出森林场景、模糊层次和轻边框窗口的融合。             |
+<table>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample1.webp" alt="Panda sample 1" />
+      <br />
+      <strong>磨砂花景</strong>
+      <br />
+      突出图片背景与毛玻璃窗口的柔和氛围。
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample2.webp" alt="Panda sample 2" />
+      <br />
+      <strong>轻盈渐变</strong>
+      <br />
+      突出高亮代码与低干扰渐变背景的平衡。
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample3.webp" alt="Panda sample 3" />
+      <br />
+      <strong>深色终端</strong>
+      <br />
+      突出深色编辑区、清晰边框与稳定的技术发布观感。
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample4.webp" alt="Panda sample 4" />
+      <br />
+      <strong>品牌强化</strong>
+      <br />
+      突出鲜明渐变、品牌露出和更强的视觉记忆点。
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample5.webp" alt="Panda sample 5" />
+      <br />
+      <strong>自然景深</strong>
+      <br />
+      突出森林场景、模糊层次和轻边框窗口的融合。
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/readme-assets/export-sample6.webp" alt="Panda sample 6" />
+      <br />
+      <strong>多边形背景</strong>
+      <br />
+      突出几何背景素材与半透明窗口叠加效果。
+    </td>
+  </tr>
+</table>
 
 这些样例共同说明了一点：Panda 的重点不是单一主题，而是让同一段代码在不同背景、边框、透明度和品牌元素下快速切换成不同发布风格。
+
+![Panda preset gallery](./docs/readme-assets/preset-gallery.png)
 
 ---
 
 <a id="product-breakdown"></a>
 
 ## 产品能力拆解
+
+在进入四个能力层之前，可以先看这张 `editor-showcase.png`。它以 `export-sample3.webp` 为主画面，把编辑区、背景来源、水印和导出能力浓缩到一个讲解视图里，帮助快速建立对 Panda 工作流的整体认识。
+
+![Panda editor showcase](./docs/readme-assets/editor-showcase.png)
 
 ### 1. 输出结果层
 
@@ -154,6 +217,8 @@ Panda 是一个面向技术写作、社交媒体发布、演讲配图和文档�
 
 ## 快速开始
 
+如果你只是想先体验效果，可以直接打开在线预览：[https://pandajs404.github.io/panda-image](https://pandajs404.github.io/panda-image)。
+
 ### 环境要求
 
 - Node.js `>=20.9.0`
@@ -238,7 +303,7 @@ npm run test:e2e
 - `components/ImagePicker.js`：看背景来源、内置图库与随机图片接入。
 - `src/modules/editor/config/index.js`：看主题、字体、语言、预设和默认配置。
 - `src/shared/utils/index.js`：看本地持久化、配置导入导出和格式化工具。
-- `docs/readme-assets/generate-assets.ps1`：历史/备用 README 资产生成脚本，不再是当前正文主展示资源依赖。
+- `docs/readme-assets/generate-assets.ps1`：用于生成 README 三张中文合成展示图，输入源来自 `export-sample` 系列样例。
 
 ---
 

@@ -6,6 +6,12 @@ const normalizeApiOrigin = value => value.replace(/\/api\/?$/u, '').replace(/\/$
 const configuredApiOrigin = normalizeApiOrigin(
   import.meta.env.VITE_API_URL || import.meta.env.NEXT_PUBLIC_API_URL || ''
 )
+const isGitHubPagesRuntime = () =>
+  typeof window !== 'undefined' && /(^|\.)github\.io$/iu.test(window.location.hostname || '')
+const hasRandomImageApi = Boolean(configuredApiOrigin) || !isGitHubPagesRuntime()
+const randomImageUnavailableReason = hasRandomImageApi
+  ? null
+  : '当前站点未配置外部图片 API，请为 GitHub Pages 设置 PAGES_API_URL。'
 
 export const client = axios.create({
   baseURL: configuredApiOrigin ? `${configuredApiOrigin}/api` : '/api',
@@ -49,7 +55,13 @@ const downloadThumbnailImage = img => {
 }
 
 const randomImage = {
+  isAvailable: hasRandomImageApi,
+  unavailableReason: randomImageUnavailableReason,
   async download(id) {
+    if (!hasRandomImageApi) {
+      throw new Error('RANDOM_IMAGE_API_UNAVAILABLE')
+    }
+
     const response = await client.get('/random-image-download', {
       params: { id },
     })
@@ -57,6 +69,10 @@ const randomImage = {
     return normalizeRandomImage(response.data)
   },
   async random() {
+    if (!hasRandomImageApi) {
+      throw new Error('RANDOM_IMAGE_API_UNAVAILABLE')
+    }
+
     const response = await client.get('/random-image')
 
     return response.data.map(normalizeRandomImage)
@@ -64,6 +80,7 @@ const randomImage = {
 }
 
 const api = {
+  hasRandomImageApi,
   randomImage,
   downloadThumbnailImage,
 }
