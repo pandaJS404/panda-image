@@ -80,7 +80,7 @@ function FileDropzone({ children, filter = file => file, onDrop }) {
         onDrop(content)
       })
     },
-    [filter, onDrop]
+    [filter, onDrop],
   )
 
   const handleDragEnter = React.useCallback(event => {

@@ -36,7 +36,7 @@ function RandomImage(props) {
   })
 
   const [updateCache, { loading: updating, error, data: imgs }] = useAsyncCallback(
-    api.randomImage.random
+    api.randomImage.random,
   )
 
   const needsFetch =
@@ -116,7 +116,12 @@ function RandomImage(props) {
         ) : null}
       </div>
       {error && !loading ? (
-        <Alert className="random-image-status" showIcon type="warning" title="随机图片加载失败，请重试。" />
+        <Alert
+          className="random-image-status"
+          showIcon
+          type="warning"
+          title="随机图片加载失败，请重试。"
+        />
       ) : null}
       {photographer && <PhotoCredit photographer={photographer} />}
     </div>

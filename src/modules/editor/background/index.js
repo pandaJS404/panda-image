@@ -11,7 +11,9 @@ const STATIC_BACKGROUND_STYLE = {
 }
 
 export function getBackgroundImageSource(config = {}) {
-  return (config.backgroundImage && config.backgroundImageSelection) || config.backgroundImage || null
+  return (
+    (config.backgroundImage && config.backgroundImageSelection) || config.backgroundImage || null
+  )
 }
 
 export function getStaticBackgroundStyle(config = {}) {

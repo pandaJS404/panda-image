@@ -70,7 +70,9 @@ describe('background color', () => {
     cy.get('.container-bg .bg')
       .invoke('css', 'background-image')
       .should('match', /gradient/i)
-    cy.get('.bg-color-container .bg-color').invoke('css', 'background-image').should('match', /gradient/i)
+    cy.get('.bg-color-container .bg-color')
+      .invoke('css', 'background-image')
+      .should('match', /gradient/i)
 
     cy.get('.bg-select-panel .ant-tabs-tab').eq(0).click()
     cy.get(picker).find(darkRedTile).click()

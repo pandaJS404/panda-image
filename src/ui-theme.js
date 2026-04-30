@@ -72,7 +72,7 @@ export function UiThemeProvider({ children }) {
   const setUiTheme = nextTheme => {
     React.startTransition(() => {
       setUiThemeState(currentTheme =>
-        normalizeUiTheme(typeof nextTheme === 'function' ? nextTheme(currentTheme) : nextTheme)
+        normalizeUiTheme(typeof nextTheme === 'function' ? nextTheme(currentTheme) : nextTheme),
       )
     })
   }

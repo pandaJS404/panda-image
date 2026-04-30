@@ -21,12 +21,7 @@ const Font = ({ id, name }) => {
 
 function FontSelect(props) {
   const inputEl = React.useRef(null)
-  const {
-    fonts = FONTS,
-    title = 'Font',
-    uploadLabel = 'Upload font +',
-    allowUpload = true,
-  } = props
+  const { fonts = FONTS, title = 'Font', uploadLabel = 'Upload font +', allowUpload = true } = props
 
   function onChange(id) {
     if (allowUpload && id === 'upload') {

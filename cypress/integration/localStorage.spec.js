@@ -6,11 +6,7 @@ describe('localStorage', () => {
   const uiThemeToggle = () => cy.get('[data-cy="theme-toggle"]')
   const currentUiTheme = () => cy.document().its('documentElement.dataset.uiTheme')
 
-  const pickTheme = (name = 'Blackboard') =>
-    themeDropdown()
-      .click()
-      .contains(name)
-      .click()
+  const pickTheme = (name = 'Blackboard') => themeDropdown().click().contains(name).click()
 
   beforeEach(() => {
     cy.clearLocalStorage()

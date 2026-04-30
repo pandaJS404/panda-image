@@ -14,7 +14,7 @@ const ToolbarButton = React.forwardRef(
       fullWidth = false,
       ...props
     },
-    ref
+    ref,
   ) => (
     <ButtonPrimitive
       ref={ref}
@@ -27,7 +27,7 @@ const ToolbarButton = React.forwardRef(
       data-justify={justify}
       {...props}
     />
-  )
+  ),
 )
 
 export default ToolbarButton

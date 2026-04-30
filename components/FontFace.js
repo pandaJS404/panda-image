@@ -37,7 +37,9 @@ export default function FontFace(config) {
       ? [config.watermarkFontFamily, config.watermarkFontUrl]
       : null,
   ].filter(Boolean)
-  const uniqueEntries = Array.from(new Map(entries.map(entry => [entry.join('::'), entry])).values())
+  const uniqueEntries = Array.from(
+    new Map(entries.map(entry => [entry.join('::'), entry])).values(),
+  )
 
   if (!uniqueEntries.length) {
     return null

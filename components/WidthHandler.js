@@ -79,7 +79,7 @@ export default function WidthHandler({
 
   const readWidth = React.useCallback(
     handleElement => measureWidth(handleElement, innerRef),
-    [innerRef]
+    [innerRef],
   )
 
   const syncWidth = React.useCallback(
@@ -87,7 +87,7 @@ export default function WidthHandler({
       const width = readWidth(handleElement)
       return width
     },
-    [readWidth]
+    [readWidth],
   )
 
   const applyPreviewWidth = React.useCallback(
@@ -104,7 +104,7 @@ export default function WidthHandler({
       element.style.setProperty('--panda-max-width', '90vw')
       return nextWidth
     },
-    [innerRef]
+    [innerRef],
   )
 
   const setDraggingCursor = React.useCallback(isActive => {
@@ -220,7 +220,7 @@ export default function WidthHandler({
         onChangeComplete(finalWidth)
       }
     },
-    [cancelDragFrame, flushDragWidth, onChangeComplete, setDraggingCursor, syncWidth]
+    [cancelDragFrame, flushDragWidth, onChangeComplete, setDraggingCursor, syncWidth],
   )
 
   React.useEffect(() => {
@@ -261,7 +261,7 @@ export default function WidthHandler({
       scheduleDragFrame()
       event.preventDefault()
     },
-    [scheduleDragFrame]
+    [scheduleDragFrame],
   )
 
   const handleWindowPointerEnd = React.useCallback(
@@ -278,7 +278,7 @@ export default function WidthHandler({
 
       finishDrag(handleRef.current)
     },
-    [finishDrag]
+    [finishDrag],
   )
 
   React.useEffect(() => {
@@ -304,7 +304,7 @@ export default function WidthHandler({
       cancelDragFrame()
       setDraggingCursor(false)
     },
-    [cancelDragFrame, setDraggingCursor]
+    [cancelDragFrame, setDraggingCursor],
   )
 
   const handlePointerDown = React.useCallback(
@@ -333,7 +333,7 @@ export default function WidthHandler({
       setDraggingCursor(true)
       event.preventDefault()
     },
-    [innerRef, setDraggingCursor, syncWidth]
+    [innerRef, setDraggingCursor, syncWidth],
   )
 
   const handleKeyDown = React.useCallback(
@@ -372,7 +372,7 @@ export default function WidthHandler({
       applyPreviewWidth(event.currentTarget, clampedWidth)
       onChangeComplete(clampedWidth)
     },
-    [applyPreviewWidth, onChangeComplete, readWidth]
+    [applyPreviewWidth, onChangeComplete, readWidth],
   )
 
   return (

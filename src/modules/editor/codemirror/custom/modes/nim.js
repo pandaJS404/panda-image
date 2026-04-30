@@ -40,7 +40,7 @@ CodeMirror.defineMode('nim', function (conf, parserConf) {
       .map(function (op) {
         return '\\' + op
       })
-      .join('|')
+      .join('|'),
   )
   var identifiers = new RegExp('^[_A-Za-z][_A-Za-z0-9]*')
 

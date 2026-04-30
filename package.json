@@ -1,19 +1,18 @@
 {
   "name": "panda",
-  "description": "Create beautiful images of your source code",
   "version": "1.0.0",
+  "description": "创建和分享你的源代码的精美图片、支持渐变、图片、毛玻璃等风格。",
   "license": "MIT",
-  "engines": {
-    "node": ">=20.9.0"
-  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "vite",
-    "preview": "vite preview",
+    "dev": "vp dev",
+    "build": "vp build",
+    "start": "vp dev",
+    "preview": "vp preview",
+    "analyze": "cross-env VITE_DEVTOOLS=true vp build",
+    "check": "vp check",
+    "fmt": "vp fmt",
     "test:e2e": "npm run cy:run --",
-    "prettier": "prettier --config .prettierrc --write {.,components,src}/*.js {components,src}/**/*.js",
-    "lint": "eslint . --ext .js",
+    "lint": "vp check",
     "cy:run": "cypress run",
     "cy:open": "cypress open"
   },
@@ -47,18 +46,18 @@
     "tohash": "^1.0.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.0",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/devtools": "^0.1.15",
+    "@vitejs/plugin-react": "^6.0.1",
     "all-contributors-cli": "^6.20.0",
+    "cross-env": "^10.1.0",
     "cypress": "^15.14.1",
-    "eslint": "^9.39.4",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-react": "^7.29.4",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "husky": "^9.1.7",
     "less": "^4.4.2",
-    "lint-staged": "^16.4.0",
-    "vite": "^7.1.12",
+    "typescript": "^6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.1.20",
+    "vite-plus": "^0.1.20",
     "wait-on": "^9.0.5"
   },
   "overrides": {
@@ -69,5 +68,9 @@
     "lodash": "^4.17.2",
     "serialize-javascript": "^6.0.0",
     "sharp": "^0.30.4"
-  }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "packageManager": "pnpm@10.33.0"
 }

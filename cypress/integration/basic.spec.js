@@ -34,7 +34,10 @@ function getImagePixel(win, image, x, y) {
 }
 
 function installClipboardStub(win, { supportsWebp }) {
-  const clipboardWrite = cy.stub().callsFake(() => Promise.resolve()).as('clipboardWrite')
+  const clipboardWrite = cy
+    .stub()
+    .callsFake(() => Promise.resolve())
+    .as('clipboardWrite')
 
   Object.defineProperty(win.navigator, 'clipboard', {
     configurable: true,
@@ -58,13 +61,13 @@ function installClipboardStub(win, { supportsWebp }) {
 describe('Basic', () => {
   it('Should open editor with the correct text encoding', () => {
     cy.visit(
-      '/?code=%250A%252F*%2520Passing%2520Boolean%2520as%2520method%2520to%2520find%2520returns%2520the%250A%2520*%2520first%2520truthy%2520value%2520in%2520the%2520array!%250A%2520*%252F%250A%255Bfalse%252C%2520false%252C%2520%27%27%252C%2520undefined%252C%2520%27qwijo%27%252C%25200%255D.find(Boolean)%2520%252F%252F%2520%27qwijo%27'
+      '/?code=%250A%252F*%2520Passing%2520Boolean%2520as%2520method%2520to%2520find%2520returns%2520the%250A%2520*%2520first%2520truthy%2520value%2520in%2520the%2520array!%250A%2520*%252F%250A%255Bfalse%252C%2520false%252C%2520%27%27%252C%2520undefined%252C%2520%27qwijo%27%252C%25200%255D.find(Boolean)%2520%252F%252F%2520%27qwijo%27',
     )
     editorVisible()
 
     cy.contains(
       '.container',
-      "/* Passing Boolean as method to find returns the * first truthy value in the array! */[false, false, '', undefined, 'qwijo', 0].find(Boolean) // 'qwijo'"
+      "/* Passing Boolean as method to find returns the * first truthy value in the array! */[false, false, '', undefined, 'qwijo', 0].find(Boolean) // 'qwijo'",
     )
   })
 
@@ -89,7 +92,7 @@ describe('Basic', () => {
           shiftKey: true,
           bubbles: true,
           cancelable: true,
-        })
+        }),
       )
     })
 
@@ -169,9 +172,7 @@ describe('Basic', () => {
 
     cy.get('[data-cy="copy-image-button"]').click()
     cy.get('@clipboardWrite', { timeout: 30000 }).should('have.been.calledOnce')
-    cy.contains('.ant-message-notice', '当前剪贴板不支持 WebP，已复制 2x PNG').should(
-      'be.visible',
-    )
+    cy.contains('.ant-message-notice', '当前剪贴板不支持 WebP，已复制 2x PNG').should('be.visible')
 
     cy.get('@clipboardWrite').then(clipboardWrite => {
       cy.window().then({ timeout: 40000 }, async win => {
@@ -280,7 +281,7 @@ describe('Basic', () => {
             windowControls: false,
             watermark: false,
             dropShadow: false,
-          })
+          }),
         )
         win.localStorage.setItem(
           'PANDA_BACKGROUND_IMAGE_ASSET',
@@ -288,7 +289,7 @@ describe('Basic', () => {
             source: null,
             image: LOCAL_BACKGROUND_DATA_URL,
             selection: null,
-          })
+          }),
         )
       },
     })

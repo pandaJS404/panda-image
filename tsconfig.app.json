@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "composite": true,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "target": "ES2022"
+  },
+  "include": ["components/**/*.js", "components/**/*.jsx", "src/**/*.js", "src/**/*.jsx"]
+}

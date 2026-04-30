@@ -88,7 +88,7 @@ function formatBackgroundPhotographerCredit(photographer) {
 
 function hasConfiguredBackgroundImage(config = {}) {
   return Boolean(
-    config.backgroundImageSelection || config.backgroundImage || config.backgroundImageSource
+    config.backgroundImageSelection || config.backgroundImage || config.backgroundImageSource,
   )
 }
 
@@ -161,7 +161,10 @@ function waitForImageReady(image) {
 
   if (image.complete && image.naturalWidth > 0) {
     if (typeof image.decode === 'function') {
-      return image.decode().catch(() => {}).then(finalize)
+      return image
+        .decode()
+        .catch(() => {})
+        .then(finalize)
     }
 
     return finalize()
@@ -214,20 +217,18 @@ class Editor extends React.Component {
 
     if (canRestoreMatchingBackgroundAsset) {
       newState.backgroundMode = 'image'
-      newState.backgroundImage =
-        getStoredBackgroundImageValue(
-          storedBackgroundImageAsset.source,
-          storedBackgroundImageAsset.image
-        )
+      newState.backgroundImage = getStoredBackgroundImageValue(
+        storedBackgroundImageAsset.source,
+        storedBackgroundImageAsset.image,
+      )
       newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
     } else if (canRestoreStoredBackgroundAsset) {
       newState.backgroundMode = 'image'
       newState.backgroundImageSource = storedBackgroundImageAsset.source || null
-      newState.backgroundImage =
-        getStoredBackgroundImageValue(
-          storedBackgroundImageAsset.source,
-          storedBackgroundImageAsset.image
-        )
+      newState.backgroundImage = getStoredBackgroundImageValue(
+        storedBackgroundImageAsset.source,
+        storedBackgroundImageAsset.image,
+      )
       newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
     } else if (
       newState.backgroundImageSource &&
@@ -689,8 +690,7 @@ class Editor extends React.Component {
       this.updateState(({ code = DEFAULT_CODE }) => ({
         ...nextBackgroundChanges,
         code:
-          code.replace(backgroundPhotographerCredit, '') +
-          `\n\n// 图片来源：${backgroundCredit}`,
+          code.replace(backgroundPhotographerCredit, '') + `\n\n// 图片来源：${backgroundCredit}`,
         preset: null,
       }))
       return

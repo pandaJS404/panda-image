@@ -4,7 +4,7 @@ import { fileToDataURL } from '../utils'
 
 const normalizeApiOrigin = value => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
 const configuredApiOrigin = normalizeApiOrigin(
-  import.meta.env.VITE_API_URL || import.meta.env.NEXT_PUBLIC_API_URL || ''
+  import.meta.env.VITE_API_URL || import.meta.env.NEXT_PUBLIC_API_URL || '',
 )
 const isGitHubPagesRuntime = () =>
   typeof window !== 'undefined' && /(^|\.)github\.io$/iu.test(window.location.hostname || '')

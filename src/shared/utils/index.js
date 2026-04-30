@@ -30,11 +30,11 @@ export const saveSettings = morph.compose(
     'watermarkFontUrl',
     'selectedLines',
     'name',
-  ])
+  ]),
 )
 export const savePresets = morph.compose(
   createAssigner(PRESETS_KEY),
-  map(omit(['backgroundImageSelection']))
+  map(omit(['backgroundImageSelection'])),
 )
 export const saveThemes = createAssigner(THEMES_KEY)
 
@@ -49,10 +49,10 @@ const parse = v => {
 function isQuotaExceededError(error) {
   return Boolean(
     error &&
-      (error.name === 'QuotaExceededError' ||
-        error.code === 22 ||
-        error.code === 1014 ||
-        STORAGE_QUOTA_ERROR_PATTERN.test(error.message || ''))
+    (error.name === 'QuotaExceededError' ||
+      error.code === 22 ||
+      error.code === 1014 ||
+      STORAGE_QUOTA_ERROR_PATTERN.test(error.message || '')),
   )
 }
 
@@ -200,7 +200,7 @@ function normalizeExportDefaultObject(code) {
   const looksLikeObjectMember =
     /^[A-Za-z_$][\w$-]*\s*:/.test(firstMeaningfulLine) ||
     /^['"][^'"]+['"]\s*:/.test(firstMeaningfulLine) ||
-    /^\.\.\./.test(firstMeaningfulLine)
+    firstMeaningfulLine.startsWith('...')
 
   if (!looksLikeObjectMember) {
     return code

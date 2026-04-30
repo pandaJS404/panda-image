@@ -34,7 +34,7 @@ describe('Debug Save Export', () => {
         return cy.writeFile(
           'cypress/tmp/exported-from-app.png',
           dataUrl.replace(/^data:image\/png;base64,/, ''),
-          'base64'
+          'base64',
         )
       })
 

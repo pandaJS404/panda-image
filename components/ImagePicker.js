@@ -36,7 +36,7 @@ const getCroppedImg = (imageDataURL, pixelCrop) => {
         0,
         0,
         pixelCrop.width,
-        pixelCrop.height
+        pixelCrop.height,
       )
 
       resolve(canvas.toDataURL('image/jpeg'))
@@ -56,9 +56,8 @@ const INITIAL_STATE = {
 }
 
 const getBuiltInImageGroup = source =>
-  BUILT_IN_BACKGROUND_IMAGE_GROUPS.find(group =>
-    group.images.some(image => image.id === source)
-  ) || null
+  BUILT_IN_BACKGROUND_IMAGE_GROUPS.find(group => group.images.some(image => image.id === source)) ||
+  null
 
 const getDefaultActiveBuiltInGroups = source => {
   const group = getBuiltInImageGroup(source)
@@ -85,7 +84,7 @@ export default class ImagePicker extends React.Component {
             ...state.crop,
             aspect: nextProps.aspectRatio,
           },
-          state.imageAspectRatio
+          state.imageAspectRatio,
         ),
       }
     }
@@ -212,7 +211,7 @@ export default class ImagePicker extends React.Component {
           source: url,
           image: dataURL,
           dataURL,
-        })
+        }),
       )
       .catch(error => {
         if (error.message.indexOf('Network Error') > -1) {
@@ -284,7 +283,7 @@ export default class ImagePicker extends React.Component {
           backgroundImageSource: null,
           backgroundImageSelection: null,
         })
-      }
+      },
     )
   }
 

@@ -105,7 +105,7 @@ function ListSetting({
         className={getClassName(
           'list-setting-display-button',
           open && 'list-setting-display-button--open',
-          displayClassName
+          displayClassName,
         )}
         classNames={{
           ...DEFAULT_SELECT_CLASS_NAMES,

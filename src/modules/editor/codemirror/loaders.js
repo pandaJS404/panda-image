@@ -71,7 +71,10 @@ let addonsPromise = null
 
 function ensureCodeMirrorAddons() {
   if (!addonsPromise) {
-    addonsPromise = Promise.all([import('./custom/autoCloseBrackets'), import('cm-show-invisibles')])
+    addonsPromise = Promise.all([
+      import('./custom/autoCloseBrackets'),
+      import('cm-show-invisibles'),
+    ])
   }
 
   return addonsPromise

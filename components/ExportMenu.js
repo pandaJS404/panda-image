@@ -39,7 +39,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
         filename: getFilename(),
         exportSize: QUICK_EXPORT_SIZE,
       }),
-    [exportImage]
+    [exportImage],
   )
 
   const handleQuickSvgExport = React.useCallback(
@@ -47,7 +47,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
       exportImage('svg', {
         filename: getFilename(),
       }),
-    [exportImage]
+    [exportImage],
   )
 
   const handleModalExport = format => async () => {

@@ -152,7 +152,7 @@ export const serializeState = state => {
   const stateString = encodeURIComponent(JSON.stringify(state))
 
   return encodeURIComponent(
-    typeof window !== 'undefined' ? btoa(stateString) : Buffer.from(stateString).toString('base64')
+    typeof window !== 'undefined' ? btoa(stateString) : Buffer.from(stateString).toString('base64'),
   )
 }
 
@@ -219,6 +219,6 @@ export const updateRouteState = (router, state) => {
       pathname: router.pathname,
       query: mappedState,
     },
-    { shallow: true, scroll: false }
+    { shallow: true, scroll: false },
   )
 }

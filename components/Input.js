@@ -35,7 +35,7 @@ const Input = React.forwardRef(
       classNames,
       ...props
     },
-    ref
+    ref,
   ) => {
     const inputId = React.useId()
     const controlId = props.id || inputId
@@ -43,11 +43,7 @@ const Input = React.forwardRef(
 
     return (
       <div
-        className={[
-          'panda-input-field',
-          `panda-input-field--tone-${tone}`,
-          fieldClassName,
-        ]
+        className={['panda-input-field', `panda-input-field--tone-${tone}`, fieldClassName]
           .filter(Boolean)
           .join(' ')}
       >
@@ -72,7 +68,7 @@ const Input = React.forwardRef(
             input: {
               textAlign: align,
               fontSize,
-              ...(styles?.input || {}),
+              ...styles?.input,
             },
           }}
           style={{
@@ -84,7 +80,7 @@ const Input = React.forwardRef(
         />
       </div>
     )
-  }
+  },
 )
 
 export default Input

@@ -34,7 +34,7 @@ function replaceRoute(pathname, query = {}) {
 
 export function useRouter() {
   const [snapshot, setSnapshot] = React.useState(() =>
-    typeof window === 'undefined' ? { pathname: '/', asPath: '/' } : createRouterSnapshot()
+    typeof window === 'undefined' ? { pathname: '/', asPath: '/' } : createRouterSnapshot(),
   )
 
   React.useEffect(() => {
@@ -56,7 +56,7 @@ export function useRouter() {
       replace(nextUrl, nextState) {
         replaceRoute(
           nextState?.pathname || nextUrl?.pathname || snapshot.pathname,
-          nextState?.query || nextUrl?.query
+          nextState?.query || nextUrl?.query,
         )
       },
     }

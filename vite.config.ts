@@ -1,14 +1,27 @@
-const fs = require('node:fs')
-const { defineConfig, transformWithEsbuild } = require('vite')
-const react = require('@vitejs/plugin-react')
-const { randomImageApiMiddleware } = require('./bin/random-image-proxy')
+import fs from 'node:fs'
+import { createRequire } from 'node:module'
 
-const jsxDirectoriesPattern = /[\\/](components|src)[\\/].+\.js$/
+import react from '@vitejs/plugin-react'
+import { transformWithOxc } from 'vite'
+import { defineConfig } from 'vite-plus'
+
+const require = createRequire(import.meta.url)
+const { randomImageApiMiddleware } = require('./bin/random-image-proxy.js') as {
+  randomImageApiMiddleware: (req: unknown, res: unknown, next: () => void) => void
+}
+
+const jsxJsPattern = /(?:^|[\\/])(components|src)[\\/].+\.js$/u
+const jsxSourcePattern = /(?:^|[\\/])(components|src)[\\/].+\.[jt]sx?$/u
 const svgReactPattern = /\.svg\?react$/u
 const basePath = process.env.VITE_BASE_PATH || '/'
-const normalizeApiOrigin = value => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
+const isDevToolsEnabled = process.env.VITE_DEVTOOLS === 'true'
+
+const normalizeApiOrigin = (value: string) => value.replace(/\/api\/?$/u, '').replace(/\/$/u, '')
 const apiProxyTarget = normalizeApiOrigin(
-  process.env.VITE_API_PROXY_TARGET || process.env.VITE_API_URL || process.env.NEXT_PUBLIC_API_URL || ''
+  process.env.VITE_API_PROXY_TARGET ||
+    process.env.VITE_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    '',
 )
 
 const svgRootPattern = /<svg\b([^>]*)>([\s\S]*?)<\/svg>/iu
@@ -19,9 +32,10 @@ const svgAttrMap = {
   'xmlns:xlink': 'xmlnsXlink',
 }
 
-const toSvgPropName = name => svgAttrMap[name.toLowerCase()] || name
+const toSvgPropName = (name: string) =>
+  svgAttrMap[name.toLowerCase() as keyof typeof svgAttrMap] || name
 
-const parseSvgRoot = svgMarkup => {
+const parseSvgRoot = (svgMarkup: string) => {
   const match = svgMarkup.match(svgRootPattern)
 
   if (!match) {
@@ -29,7 +43,7 @@ const parseSvgRoot = svgMarkup => {
   }
 
   const [, rawAttributes, innerMarkup] = match
-  const rootAttributes = {}
+  const rootAttributes: Record<string, string> = {}
 
   for (const attributeMatch of rawAttributes.matchAll(svgAttributePattern)) {
     const [, rawName, rawValue] = attributeMatch
@@ -42,13 +56,13 @@ const parseSvgRoot = svgMarkup => {
   }
 }
 
-const serializeRootProps = rootAttributes =>
+const serializeRootProps = (rootAttributes: Record<string, string>) =>
   Object.entries(rootAttributes)
     .filter(([key]) => key !== 'className' && key !== 'style')
     .map(([key, value]) => `${JSON.stringify(key)}: ${JSON.stringify(value)}`)
     .join(',\n    ')
 
-const createSvgReactModule = svgMarkup => {
+const createSvgReactModule = (svgMarkup: string) => {
   const { rootAttributes, innerMarkup } = parseSvgRoot(svgMarkup)
   const intrinsicWidth = Number.parseFloat(rootAttributes.width)
   const intrinsicHeight = Number.parseFloat(rootAttributes.height)
@@ -81,8 +95,8 @@ export default SvgComponent
 
 const svgReactAssetPlugin = {
   name: 'panda-svg-react-asset',
-  enforce: 'pre',
-  load(id) {
+  enforce: 'pre' as const,
+  load(id: string) {
     if (!svgReactPattern.test(id)) {
       return null
     }
@@ -96,15 +110,19 @@ const svgReactAssetPlugin = {
 
 const randomImageApiPlugin = {
   name: 'panda-random-image-api',
-  configureServer(server) {
+  configureServer(server: {
+    middlewares: { use: (middleware: typeof randomImageApiMiddleware) => void }
+  }) {
     server.middlewares.use(randomImageApiMiddleware)
   },
-  configurePreviewServer(server) {
+  configurePreviewServer(server: {
+    middlewares: { use: (middleware: typeof randomImageApiMiddleware) => void }
+  }) {
     server.middlewares.use(randomImageApiMiddleware)
   },
 }
 
-module.exports = defineConfig({
+export default defineConfig({
   base: basePath,
   plugins: [
     svgReactAssetPlugin,
@@ -113,26 +131,55 @@ module.exports = defineConfig({
       name: 'panda-js-as-jsx',
       enforce: 'pre',
       async transform(code, id) {
-        if (!jsxDirectoriesPattern.test(id)) {
+        if (!jsxJsPattern.test(id)) {
           return null
         }
 
-        return transformWithEsbuild(code, id, {
-          loader: 'jsx',
-          jsx: 'automatic',
+        return transformWithOxc(code, id, {
+          lang: 'jsx',
+          jsx: {
+            runtime: 'automatic',
+          },
         })
       },
     },
     react({
-      include: /\.[jt]sx?$/,
+      include: jsxSourcePattern,
     }),
   ],
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  devtools: isDevToolsEnabled
+    ? {
+        enabled: true,
+      }
+    : undefined,
+  fmt: {
+    arrowParens: 'avoid',
+    ignorePatterns: ['dist/**', 'docs/**', 'node_modules/**', 'public/**'],
+    printWidth: 100,
+    semi: false,
+    singleQuote: true,
+  },
+  lint: {
+    ignorePatterns: ['.next/**', 'dist/**', 'docs/**', 'node_modules/**', 'public/**'],
+    options: {
+      typeAware: true,
+      typeCheck: true,
+    },
+    rules: {
+      'no-console': ['error', { allow: ['error'] }],
+    },
+  },
   optimizeDeps: {
-    esbuildOptions: {
-      // Dependency scanning runs before plugin transforms.
-      loader: {
+    rolldownOptions: {
+      // Dependency scanning runs before our transform plugin, so teach Rolldown to parse app .js as JSX here too.
+      moduleTypes: {
         '.js': 'jsx',
+      },
+      transform: {
+        jsx: {
+          runtime: 'automatic',
+        },
       },
     },
   },
@@ -145,6 +192,13 @@ module.exports = defineConfig({
             changeOrigin: true,
             secure: false,
           },
+        }
+      : undefined,
+  },
+  build: {
+    rolldownOptions: isDevToolsEnabled
+      ? {
+          devtools: {},
         }
       : undefined,
   },

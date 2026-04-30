@@ -27,16 +27,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+
+      - name: Setup VP
+        uses: voidzero-dev/setup-vp@v1
 
       - name: Configure GitHub Pages
         if: ${{ env.PAGES_ENABLEMENT_TOKEN == '' }}
@@ -50,12 +47,15 @@ jobs:
           enablement: true
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
+
+      - name: Check project
+        run: vp check
 
       - name: Build site
         env:
           NODE_OPTIONS: --max_old_space_size=8192
-        run: pnpm build
+        run: vp build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

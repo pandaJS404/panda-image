@@ -65,7 +65,10 @@ export function normalizeWatermarkText(value) {
     return ''
   }
 
-  return String(value).replace(/[\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+  return String(value)
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
 }
 
 export function resolveWatermarkFontSource({ watermarkFontFamily, watermarkFontUrl }) {
@@ -123,14 +126,14 @@ async function loadOpenType() {
 
   if (!opentypePromise) {
     opentypePromise = new Promise((resolve, reject) => {
-      const existingScript = document.querySelector(`script[data-opentype-loader="${OPENTYPE_CDN_URL}"]`)
+      const existingScript = document.querySelector(
+        `script[data-opentype-loader="${OPENTYPE_CDN_URL}"]`,
+      )
 
       if (existingScript) {
-        existingScript.addEventListener(
-          'load',
-          () => resolve(browserWindow.opentype),
-          { once: true },
-        )
+        existingScript.addEventListener('load', () => resolve(browserWindow.opentype), {
+          once: true,
+        })
         existingScript.addEventListener(
           'error',
           () => reject(new Error('Unable to load opentype.js.')),
@@ -257,7 +260,14 @@ function buildRuns(primaryFont, fallbackFont, text) {
   return runs
 }
 
-function buildWatermarkDefinition({ opentype, primaryFont, fallbackFont, text, fontSize, kerning }) {
+function buildWatermarkDefinition({
+  opentype,
+  primaryFont,
+  fallbackFont,
+  text,
+  fontSize,
+  kerning,
+}) {
   const options = { kerning }
   const path = new opentype.Path()
   let cursorX = 0

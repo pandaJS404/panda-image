@@ -30,4 +30,3 @@ export function getAssetUrl(path = '') {
 
   return `${getBaseAssetPath()}${normalizedPath}`
 }
-

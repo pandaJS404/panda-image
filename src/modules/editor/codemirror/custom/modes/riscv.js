@@ -473,7 +473,7 @@ CodeMirror.defineMode('riscv', function (/* config */) {
       'fsrmi',
       'fsflagsi',
     ],
-    'i'
+    'i',
   )
 
   // Registers
@@ -550,7 +550,7 @@ CodeMirror.defineMode('riscv', function (/* config */) {
       't6',
       'pc',
     ],
-    ''
+    '',
   )
 
   // Keywords
@@ -599,7 +599,7 @@ CodeMirror.defineMode('riscv', function (/* config */) {
       '.float',
       '.double',
     ],
-    'i'
+    'i',
   )
 
   function normal(stream, state) {

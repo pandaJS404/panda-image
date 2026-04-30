@@ -47,7 +47,8 @@ const KEY_CODE_ALIASES = {
 }
 
 const shortcutIncludes = (shortcut, values) => values.some(value => shortcut.includes(value))
-const normalizeKey = value => KEY_ALIASES[(value || '').toLowerCase()] || (value || '').toLowerCase()
+const normalizeKey = value =>
+  KEY_ALIASES[(value || '').toLowerCase()] || (value || '').toLowerCase()
 const normalizeCode = value => KEY_CODE_ALIASES[value] || ''
 
 const matchesShortcut = (shortcut, event) => {
@@ -286,7 +287,7 @@ export const useCopyTextHandler = (text, { interval = 1000 } = {}) => {
         setCopied(false)
       }
     },
-    [text]
+    [text],
   )
 
   return { onClick, copied }

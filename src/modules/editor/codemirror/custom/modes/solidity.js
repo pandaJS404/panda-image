@@ -198,7 +198,7 @@ CodeMirror.defineMode('solidity', function (config) {
     // "println": true, "real": true, "recover": true
   }
 
-  let isOperatorChar = /[+\-*&^%:=<>!|\/~]/
+  let isOperatorChar = /[+\-*&^%:=<>!|/~]/
   let isNegativeChar = /[-]/
 
   let curPunc
@@ -223,7 +223,7 @@ CodeMirror.defineMode('solidity', function (config) {
 
     if (isNumber(ch, stream)) return 'number'
 
-    if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
+    if (/[[\]{}(),;:.]/.test(ch)) {
       return updateGarmmer(ch, state)
     }
 
@@ -258,7 +258,7 @@ CodeMirror.defineMode('solidity', function (config) {
       stream.eatWhile(isOperatorChar)
       return 'operator'
     }
-    stream.eatWhile(/[\w\$_\xa1-\uffff]/)
+    stream.eatWhile(/[\w$_\xa1-\uffff]/)
 
     let cur = stream.current()
 
@@ -404,20 +404,19 @@ CodeMirror.defineMode('solidity', function (config) {
       state.lastToken = null
       return (
         !state.startOfLine &&
-        (stream.match(/[\^{0}][0-9\.]+/) ||
-          stream.match(/[\>\=]+?[\s]*[0-9\.]+[\s]*[\<]?[\s]*[0-9\.]+/))
+        (stream.match(/[\^{0}][0-9.]+/) || stream.match(/[>=]+?[\s]*[0-9.]+[\s]*[<]?[\s]*[0-9.]+/))
       )
     }
   }
 
   function isNumber(ch, stream) {
-    if (/[\d\.]/.test(ch)) {
+    if (/[\d.]/.test(ch)) {
       if (ch == '.') {
-        stream.match(/^[0-9]+([eE][\-+]?[0-9]+)?/)
+        stream.match(/^[0-9]+([eE][-+]?[0-9]+)?/)
       } else if (ch == '0') {
         stream.match(/^[xX][0-9a-fA-F]+/) || stream.match(/^0[0-7]+/)
       } else {
-        stream.match(/^[0-9]*\.?[0-9]*([eE][\-+]?[0-9]+)?/)
+        stream.match(/^[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?/)
       }
       return true
     }

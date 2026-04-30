@@ -41,10 +41,7 @@ function getPersistedBackgroundImageAsset(state) {
 
   const source = state.backgroundImageSource || null
   const selection = state.backgroundImageSelection || null
-  const image =
-    selection || source
-      ? null
-      : state.backgroundImage || null
+  const image = selection || source ? null : state.backgroundImage || null
 
   return {
     source,

@@ -6,11 +6,7 @@ import WindowControls from './WindowControls'
 import Watermark from './Watermark'
 import WidthHandler from './WidthHandler'
 
-import {
-  COLORS,
-  DEFAULT_SETTINGS,
-  THEMES_HASH,
-} from '../src/modules/editor/config'
+import { COLORS, DEFAULT_SETTINGS, THEMES_HASH } from '../src/modules/editor/config'
 import { resolveLanguageMode } from '../src/modules/editor/language'
 import {
   ensureCodeMirrorMode,
@@ -23,10 +19,7 @@ const LANGUAGE_MASK_DELAY = 100
 
 function getResolvedLanguageModeFromProps(props) {
   const config = { ...DEFAULT_SETTINGS, ...props.config }
-  return resolveLanguageMode(
-    props.children,
-    config.language && config.language.toLowerCase(),
-  )
+  return resolveLanguageMode(props.children, config.language && config.language.toLowerCase())
 }
 
 function noop() {}
@@ -417,9 +410,7 @@ class Panda extends React.PureComponent {
                   onSelection={this.onSelection}
                 />
               )}
-              {config.watermark && (
-                <Watermark config={config} light={light} />
-              )}
+              {config.watermark && <Watermark config={config} light={light} />}
               <div className="panda-loading-mask eliminateOnRender">
                 {showLanguageMask ? (
                   <div className="panda-loading-mask__content">

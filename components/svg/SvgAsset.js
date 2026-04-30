@@ -23,7 +23,7 @@ function resolveWidthFromSize(size, component) {
 
 function SvgAsset(
   { component: AssetComponent, size, width, height, color, className, style, ...rest },
-  ref
+  ref,
 ) {
   if (!AssetComponent) {
     return null
@@ -42,7 +42,7 @@ function SvgAsset(
     }
   }
 
-  const mergedStyle = color == null ? style : { ...(style || {}), color }
+  const mergedStyle = color == null ? style : { ...style, color }
   const sizeProps = {}
 
   if (resolvedWidth != null) {
@@ -54,13 +54,7 @@ function SvgAsset(
   }
 
   return (
-    <AssetComponent
-      {...rest}
-      ref={ref}
-      {...sizeProps}
-      className={className}
-      style={mergedStyle}
-    />
+    <AssetComponent {...rest} ref={ref} {...sizeProps} className={className} style={mergedStyle} />
   )
 }
 

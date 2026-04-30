@@ -98,7 +98,10 @@ export const MetaTags = React.memo(() => {
       <title>{`${title} | 将源码生成精美图片`}</title>
       <link rel="shortcut icon" href={getAssetUrl('favicon.ico')} />
       <link rel="manifest" href={getAssetUrl('manifest.json')} />
-      <link rel="apple-touch-icon" href={getAbsoluteAssetUrl('static/brand/apple-touch-icon.png')} />
+      <link
+        rel="apple-touch-icon"
+        href={getAbsoluteAssetUrl('static/brand/apple-touch-icon.png')}
+      />
     </Helmet>
   )
 })

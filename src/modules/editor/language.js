@@ -1,10 +1,6 @@
 import hljs from 'highlight.js/lib/common'
 
-import {
-  LANGUAGE_MIME_HASH,
-  LANGUAGE_MODE_HASH,
-  LANGUAGE_NAME_HASH,
-} from './config'
+import { LANGUAGE_MIME_HASH, LANGUAGE_MODE_HASH, LANGUAGE_NAME_HASH } from './config'
 
 const LANGUAGE_ALIASES = {
   bash: 'shell',
@@ -160,7 +156,11 @@ export function getDroppedFileLanguage(file = {}) {
 export function isDroppedTextFile(file = {}) {
   const mimeType = normalizeLanguageToken(file.type)
 
-  if (mimeType.startsWith('image/') || mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
+  if (
+    mimeType.startsWith('image/') ||
+    mimeType.startsWith('video/') ||
+    mimeType.startsWith('audio/')
+  ) {
     return false
   }
 

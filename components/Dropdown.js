@@ -36,7 +36,7 @@ const getListIndex = (list, item) => {
       candidate.id === item.id &&
       candidate.mode === item.mode &&
       candidate.mime === item.mime &&
-      candidate.name === item.name
+      candidate.name === item.name,
   )
 }
 
@@ -75,7 +75,8 @@ const Dropdown = React.memo(
 
     const selectedIndex = getListIndex(list, selected)
     const selectedValue = {
-      value: selectedIndex > -1 ? getItemValue(selected, selectedIndex) : selected?.name || 'selected',
+      value:
+        selectedIndex > -1 ? getItemValue(selected, selectedIndex) : selected?.name || 'selected',
       label: selected?.name,
     }
 
@@ -104,12 +105,7 @@ const Dropdown = React.memo(
     }
 
     const dropdownNode = (
-      <DropdownContainer
-        className={className}
-        isOpen={isOpen}
-        ariaTooltip={ariaTooltip}
-        {...props}
-      >
+      <DropdownContainer className={className} isOpen={isOpen} ariaTooltip={ariaTooltip} {...props}>
         <Select
           ref={selectRef}
           open={isOpen}
@@ -153,7 +149,7 @@ const Dropdown = React.memo(
     }
 
     return dropdownNode
-  }
+  },
 )
 
 const DropdownContainer = ({ children, className, isOpen, ariaTooltip, ...props }) => {

@@ -33,9 +33,7 @@ describe('background image persistence', () => {
     })
     cy.wait(1000)
 
-    cy.url().should(url =>
-      expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01')
-    )
+    cy.url().should(url => expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01'))
     cy.window().then(win => {
       const asset = JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)
 
@@ -47,9 +45,7 @@ describe('background image persistence', () => {
     cy.reload()
     editorVisible()
 
-    cy.url().should(url =>
-      expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01')
-    )
+    cy.url().should(url => expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01'))
     cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
     cy.get('.bg-color-container .bg-color')
       .invoke('attr', 'style')
@@ -127,9 +123,7 @@ describe('background image persistence', () => {
 
     cy.reload()
     editorVisible()
-    cy.url().should(url =>
-      expect(decodeURIComponent(url)).to.contain(`bgi=${REMOTE_IMAGE_URL}`)
-    )
+    cy.url().should(url => expect(decodeURIComponent(url)).to.contain(`bgi=${REMOTE_IMAGE_URL}`))
     cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
     cy.get('.bg-color-container .bg-color')
       .invoke('attr', 'style')
@@ -152,7 +146,7 @@ describe('background image persistence', () => {
           JSON.stringify({
             backgroundMode: 'image',
             backgroundImageSource: null,
-          })
+          }),
         )
         win.localStorage.setItem(
           'PANDA_BACKGROUND_IMAGE_ASSET',
@@ -160,7 +154,7 @@ describe('background image persistence', () => {
             source: null,
             image: LOCAL_IMAGE_DATA_URL,
             selection: LOCAL_SELECTION_DATA_URL,
-          })
+          }),
         )
       },
     })
@@ -188,7 +182,7 @@ describe('background image persistence', () => {
             backgroundGradient: gradient,
             backgroundGradientBlendMode: null,
             backgroundImageSource: null,
-          })
+          }),
         )
       },
     })

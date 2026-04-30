@@ -82,13 +82,7 @@ function CopyMenu({ copyImage }) {
   })
 
   const tooltipLabel = loading ? '复制中' : copied ? '复制成功' : '复制图片'
-  const icon = loading ? (
-    <LoadingOutlined spin />
-  ) : copied ? (
-    <CheckOutlined />
-  ) : (
-    <CopyOutlined />
-  )
+  const icon = loading ? <LoadingOutlined spin /> : copied ? <CheckOutlined /> : <CopyOutlined />
 
   return (
     <div className="copy-menu-container copy-menu-container--contrast tools-item">

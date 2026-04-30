@@ -29,7 +29,7 @@ const ButtonPrimitive = React.forwardRef(
       styles,
       ...props
     },
-    ref
+    ref,
   ) => {
     const tooltipKey = React.useId()
 
@@ -84,7 +84,7 @@ const ButtonPrimitive = React.forwardRef(
         {children}
       </AntButton>
     )
-  }
+  },
 )
 
 export default ButtonPrimitive
