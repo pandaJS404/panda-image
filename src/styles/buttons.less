@@ -487,39 +487,103 @@
   position: relative;
   display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   align-items: stretch;
-  justify-content: stretch;
+  justify-content: flex-start;
   width: 100%;
   height: 100%;
-  min-height: 88px;
+  min-height: 118px;
   padding: 0;
   margin-inline-end: 0;
   overflow: hidden;
   border-radius: var(--control-radius);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  line-height: 0;
+  border: 1px solid var(--control-border);
+  background: var(--control-surface);
+  color: var(--text-primary);
+  box-shadow: none;
+  line-height: normal;
+  transition: var(--interactive-transition);
+}
+
+.preset-preview-button > .panda-button__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
 }
 
 .preset-preview-button:hover,
 .preset-preview-button:focus,
 .preset-preview-button:focus-visible,
 .preset-preview-button:focus-within {
-  box-shadow: inset 0 0 0 1px var(--focus-ring);
+  transform: translateY(-1px);
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
 .preset-preview-button[data-selected='true'],
 .preset-preview-button[data-active='true'] {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  border-color: var(--control-selected-border);
+  background: var(--control-selected-surface);
+  box-shadow: inset 0 0 0 1px var(--control-selected-border);
+}
+
+.preset-preview-button:hover .preset-preview-image,
+.preset-preview-button:focus-visible .preset-preview-image,
+.preset-preview-button:focus-within .preset-preview-image {
+  filter: brightness(1.06);
+  transform: scale(1.03);
+}
+
+.preset-preview-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  transition: var(--interactive-transition);
+}
+
+.preset-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px;
+  text-align: left;
+}
+
+.preset-card-title {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-card-description {
+  display: block;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .preset-remove-button {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  min-width: 18px;
-  min-height: 18px;
+  top: 5px;
+  right: 5px;
+  min-width: 20px;
+  min-height: 20px;
   background-color: var(--surface-1);
   border-color: var(--border-subtle);
   border-radius: var(--control-radius);
@@ -527,19 +591,18 @@
 }
 
 .settings-presets-create-button {
-  min-height: 24px;
-  margin-left: 4px;
+  justify-content: center;
+  min-height: var(--control-height);
   color: var(--text-secondary);
+  border: 1px solid var(--control-border);
+  background: var(--control-surface);
 }
 
 .settings-presets-create-button:hover,
 .settings-presets-create-button:focus-visible {
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
   color: var(--text-primary);
-}
-
-.settings-presets-toggle {
-  margin-left: auto;
-  min-height: 24px;
 }
 
 .settings-presets-undo {

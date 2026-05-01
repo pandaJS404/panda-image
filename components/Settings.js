@@ -30,6 +30,7 @@ function getViewportWidthMax() {
 }
 
 const SETTINGS_MENU_LABELS = {
+  Templates: '模板',
   Window: '窗口',
   Editor: '编辑器',
   Watermark: '水印',
@@ -601,8 +602,7 @@ const invalidSetting = (value, key) =>
 
 function Settings(props) {
   const [presets, setPresets] = React.useState(DEFAULT_PRESETS)
-  const [selectedMenu, setSelectedMenu] = React.useState('Window')
-  const [showPresets, setShowPresets] = React.useState(true)
+  const [selectedMenu, setSelectedMenu] = React.useState('Templates')
   const [previousSettings, setPreviousSettings] = React.useState(null)
   const [open, setOpen] = React.useState(false)
 
@@ -651,9 +651,20 @@ function Settings(props) {
     }
   }, [handleResetShortcut])
 
-  const togglePresets = React.useCallback(() => {
-    setShowPresets(current => !current)
-  }, [])
+  React.useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    const lockClassName = 'panda-settings-scroll-lock'
+    const targets = [document.documentElement, document.body].filter(Boolean)
+
+    targets.forEach(target => target.classList.toggle(lockClassName, open))
+
+    return () => {
+      targets.forEach(target => target.classList.remove(lockClassName))
+    }
+  }, [open])
 
   const toggleOpen = React.useCallback(() => {
     setOpen(current => !current)
@@ -756,6 +767,21 @@ function Settings(props) {
   }, [getSettingsFromProps, props])
 
   const tabItems = [
+    {
+      key: 'Templates',
+      label: SETTINGS_MENU_LABELS.Templates,
+      children: (
+        <Presets
+          presets={presets}
+          selected={props.preset}
+          apply={applyPreset}
+          undo={undoPreset}
+          remove={removePreset}
+          create={createPreset}
+          applied={Boolean(previousSettings)}
+        />
+      ),
+    },
     {
       key: 'Window',
       label: SETTINGS_MENU_LABELS.Window,
@@ -861,17 +887,6 @@ function Settings(props) {
       >
         {open ? (
           <div className="settings-panel">
-            <Presets
-              show={showPresets}
-              presets={presets}
-              selected={props.preset}
-              toggle={togglePresets}
-              apply={applyPreset}
-              undo={undoPreset}
-              remove={removePreset}
-              create={createPreset}
-              applied={Boolean(previousSettings)}
-            />
             <Tabs
               activeKey={selectedMenu}
               className="settings-tabs"

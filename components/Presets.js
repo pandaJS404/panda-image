@@ -1,10 +1,52 @@
 import React from 'react'
-import { DeleteOutlined, DownOutlined, UpOutlined } from '@ant-design/icons'
+import { DeleteOutlined } from '@ant-design/icons'
 
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import { DEFAULT_PRESETS } from '../src/modules/editor/config'
 
-const Preset = React.memo(({ remove, apply, selected, preset }) => {
+const WINDOW_THEME_LABELS = {
+  none: '无窗口',
+  bw: '黑白窗口',
+  boxy: '方形窗口',
+  sharp: '无窗口',
+}
+
+function getTemplateTitle(preset, index) {
+  if (preset.name) {
+    return preset.name
+  }
+
+  return preset.custom ? `我的模板 ${index + 1}` : `模板 ${index + 1}`
+}
+
+function getTemplateDescription(preset) {
+  const details = []
+  const theme = preset.theme || '默认主题'
+  const windowTheme = WINDOW_THEME_LABELS[preset.windowTheme || 'none'] || '窗口样式'
+
+  details.push(theme)
+  details.push(windowTheme)
+
+  if (preset.backgroundMode === 'image') {
+    details.push('图片背景')
+  } else if (preset.backgroundGradient) {
+    details.push('渐变背景')
+  } else if (preset.backgroundColor) {
+    details.push('纯色背景')
+  }
+
+  if (preset.dropShadow) {
+    details.push('投影')
+  }
+
+  if (preset.glassEffect) {
+    details.push('毛玻璃')
+  }
+
+  return details.filter(Boolean).slice(0, 4).join(' · ') || '快速套用当前视觉风格'
+}
+
+const Preset = React.memo(({ remove, apply, selected, preset, title, description }) => {
   const isSelected = preset.id === selected
 
   const handleApply = () => {
@@ -20,18 +62,26 @@ const Preset = React.memo(({ remove, apply, selected, preset }) => {
         active={isSelected}
         className="preset-preview-button"
         onClick={handleApply}
-        aria-tooltip={preset.name ? `应用预设 ${preset.name}` : '应用预设'}
-        style={{
-          backgroundImage: `url('${preset.icon}')`,
-          backgroundColor: preset.backgroundColor,
-        }}
-      />
+        aria-tooltip={`应用模板 ${title}`}
+      >
+        <span
+          className="preset-preview-image"
+          style={{
+            backgroundImage: `url('${preset.icon}')`,
+            backgroundColor: preset.backgroundColor,
+          }}
+        />
+        <span className="preset-card-body">
+          <span className="preset-card-title">{title}</span>
+          <span className="preset-card-description">{description}</span>
+        </span>
+      </ButtonPrimitive>
       {preset.custom ? (
         <ButtonPrimitive
           iconOnly
           onClick={() => remove(preset.id)}
           className="preset-remove-button"
-          aria-tooltip="移除预设"
+          aria-tooltip="移除模板"
         >
           <DeleteOutlined />
         </ButtonPrimitive>
@@ -41,51 +91,40 @@ const Preset = React.memo(({ remove, apply, selected, preset }) => {
 })
 
 const Presets = React.memo(
-  ({ show, create, toggle, undo, presets, selected, remove, apply, applied, contentRef }) => {
-    const customPresetsLength = presets.length - DEFAULT_PRESETS.length
+  ({ create, undo, presets, selected, remove, apply, applied, contentRef }) => {
+    const customPresets = presets.filter(preset => preset.custom)
+    const defaultPresets = presets.filter(preset => !preset.custom)
+    const renderPreset = (preset, index) => (
+      <Preset
+        key={preset.id}
+        remove={remove}
+        apply={apply}
+        preset={preset}
+        selected={selected}
+        title={getTemplateTitle(preset, index)}
+        description={getTemplateDescription(preset)}
+      />
+    )
 
     return (
       <div className="settings-presets">
         <div className="settings-presets-header">
-          <span>预设</span>
-          {show ? (
-            <ButtonPrimitive onClick={create} className="settings-presets-create-button">
-              新建 +
-            </ButtonPrimitive>
-          ) : null}
-          <ButtonPrimitive
-            iconOnly
-            onClick={toggle}
-            className="settings-presets-toggle"
-            aria-tooltip="切换预设列表"
-          >
-            {show ? <UpOutlined /> : <DownOutlined />}
+          <ButtonPrimitive fullWidth onClick={create} className="settings-presets-create-button">
+            存为模板
           </ButtonPrimitive>
         </div>
-        {show ? (
-          <div className="settings-presets-content" ref={contentRef} role="radiogroup">
-            {presets
-              .filter(preset => preset.custom)
-              .map(preset => (
-                <Preset
-                  key={preset.id}
-                  remove={remove}
-                  apply={apply}
-                  preset={preset}
-                  selected={selected}
-                />
-              ))}
-            {customPresetsLength > 0 ? <div className="settings-presets-divider" /> : null}
-            {presets
-              .filter(preset => !preset.custom)
-              .map(preset => (
-                <Preset key={preset.id} apply={apply} preset={preset} selected={selected} />
-              ))}
-          </div>
-        ) : null}
-        {show && applied ? (
+        <div className="settings-presets-content" ref={contentRef} role="radiogroup">
+          <div className="settings-presets-group-title">个人模板</div>
+          {customPresets.length === 0 ? (
+            <div className="settings-presets-empty">保存当前样式后会出现在这里</div>
+          ) : null}
+          {customPresets.map(renderPreset)}
+          <div className="settings-presets-group-title">系统模板</div>
+          {defaultPresets.map(renderPreset)}
+        </div>
+        {applied ? (
           <div className="settings-presets-applied">
-            <span>已应用预设</span>
+            <span>已应用模板</span>
 
             <button type="button" onClick={undo} className="settings-presets-undo">
               撤销 <span>&#x21A9;</span>
