@@ -58,9 +58,7 @@ function EditorContainer() {
   const storageQueueRef = React.useRef(Promise.resolve())
 
   const enqueueStorageTask = React.useCallback(task => {
-    const nextTask = storageQueueRef.current
-      .catch(() => {})
-      .then(task)
+    const nextTask = storageQueueRef.current.catch(() => {}).then(task)
 
     storageQueueRef.current = nextTask.catch(() => {})
     return nextTask

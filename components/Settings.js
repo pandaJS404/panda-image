@@ -85,10 +85,7 @@ function NeumorphismShapeIcon({ shape, label }) {
 
   return (
     <span className="settings-neumorphism-shape-icon" aria-hidden="true" title={label}>
-      <SvgAsset
-        component={asset}
-        className="settings-neumorphism-shape-icon__svg"
-      />
+      <SvgAsset component={asset} className="settings-neumorphism-shape-icon__svg" />
     </span>
   )
 }
@@ -373,8 +370,7 @@ function SettingsSlider({
           step={step}
           marks={marks}
           tooltip={{
-            open: false,
-            formatter: null,
+            formatter: nextValue => formatSliderDisplay(nextValue, unit),
           }}
         />
       </SliderInternalContext.Provider>
@@ -714,11 +710,7 @@ function NeumorphismSettings({
             fallbackColor={neumorphismGradientStart || DEFAULT_SETTINGS.neumorphismGradientStart}
             disabled={isImageBackground}
             onChange={onChange.bind(null, 'neumorphismGradientStart')}
-            onClear={onChange.bind(
-              null,
-              'neumorphismGradientStart',
-              gradientDefaults.start,
-            )}
+            onClear={onChange.bind(null, 'neumorphismGradientStart', gradientDefaults.start)}
           />
           <HexColorField
             label="结束色"
@@ -726,11 +718,7 @@ function NeumorphismSettings({
             fallbackColor={neumorphismGradientEnd || DEFAULT_SETTINGS.neumorphismGradientEnd}
             disabled={isImageBackground}
             onChange={onChange.bind(null, 'neumorphismGradientEnd')}
-            onClear={onChange.bind(
-              null,
-              'neumorphismGradientEnd',
-              gradientDefaults.end,
-            )}
+            onClear={onChange.bind(null, 'neumorphismGradientEnd', gradientDefaults.end)}
           />
           <SettingsSlider
             label="渐变角度"
@@ -1044,7 +1032,11 @@ function WatermarkSettings({
                     value={watermarkFillColor}
                     fallbackColor={DEFAULT_WATERMARK_FILL_COLOR}
                     onChange={onChange.bind(null, 'watermarkFillColor')}
-                    onClear={onChange.bind(null, 'watermarkFillColor', DEFAULT_WATERMARK_FILL_COLOR)}
+                    onClear={onChange.bind(
+                      null,
+                      'watermarkFillColor',
+                      DEFAULT_WATERMARK_FILL_COLOR,
+                    )}
                   />
                 ) : null}
               </SettingsSection>
