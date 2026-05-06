@@ -9,6 +9,7 @@ function Toggle({ className = '', enabled, label, onChange, disabled = false }) 
       <Switch
         checked={enabled}
         checkedChildren={<CheckOutlined />}
+        disabled={disabled}
         unCheckedChildren={<CloseOutlined />}
         onChange={onChange}
       />

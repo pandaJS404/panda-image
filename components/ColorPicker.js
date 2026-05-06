@@ -8,7 +8,7 @@ export default function ColorPicker(props) {
   const { onChange = () => {}, presets, disableAlpha, className = '' } = props
 
   React.useEffect(() => {
-    setColor(props.color)
+    setColor(currentColor => (currentColor === props.color ? currentColor : props.color))
   }, [props.color])
 
   return (

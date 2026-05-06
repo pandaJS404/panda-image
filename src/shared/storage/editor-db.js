@@ -265,7 +265,13 @@ function buildMigratedStorage({
 
 async function readRootStorage() {
   const rawStorage = await readValue(STORAGE_ROOT_KEY)
-  return normalizeStorageShape(rawStorage)
+  const normalizedStorage = normalizeStorageShape(rawStorage)
+
+  if (JSON.stringify(rawStorage || {}) !== JSON.stringify(normalizedStorage)) {
+    await writeValue(STORAGE_ROOT_KEY, normalizedStorage, { skipMigration: true })
+  }
+
+  return normalizedStorage
 }
 
 function mergeSection(currentStorage, section, updates) {
@@ -504,7 +510,9 @@ export async function clearStorage() {
   return clearValues()
 }
 
-export async function migrateLegacyStorage(storage = typeof window !== 'undefined' ? window.localStorage : null) {
+export async function migrateLegacyStorage(
+  storage = typeof window !== 'undefined' ? window.localStorage : null,
+) {
   if (storage !== (typeof window !== 'undefined' ? window.localStorage : null)) {
     return false
   }

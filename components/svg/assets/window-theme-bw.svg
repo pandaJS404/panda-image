@@ -3,11 +3,9 @@
   <g fill="none" fill-rule="evenodd" transform="translate(17 33)">
     <path
       fill="#000000"
-      stroke="#FFFFFF"
-      stroke-width="2"
       d="M65.0458013,49.1077029 C66.0458013,49.1077029 0.174089069,49.1077029 0.174089069,49.1077029 L0.174089069,5.16868499 C0.174089069,2.41055979 2.40986586,0.174657534 5.17268563,0.174657534 L65.0458013,0.174657534 L65.0458013,49.1077029 Z"
     />
-    <g fill-rule="nonzero" stroke="#878787" transform="translate(18.96 14.27)">
+    <g fill-rule="nonzero" stroke="#f9f9f9" transform="translate(18.96 14.27)">
       <ellipse cx="7.045" cy="7.048" rx="7.045" ry="7.048" />
       <ellipse cx="30.526" cy="7.048" rx="7.045" ry="7.048" />
     </g>

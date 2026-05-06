@@ -1,5 +1,6 @@
 import toHash from 'tohash'
 import { getAssetUrl } from '../../../shared/assets'
+import { DEFAULT_NEUMORPHISM_SETTINGS } from '../neumorphism'
 
 export const FONTS = [
   {
@@ -1309,6 +1310,7 @@ export const DEFAULT_SETTINGS = {
   dropShadow: true,
   dropShadowOffsetY: '20px',
   dropShadowBlurRadius: '68px',
+  ...DEFAULT_NEUMORPHISM_SETTINGS,
   theme: DEFAULT_THEME.id,
   windowTheme: 'none',
   codeMirrorBorder: false,

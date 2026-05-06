@@ -32,7 +32,12 @@ function AppProviders() {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const rootElement = document.getElementById('root')
+const root = window.__PANDA_REACT_ROOT__ || ReactDOM.createRoot(rootElement)
+
+window.__PANDA_REACT_ROOT__ = root
+
+root.render(
   <ErrorBoundary>
     <UiThemeProvider>
       <AppProviders />

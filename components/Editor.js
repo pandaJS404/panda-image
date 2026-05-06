@@ -70,6 +70,22 @@ const EXPORT_STAGE_STYLES = {
   zIndex: '-1',
   contain: 'layout style paint',
 }
+const NEUMORPHISM_CONFLICTING_SETTINGS = {
+  codeMirrorBorder: false,
+  dropShadow: false,
+  glassEffect: false,
+}
+
+function getNeumorphismCompatibleSettings(settings) {
+  if (!settings?.neumorphismEnabled) {
+    return settings
+  }
+
+  return {
+    ...settings,
+    ...NEUMORPHISM_CONFLICTING_SETTINGS,
+  }
+}
 
 function formatBackgroundPhotographerCredit(photographer) {
   const name = photographer?.name || ''
@@ -249,7 +265,11 @@ class Editor extends React.Component {
       newState.fontUrl = storedFontUrl
     }
 
-    if (newState.fontFamily && !FONTS.find(({ id }) => id === newState.fontFamily) && !newState.fontUrl) {
+    if (
+      newState.fontFamily &&
+      !FONTS.find(({ id }) => id === newState.fontFamily) &&
+      !newState.fontUrl
+    ) {
       newState.fontFamily = DEFAULT_SETTINGS.fontFamily
     }
 
@@ -274,7 +294,13 @@ class Editor extends React.Component {
       newState.watermarkFontFamily = DEFAULT_FONT_FAMILY
     }
 
-    this.setState(newState)
+    const compatibleState = getNeumorphismCompatibleSettings(newState)
+
+    this.setState(compatibleState, () => {
+      if (compatibleState.neumorphismEnabled) {
+        this.sync()
+      }
+    })
   }
 
   getTheme = () => this.props.themes.find(theme => theme.id === this.state.theme) || DEFAULT_THEME
@@ -595,15 +621,51 @@ class Editor extends React.Component {
   }
 
   updateSetting = (key, value) => {
-    this.updateState({ [key]: value })
-
     if (key === 'fontUrl') {
       this.props.onFontAssetChange?.(value || null)
     }
 
-    if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
-      this.updateState({ preset: null })
+    this.setState(currentState => {
+      const candidateState = getNeumorphismCompatibleSettings({ ...currentState, [key]: value })
+      const changedEntries = Object.entries(candidateState).filter(
+        ([nextKey, nextValue]) => currentState[nextKey] !== nextValue,
+      )
+
+      if (!changedEntries.length) {
+        return null
+      }
+
+      const nextState = Object.fromEntries(changedEntries)
+
+      if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
+        nextState.preset = null
+      }
+
+      return nextState
+    }, this.sync)
+  }
+
+  updateTheme = theme => {
+    this.setState(currentState => {
+      if (currentState.theme === theme && currentState.highlights == null) {
+        return null
+      }
+
+      return { theme, highlights: null }
+    }, this.sync)
+  }
+
+  updateHighlights = updates => {
+    if (!updates || Object.keys(updates).length === 0) {
+      return
     }
+
+    this.setState(({ highlights = {} }) => ({
+      highlights: {
+        ...highlights,
+        ...updates,
+      },
+    }))
   }
 
   setWatermarkFontAsset = nextValue => {
@@ -714,16 +776,6 @@ class Editor extends React.Component {
     this.updateState({ ...nextBackgroundChanges, preset: null })
   }
 
-  updateTheme = theme => this.updateState({ theme, highlights: null })
-
-  updateHighlights = updates =>
-    this.setState(({ highlights = {} }) => ({
-      highlights: {
-        ...highlights,
-        ...updates,
-      },
-    }))
-
   createTheme = theme => {
     this.props.updateThemes(themes => [theme, ...themes])
     this.updateTheme(theme.id)
@@ -738,7 +790,7 @@ class Editor extends React.Component {
   }
 
   applyPreset = ({ id: preset, ...settings }) => {
-    this.updateState({ preset, ...settings })
+    this.updateState(getNeumorphismCompatibleSettings({ preset, ...settings }))
     this.setWatermarkFontAsset(settings.watermarkFontUrl || null)
   }
 

@@ -45,22 +45,16 @@ export const saveSettings = async settings => {
 }
 
 export const savePresets = async presets =>
-  setSection(
-    STORAGE_SECTIONS.template,
-    {
-      ...(await getSection(STORAGE_SECTIONS.template)),
-      presets: Array.isArray(presets) ? presets : [],
-    },
-  )
+  setSection(STORAGE_SECTIONS.template, {
+    ...(await getSection(STORAGE_SECTIONS.template)),
+    presets: Array.isArray(presets) ? presets : [],
+  })
 
 export const saveThemes = async themes =>
-  setSection(
-    STORAGE_SECTIONS.theme,
-    {
-      ...(await getSection(STORAGE_SECTIONS.theme)),
-      themes: Array.isArray(themes) ? themes : [],
-    },
-  )
+  setSection(STORAGE_SECTIONS.theme, {
+    ...(await getSection(STORAGE_SECTIONS.theme)),
+    themes: Array.isArray(themes) ? themes : [],
+  })
 
 export const getSettings = async () => {
   const storage = await getStorage()
@@ -114,8 +108,7 @@ export const getBackgroundImageAsset = async () => {
   }
 }
 
-export const clearSettings = () =>
-  setStorage(normalizeStorageShape()).then(() => undefined)
+export const clearSettings = () => setStorage(normalizeStorageShape()).then(() => undefined)
 
 export const clearWatermarkFontAsset = () =>
   removeSectionKeysByName(STORAGE_SECTIONS.assets, ['watermarkFontUrl']).then(() => undefined)
@@ -162,6 +155,8 @@ export const syncLegacyStorage = migrateLegacyStorage
 export const clearEditorStorage = clearStorage
 export const toSectionedStorage = normalizeImportedConfig
 export const toFlatSettings = flattenStorageSections
+export const prepareConfigForExport = settings => toSectionedStorage(settings)
+export const prepareConfigForImport = value => toFlatSettings(toSectionedStorage(value))
 
 export const fileToDataURL = blob =>
   new Promise((resolve, reject) => {

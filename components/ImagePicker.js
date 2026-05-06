@@ -478,8 +478,13 @@ export default class ImagePicker extends React.Component {
 
 function GeneratePaletteSetting({ onChange }) {
   const [enabled, setEnabled] = useLocalStorage('PANDA_GENERATE_COLOR_PALETTE')
+  const onChangeRef = React.useRef(onChange)
 
-  React.useEffect(() => void onChange(enabled), [enabled, onChange])
+  React.useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  React.useEffect(() => void onChangeRef.current(enabled), [enabled])
 
   return (
     <Toggle

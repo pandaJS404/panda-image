@@ -31,16 +31,13 @@ const ButtonPrimitive = React.forwardRef(
     },
     ref,
   ) => {
-    const tooltipKey = React.useId()
+    const buttonRef = React.useRef(null)
 
     React.useEffect(() => {
-      if (typeof document === 'undefined') {
-        return
-      }
+      syncDomAttribute(buttonRef.current, 'aria-tooltip', ariaTooltip)
+    }, [ariaTooltip])
 
-      const element = document.querySelector(`[data-aria-tooltip-key="${tooltipKey}"]`)
-      syncDomAttribute(element, 'aria-tooltip', ariaTooltip)
-    }, [ariaTooltip, tooltipKey])
+    React.useImperativeHandle(ref, () => buttonRef.current)
 
     const handleClick = event => {
       if (disabled) {
@@ -53,7 +50,7 @@ const ButtonPrimitive = React.forwardRef(
 
     return (
       <AntButton
-        ref={ref}
+        ref={buttonRef}
         href={href}
         htmlType={href ? undefined : htmlType}
         onClick={handleClick}
@@ -68,7 +65,6 @@ const ButtonPrimitive = React.forwardRef(
         data-selected={selected || undefined}
         data-full-width={fullWidth || undefined}
         data-icon-only={iconOnly || undefined}
-        data-aria-tooltip-key={ariaTooltip ? tooltipKey : undefined}
         autoInsertSpace={false}
         className={`panda-button${className ? ` ${className}` : ''}`}
         classNames={{

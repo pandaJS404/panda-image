@@ -2,6 +2,7 @@ import React from 'react'
 import omitBy from 'lodash.omitby'
 import { SettingOutlined } from '@ant-design/icons'
 import { Modal, Popover, Radio, Slider as AntSlider, Tabs } from 'antd'
+import SliderInternalContext from 'antd/es/slider/Context'
 import { useKeyboardListener } from '../src/shared/react/hooks'
 
 import ThemeSelect from './ThemeSelect'
@@ -12,15 +13,20 @@ import Toggle from './Toggle'
 import ButtonPrimitive from './buttons/ButtonPrimitive'
 import ToolbarIconButton from './buttons/ToolbarIconButton'
 import Presets from './Presets'
+import SvgAsset from './svg/SvgAsset'
+import NeumorphismFlatAsset from './svg/assets/mimicry/plane.svg?react'
+import NeumorphismPressedAsset from './svg/assets/mimicry/invagination.svg?react'
+import NeumorphismConcaveAsset from './svg/assets/mimicry/indent.svg?react'
+import NeumorphismConvexAsset from './svg/assets/mimicry/convex.svg?react'
 import { DEFAULT_PRESETS, DEFAULT_SETTINGS, DEFAULT_WIDTHS } from '../src/modules/editor/config'
 import {
   getPresets,
   savePresets,
   generateId,
   fileToJSON,
+  prepareConfigForExport,
+  prepareConfigForImport,
   stringifyColor,
-  toFlatSettings,
-  toSectionedStorage,
 } from '../src/shared/utils'
 
 function getViewportWidthMax() {
@@ -43,6 +49,43 @@ const WATERMARK_MODE_OPTIONS = [
   { id: 'logo', name: 'Panda' },
   { id: 'text-svg', name: '自定义' },
 ]
+
+const SLIDER_HANDLE_RENDER = node => node
+const SLIDER_INTERNAL_CONTEXT_VALUE = { handleRender: SLIDER_HANDLE_RENDER }
+
+const NEUMORPHISM_SHAPE_OPTIONS = [
+  { id: 'flat', name: '平面' },
+  { id: 'concave', name: '内凹' },
+  { id: 'convex', name: '外凸' },
+  { id: 'pressed', name: '按下' },
+]
+
+const NEUMORPHISM_LIGHT_OPTIONS = [
+  { id: 'top-left', name: '左上' },
+  { id: 'top-right', name: '右上' },
+  { id: 'bottom-right', name: '右下' },
+  { id: 'bottom-left', name: '左下' },
+]
+
+const NEUMORPHISM_SHAPE_ASSETS = {
+  flat: NeumorphismFlatAsset,
+  pressed: NeumorphismPressedAsset,
+  concave: NeumorphismConcaveAsset,
+  convex: NeumorphismConvexAsset,
+}
+
+function NeumorphismShapeIcon({ shape, label }) {
+  const asset = NEUMORPHISM_SHAPE_ASSETS[shape]
+
+  return (
+    <span className="settings-neumorphism-shape-icon" aria-hidden="true" title={label}>
+      <SvgAsset
+        component={asset}
+        className="settings-neumorphism-shape-icon__svg"
+      />
+    </span>
+  )
+}
 
 function serializeNumericValue(value, precision = 2) {
   return `${Number.parseFloat(value.toFixed(precision))}`
@@ -78,44 +121,65 @@ function SettingsSlider({
   label,
   value,
   onChange,
+  disabled = false,
   minValue = 0,
   maxValue = 100,
   step = 1,
   unit = 'px',
   serializeValue = nextValue => `${nextValue}${unit}`,
 }) {
+  const [draftValue, setDraftValue] = React.useState(null)
   const numericValue = Number.parseFloat(value)
-  const sliderValue = Number.isFinite(numericValue) ? numericValue : minValue
+  const committedValue = Number.isFinite(numericValue) ? numericValue : minValue
+  const sliderValue = draftValue ?? committedValue
   const marks = React.useMemo(
     () => getSliderMarks(minValue, maxValue, unit),
     [maxValue, minValue, unit],
   )
 
-  const handleChange = React.useCallback(
-    nextValue => {
-      if (Array.isArray(nextValue)) {
-        return
-      }
+  React.useEffect(() => {
+    if (!disabled) {
+      setDraftValue(null)
+    }
+  }, [committedValue, disabled])
 
-      onChange(serializeValue(nextValue))
-    },
-    [onChange, serializeValue],
-  )
+  const commitValue = React.useCallback(nextValue => {
+    if (Array.isArray(nextValue)) {
+      return
+    }
+
+    setDraftValue(null)
+  }, [])
 
   return (
-    <div className={`settings-row settings-slider-row${className ? ` ${className}` : ''}`}>
+    <div
+      className={`settings-row settings-slider-row${className ? ` ${className}` : ''}`}
+      data-disabled={disabled || undefined}
+    >
       <span className="settings-slider-label">{label}</span>
-      <AntSlider
-        aria-label={label}
-        value={sliderValue}
-        className="settings-slider-control"
-        onChange={handleChange}
-        min={minValue}
-        max={maxValue}
-        step={step}
-        marks={marks}
-        tooltip={{ formatter: tooltipValue => formatSliderDisplay(tooltipValue, unit) }}
-      />
+      <SliderInternalContext.Provider value={SLIDER_INTERNAL_CONTEXT_VALUE}>
+        <AntSlider
+          aria-label={label}
+          value={sliderValue}
+          className="settings-slider-control"
+          disabled={disabled}
+          onChange={nextValue => {
+            if (!Array.isArray(nextValue)) {
+              setDraftValue(nextValue)
+              onChange(serializeValue(nextValue))
+            }
+          }}
+          onChangeComplete={commitValue}
+          min={minValue}
+          max={maxValue}
+          step={step}
+          marks={marks}
+          tooltip={{
+            open: false,
+            formatter: null,
+          }}
+        />
+      </SliderInternalContext.Provider>
     </div>
   )
 }
@@ -128,6 +192,7 @@ function SettingsColorField({
   fallbackColor = DEFAULT_SETTINGS.codeMirrorBorderColor,
   onClear,
   clearLabel = '复原',
+  disabled = false,
 }) {
   const [open, setOpen] = React.useState(false)
   const displayColor = value || fallbackColor
@@ -147,14 +212,17 @@ function SettingsColorField({
   )
 
   return (
-    <div className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}>
+    <div
+      className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}
+      data-disabled={disabled || undefined}
+    >
       <span className="settings-slider-label">{label}</span>
       <div className="settings-color-actions">
         <Popover
           trigger="click"
           placement="bottomRight"
-          open={open}
-          onOpenChange={setOpen}
+          open={disabled ? false : open}
+          onOpenChange={nextOpen => setOpen(disabled ? false : nextOpen)}
           classNames={{ root: 'settings-color-popover' }}
           styles={{ body: { padding: 0 } }}
           getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
@@ -169,6 +237,7 @@ function SettingsColorField({
             className="settings-color-trigger"
             aria-label={label}
             aria-tooltip={label}
+            disabled={disabled}
           >
             <span className="settings-color-trigger__alpha" aria-hidden="true" />
             <span
@@ -179,8 +248,80 @@ function SettingsColorField({
           </ButtonPrimitive>
         </Popover>
         {onClear ? (
-          <ButtonPrimitive className="settings-color-clear" onClick={onClear}>
+          <ButtonPrimitive className="settings-color-clear" disabled={disabled} onClick={onClear}>
             {clearLabel}
+          </ButtonPrimitive>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function HexColorField({
+  className = '',
+  label,
+  value,
+  onChange,
+  fallbackColor,
+  onClear,
+  disabled = false,
+}) {
+  const [open, setOpen] = React.useState(false)
+  const displayColor = value || fallbackColor
+
+  const handleChange = React.useCallback(
+    nextColor => {
+      if (typeof nextColor === 'string') {
+        onChange(nextColor)
+        return
+      }
+
+      if (nextColor?.hex) {
+        onChange(nextColor.hex)
+      }
+    },
+    [onChange],
+  )
+
+  return (
+    <div
+      className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}
+      data-disabled={disabled || undefined}
+    >
+      <span className="settings-slider-label">{label}</span>
+      <div className="settings-color-actions">
+        <Popover
+          trigger="click"
+          placement="bottomRight"
+          open={disabled ? false : open}
+          onOpenChange={nextOpen => setOpen(disabled ? false : nextOpen)}
+          classNames={{ root: 'settings-color-popover' }}
+          styles={{ body: { padding: 0 } }}
+          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
+          content={
+            <div className="settings-color-popover__content">
+              <ColorPicker color={displayColor} onChange={handleChange} disableAlpha />
+            </div>
+          }
+        >
+          <ButtonPrimitive
+            active={open}
+            className="settings-color-trigger"
+            aria-label={label}
+            aria-tooltip={label}
+            disabled={disabled}
+          >
+            <span className="settings-color-trigger__alpha" aria-hidden="true" />
+            <span
+              className="settings-color-trigger__swatch"
+              aria-hidden="true"
+              style={{ background: displayColor }}
+            />
+          </ButtonPrimitive>
+        </Popover>
+        {onClear ? (
+          <ButtonPrimitive className="settings-color-clear" disabled={disabled} onClick={onClear}>
+            重置
           </ButtonPrimitive>
         ) : null}
       </div>
@@ -199,6 +340,7 @@ function SettingsSection({ title, children }) {
 
 function WindowSettings({
   onChange,
+  neumorphismEnabled,
   codeMirrorBorder,
   codeMirrorBorderColor,
   codeMirrorBorderRadius,
@@ -215,18 +357,21 @@ function WindowSettings({
   width,
 }) {
   const widthMax = getViewportWidthMax()
+  const disableConflictingVisualOptions = Boolean(neumorphismEnabled)
 
   return (
     <div className="settings-content">
       <Toggle
         label="编辑器边框"
         enabled={codeMirrorBorder}
+        disabled={disableConflictingVisualOptions}
         onChange={onChange.bind(null, 'codeMirrorBorder')}
       />
       {codeMirrorBorder ? (
         <SettingsColorField
           label="编辑器边框颜色"
           value={codeMirrorBorderColor}
+          disabled={disableConflictingVisualOptions}
           onChange={onChange.bind(null, 'codeMirrorBorderColor')}
         />
       ) : null}
@@ -239,6 +384,7 @@ function WindowSettings({
         <SettingsColorField
           label="编辑器边框颜色"
           value={codeMirrorBorderColor}
+          disabled={disableConflictingVisualOptions}
           onChange={onChange.bind(null, 'codeMirrorBorderColor')}
         />
       ) : null}
@@ -247,6 +393,7 @@ function WindowSettings({
           label="圆角"
           value={codeMirrorBorderRadius}
           maxValue={24}
+          disabled={disableConflictingVisualOptions}
           onChange={onChange.bind(null, 'codeMirrorBorderRadius')}
         />
       </div>
@@ -265,26 +412,39 @@ function WindowSettings({
           onChange={onChange.bind(null, 'paddingHorizontal')}
         />
       </div>
-      <Toggle label="投影" enabled={dropShadow} onChange={onChange.bind(null, 'dropShadow')} />
+      <Toggle
+        label="投影"
+        enabled={dropShadow}
+        disabled={disableConflictingVisualOptions}
+        onChange={onChange.bind(null, 'dropShadow')}
+      />
       {dropShadow ? (
         <div className="settings-split-row drop-shadow-options">
           <SettingsSlider
             label="Y 轴偏移"
             value={dropShadowOffsetY}
+            disabled={disableConflictingVisualOptions}
             onChange={onChange.bind(null, 'dropShadowOffsetY')}
           />
           <SettingsSlider
             label="模糊半径"
             value={dropShadowBlurRadius}
+            disabled={disableConflictingVisualOptions}
             onChange={onChange.bind(null, 'dropShadowBlurRadius')}
           />
         </div>
       ) : null}
-      <Toggle label="毛玻璃" enabled={glassEffect} onChange={onChange.bind(null, 'glassEffect')} />
+      <Toggle
+        label="毛玻璃"
+        enabled={glassEffect}
+        disabled={disableConflictingVisualOptions}
+        onChange={onChange.bind(null, 'glassEffect')}
+      />
       {glassEffect ? (
         <SettingsSlider
           label="模糊强度"
           value={glassBlurRadius}
+          disabled={disableConflictingVisualOptions}
           minValue={4}
           maxValue={40}
           step={1}
@@ -309,6 +469,105 @@ function WindowSettings({
           onChange={onChange.bind(null, 'width')}
         />
       ) : null}
+    </div>
+  )
+}
+
+function NeumorphismSettings({
+  onChange,
+  neumorphismEnabled,
+  neumorphismColor,
+  neumorphismShape,
+  neumorphismLightSource,
+  neumorphismDistance,
+  neumorphismBlur,
+  neumorphismIntensity,
+  neumorphismRadius,
+}) {
+  return (
+    <div className="settings-content">
+      <Toggle
+        label="启用拟态"
+        enabled={neumorphismEnabled}
+        onChange={onChange.bind(null, 'neumorphismEnabled')}
+      />
+      <HexColorField
+        label="基色"
+        value={neumorphismColor}
+        fallbackColor={DEFAULT_SETTINGS.neumorphismColor}
+        onChange={onChange.bind(null, 'neumorphismColor')}
+        onClear={onChange.bind(null, 'neumorphismColor', DEFAULT_SETTINGS.neumorphismColor)}
+      />
+      <div className="settings-row settings-radio-row">
+        <span className="settings-slider-label">形状</span>
+        <Radio.Group
+          className="settings-radio-group settings-radio-group--wide settings-radio-group--iconic"
+          optionType="button"
+          buttonStyle="solid"
+          value={neumorphismShape || DEFAULT_SETTINGS.neumorphismShape}
+          onChange={event => onChange('neumorphismShape', event.target.value)}
+        >
+          {NEUMORPHISM_SHAPE_OPTIONS.map(({ id, name }) => (
+            <Radio.Button key={id} value={id} aria-label={name}>
+              <NeumorphismShapeIcon shape={id} label={name} />
+            </Radio.Button>
+          ))}
+        </Radio.Group>
+      </div>
+      <div className="settings-row settings-radio-row">
+        <span className="settings-slider-label">光源</span>
+        <Radio.Group
+          className="settings-radio-group settings-radio-group--wide"
+          optionType="button"
+          buttonStyle="solid"
+          value={neumorphismLightSource || DEFAULT_SETTINGS.neumorphismLightSource}
+          onChange={event => onChange('neumorphismLightSource', event.target.value)}
+        >
+          {NEUMORPHISM_LIGHT_OPTIONS.map(({ id, name }) => (
+            <Radio.Button key={id} value={id}>
+              {name}
+            </Radio.Button>
+          ))}
+        </Radio.Group>
+      </div>
+      <SettingsSlider
+        label="距离"
+        value={neumorphismDistance}
+        minValue={0}
+        maxValue={80}
+        unit="px"
+        serializeValue={nextValue => nextValue}
+        onChange={onChange.bind(null, 'neumorphismDistance')}
+      />
+      <SettingsSlider
+        label="模糊"
+        value={neumorphismBlur}
+        minValue={0}
+        maxValue={140}
+        unit="px"
+        serializeValue={nextValue => nextValue}
+        onChange={onChange.bind(null, 'neumorphismBlur')}
+      />
+      <SettingsSlider
+        label="强度"
+        value={
+          Number.parseFloat(neumorphismIntensity || DEFAULT_SETTINGS.neumorphismIntensity) * 100
+        }
+        minValue={1}
+        maxValue={60}
+        unit="%"
+        serializeValue={nextValue => serializeNumericValue(nextValue / 100)}
+        onChange={onChange.bind(null, 'neumorphismIntensity')}
+      />
+      <SettingsSlider
+        label="圆角"
+        value={neumorphismRadius}
+        minValue={0}
+        maxValue={120}
+        unit="px"
+        serializeValue={nextValue => nextValue}
+        onChange={onChange.bind(null, 'neumorphismRadius')}
+      />
     </div>
   )
 }
@@ -536,7 +795,7 @@ function WatermarkSettings({
 function MiscSettings({ format, reset, applyPreset, settings }) {
   const inputRef = React.useRef(null)
   let download
-  const sectionedSettings = React.useMemo(() => toSectionedStorage(settings), [settings])
+  const sectionedSettings = React.useMemo(() => prepareConfigForExport(settings), [settings])
 
   try {
     download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sectionedSettings))}`
@@ -555,7 +814,7 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
           onChange={async event => {
             const json = await fileToJSON(event.target.files[0])
             if (json) {
-              applyPreset(toFlatSettings(toSectionedStorage(json)))
+              applyPreset(prepareConfigForImport(json))
             }
           }}
         />
@@ -790,6 +1049,7 @@ function Settings(props) {
       children: (
         <WindowSettings
           onChange={handleChange}
+          neumorphismEnabled={props.neumorphismEnabled}
           codeMirrorBorder={props.codeMirrorBorder}
           codeMirrorBorderColor={props.codeMirrorBorderColor}
           codeMirrorBorderRadius={props.codeMirrorBorderRadius}
@@ -820,6 +1080,23 @@ function Settings(props) {
           lineNumbers={props.lineNumbers}
           firstLineNumber={props.firstLineNumber}
           hiddenCharacters={props.hiddenCharacters}
+        />
+      ),
+    },
+    {
+      key: 'Neumorphism',
+      label: '拟态',
+      children: (
+        <NeumorphismSettings
+          onChange={handleChange}
+          neumorphismEnabled={props.neumorphismEnabled}
+          neumorphismColor={props.neumorphismColor}
+          neumorphismShape={props.neumorphismShape}
+          neumorphismLightSource={props.neumorphismLightSource}
+          neumorphismDistance={props.neumorphismDistance}
+          neumorphismBlur={props.neumorphismBlur}
+          neumorphismIntensity={props.neumorphismIntensity}
+          neumorphismRadius={props.neumorphismRadius}
         />
       ),
     },
@@ -892,6 +1169,7 @@ function Settings(props) {
             <Tabs
               activeKey={selectedMenu}
               className="settings-tabs"
+              destroyOnHidden={false}
               items={tabItems}
               onChange={setSelectedMenu}
               tabPlacement="left"

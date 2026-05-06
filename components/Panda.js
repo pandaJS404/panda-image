@@ -13,6 +13,7 @@ import {
   isCodeMirrorModeLoaded,
 } from '../src/modules/editor/codemirror/loaders'
 import { getCanvasBackgroundStyle } from '../src/modules/editor/background'
+import { getNeumorphismStyle } from '../src/modules/editor/neumorphism'
 
 const SelectionEditor = React.lazy(() => import('./SelectionEditor'))
 const LANGUAGE_MASK_DELAY = 100
@@ -354,6 +355,7 @@ class Panda extends React.PureComponent {
       document.getElementById('style-editor-button')
 
     const backgroundStyle = getCanvasBackgroundStyle(this.props.config)
+    const neumorphismStyle = config.neumorphismEnabled ? getNeumorphismStyle(config) : null
 
     return (
       <div className="section panda-section">
@@ -372,6 +374,10 @@ class Panda extends React.PureComponent {
               className="container panda-container"
               data-language-loading={showLanguageMask || undefined}
               data-glass-effect={config.glassEffect || undefined}
+              data-neumorphism-enabled={config.neumorphismEnabled || undefined}
+              data-neumorphism-shape={
+                config.neumorphismEnabled ? config.neumorphismShape : undefined
+              }
               style={{
                 '--panda-min-width': config.widthAdjustment ? '90px' : 'auto',
                 '--panda-max-width': '90vw',
@@ -383,6 +389,9 @@ class Panda extends React.PureComponent {
                 '--panda-drop-shadow': config.dropShadow
                   ? `0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
                   : 'none',
+                '--panda-neumorphism-background': neumorphismStyle?.background,
+                '--panda-neumorphism-border-radius': neumorphismStyle?.borderRadius,
+                '--panda-neumorphism-box-shadow': neumorphismStyle?.boxShadow,
                 '--panda-code-border-color': config.codeMirrorBorderColor,
                 '--panda-code-border-radius': config.codeMirrorBorderRadius,
                 '--panda-code-padding-left': '12px',

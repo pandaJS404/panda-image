@@ -27,6 +27,14 @@ export const SETTINGS_SECTION_KEYS = {
     'dropShadow',
     'dropShadowOffsetY',
     'dropShadowBlurRadius',
+    'neumorphismEnabled',
+    'neumorphismColor',
+    'neumorphismShape',
+    'neumorphismLightSource',
+    'neumorphismDistance',
+    'neumorphismBlur',
+    'neumorphismIntensity',
+    'neumorphismRadius',
     'windowTheme',
     'codeMirrorBorder',
     'codeMirrorBorderColor',
@@ -102,6 +110,33 @@ export function createEmptyStorage() {
   }, {})
 }
 
+function mergeFlatFieldsIntoSections(storage, source) {
+  Object.entries(SETTINGS_SECTION_KEYS).forEach(([section, keys]) => {
+    const flatValues = pickKeys(source, keys)
+
+    if (Object.keys(flatValues).length) {
+      storage[section] = {
+        ...flatValues,
+        ...storage[section],
+      }
+    }
+  })
+
+  const assetValues = {
+    ...pickKeys(source, ASSET_KEYS),
+    ...pickKeys(source, WATERMARK_ASSET_KEYS),
+  }
+
+  if (Object.keys(assetValues).length) {
+    storage.assets = {
+      ...assetValues,
+      ...storage.assets,
+    }
+  }
+
+  return storage
+}
+
 export function normalizeStorageShape(value) {
   const storage = createEmptyStorage()
   const source = normalizeObject(value)
@@ -110,13 +145,15 @@ export function normalizeStorageShape(value) {
     storage[section] = normalizeObject(source[section])
   })
 
-  return storage
+  return mergeFlatFieldsIntoSections(storage, source)
 }
 
 export function isSectionedStorage(value) {
   const source = normalizeObject(value)
 
-  return STORAGE_SECTION_LIST.some(section => source[section] && typeof source[section] === 'object')
+  return STORAGE_SECTION_LIST.some(
+    section => source[section] && typeof source[section] === 'object',
+  )
 }
 
 export function flattenStorageSections(value = {}) {

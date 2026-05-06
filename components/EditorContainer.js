@@ -79,24 +79,21 @@ function EditorContainer() {
     window.history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  const onEditorUpdate = React.useCallback(
-    state => {
-      void saveSettings(state)
+  const onEditorUpdate = React.useCallback(state => {
+    void saveSettings(state)
 
-      const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
+    const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
-      if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
-        if (nextBackgroundAsset) {
-          void saveBackgroundImageAsset(nextBackgroundAsset)
-        } else {
-          void clearBackgroundImageAsset()
-        }
-
-        backgroundAssetRef.current = nextBackgroundAsset
+    if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
+      if (nextBackgroundAsset) {
+        void saveBackgroundImageAsset(nextBackgroundAsset)
+      } else {
+        void clearBackgroundImageAsset()
       }
-    },
-    [],
-  )
+
+      backgroundAssetRef.current = nextBackgroundAsset
+    }
+  }, [])
 
   const onWatermarkFontAssetChange = React.useCallback(nextValue => {
     if (nextValue == null) {

@@ -1277,6 +1277,17 @@
   box-sizing: border-box;
 }
 
+.settings-slider-row[data-disabled='true'],
+.settings-color-row[data-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.settings-slider-row[data-disabled='true'] .settings-slider-label,
+.settings-color-row[data-disabled='true'] .settings-slider-label,
+.settings-color-row[data-disabled='true'] .settings-color-actions {
+  opacity: 0.58;
+}
+
 .settings-slider-label {
   display: inline-flex;
   align-items: center;
@@ -1417,10 +1428,12 @@
   display: inline-flex;
   justify-self: end;
   max-width: 100%;
-  padding: 2px;
-  border: 1px solid var(--control-border);
-  border-radius: var(--panel-radius);
-  background: var(--surface-panel-muted);
+  padding: 4px;
+}
+
+.settings-radio-group--wide.ant-radio-group {
+  flex-wrap: wrap;
+  justify-self: stretch;
 }
 
 .settings-radio-group.ant-radio-group .ant-radio-button-wrapper {
@@ -1453,6 +1466,40 @@
 .settings-radio-group.ant-radio-group
   .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
   color: var(--color-picker-field-surface);
+}
+
+.settings-radio-group--iconic.ant-radio-group {
+  gap: 8px;
+}
+
+.settings-radio-group--iconic.ant-radio-group .ant-radio-button-wrapper {
+  min-width: 54px;
+  height: 40px;
+  padding: 0 8px;
+  line-height: 1;
+}
+
+.settings-radio-group--iconic.ant-radio-group .ant-radio-button-wrapper > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.settings-neumorphism-shape-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 20px;
+  color: inherit;
+}
+
+.settings-neumorphism-shape-icon__svg {
+  display: block;
+  flex: none;
+  color: inherit;
 }
 
 .settings-section {

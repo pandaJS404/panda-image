@@ -69,16 +69,18 @@ export function UiThemeProvider({ children }) {
     }
   }, [uiTheme])
 
-  const setUiTheme = nextTheme => {
+  const setUiTheme = React.useCallback(nextTheme => {
     React.startTransition(() => {
       setUiThemeState(currentTheme =>
         normalizeUiTheme(typeof nextTheme === 'function' ? nextTheme(currentTheme) : nextTheme),
       )
     })
-  }
+  }, [])
 
-  const toggleUiTheme = () =>
-    setUiTheme(currentTheme => (currentTheme === 'dark' ? 'light' : 'dark'))
+  const toggleUiTheme = React.useCallback(
+    () => setUiTheme(currentTheme => (currentTheme === 'dark' ? 'light' : 'dark')),
+    [setUiTheme],
+  )
 
   const isDark = uiTheme === 'dark'
   const colors = React.useMemo(() => getAppThemeColors(uiTheme), [uiTheme])
