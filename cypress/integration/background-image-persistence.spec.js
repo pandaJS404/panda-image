@@ -1,5 +1,5 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible, readEditorStorage } from '../support'
 
 const REMOTE_IMAGE_URL = 'https://example.com/bing-wallpaper.png'
 const REMOTE_IMAGE_DATA_URL =
@@ -12,6 +12,7 @@ const LOCAL_SELECTION_DATA_URL =
 describe('background image persistence', () => {
   beforeEach(() => {
     cy.clearLocalStorage()
+    clearEditorStorage()
   })
 
   it('persists builtin image source in the route and restores the current preview after refresh', () => {
@@ -33,19 +34,15 @@ describe('background image persistence', () => {
     })
     cy.wait(1000)
 
-    cy.url().should(url => expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01'))
-    cy.window().then(win => {
-      const asset = JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)
-
-      expect(asset.source).to.eq('builtin:panda-bg-01')
-      expect(asset.image).to.eq(null)
-      expect(asset.selection).to.eq(null)
+    readEditorStorage().should(storage => {
+      expect(storage.assets.backgroundImageSource).to.eq('builtin:panda-bg-01')
+      expect(storage.assets.backgroundImage).to.eq(null)
+      expect(storage.assets.backgroundImageSelection).to.eq(null)
     })
 
     cy.reload()
     editorVisible()
 
-    cy.url().should(url => expect(decodeURIComponent(url)).to.contain('bgi=builtin:panda-bg-01'))
     cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
     cy.get('.bg-color-container .bg-color')
       .invoke('attr', 'style')
@@ -100,30 +97,20 @@ describe('background image persistence', () => {
     cy.get('.bg-select-modal').should('be.visible')
     cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
     cy.get('[data-cy="background-gradient-item"][data-gradient-name="Warm Flame"]').click()
-    cy.url().should('contain', 'bgg=')
     cy.get('.bg-select-panel .ant-tabs-tab').eq(2).click()
     cy.wait('@randomImageList')
     cy.get('.random-image-controls .random-image-action').first().click()
     cy.wait('@randomImageDownload')
     cy.wait(1000)
 
-    cy.url().should(url => {
-      const decodedUrl = decodeURIComponent(url)
-      expect(decodedUrl).to.contain(`bgi=${REMOTE_IMAGE_URL}`)
-      expect(decodedUrl).not.to.contain('bgg=')
-      expect(decodedUrl).not.to.contain('bgbm=')
-    })
-    cy.window().then(win => {
-      expect(JSON.parse(win.localStorage.PANDA_BACKGROUND_IMAGE_ASSET)).to.deep.equal({
-        source: REMOTE_IMAGE_URL,
-        image: null,
-        selection: null,
-      })
+    readEditorStorage().should(storage => {
+      expect(storage.assets.backgroundImageSource).to.eq(REMOTE_IMAGE_URL)
+      expect(storage.assets.backgroundImage).to.eq(null)
+      expect(storage.assets.backgroundImageSelection).to.eq(null)
     })
 
     cy.reload()
     editorVisible()
-    cy.url().should(url => expect(decodeURIComponent(url)).to.contain(`bgi=${REMOTE_IMAGE_URL}`))
     cy.get('.container-bg .bg').invoke('css', 'background-image').should('not.eq', 'none')
     cy.get('.bg-color-container .bg-color')
       .invoke('attr', 'style')
@@ -142,25 +129,34 @@ describe('background image persistence', () => {
     cy.visit('/', {
       onBeforeLoad(win) {
         win.localStorage.setItem(
-          'PANDA_STATE',
+          'PANDA_EDITOR_STORAGE',
           JSON.stringify({
-            backgroundMode: 'image',
-            backgroundImageSource: null,
-          }),
-        )
-        win.localStorage.setItem(
-          'PANDA_BACKGROUND_IMAGE_ASSET',
-          JSON.stringify({
-            source: null,
-            image: LOCAL_IMAGE_DATA_URL,
-            selection: LOCAL_SELECTION_DATA_URL,
+            template: {},
+            window: {
+              backgroundMode: 'image',
+              backgroundImageSource: null,
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {
+              backgroundImage: LOCAL_IMAGE_DATA_URL,
+              backgroundImageSource: null,
+              backgroundImageSelection: LOCAL_SELECTION_DATA_URL,
+            },
           }),
         )
       },
     })
 
     editorVisible()
-    cy.url().should('not.contain', 'bgi=')
+
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundMode).to.eq('image')
+      expect(storage.assets.backgroundImage).to.eq(LOCAL_IMAGE_DATA_URL)
+      expect(storage.assets.backgroundImageSelection).to.eq(LOCAL_SELECTION_DATA_URL)
+    })
 
     cy.get('[data-cy="display"]').click()
     cy.get('.bg-select-modal').should('be.visible')
@@ -176,18 +172,31 @@ describe('background image persistence', () => {
     cy.visit('/', {
       onBeforeLoad(win) {
         win.localStorage.setItem(
-          'PANDA_STATE',
+          'PANDA_EDITOR_STORAGE',
           JSON.stringify({
-            backgroundMode: 'image',
-            backgroundGradient: gradient,
-            backgroundGradientBlendMode: null,
-            backgroundImageSource: null,
+            template: {},
+            window: {
+              backgroundMode: 'image',
+              backgroundGradient: gradient,
+              backgroundGradientBlendMode: null,
+              backgroundImageSource: null,
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {},
           }),
         )
       },
     })
 
     editorVisible()
+
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundMode).to.eq('image')
+      expect(storage.window.backgroundGradient).to.eq(gradient)
+    })
 
     cy.get('.container-bg .bg')
       .invoke('css', 'background-image')

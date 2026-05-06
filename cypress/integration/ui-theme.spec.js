@@ -1,5 +1,5 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible, readEditorStorage } from '../support'
 
 describe('UI theme shell smoke', () => {
   const themeDropdown = () => cy.get('.toolbar .dropdown-container').first()
@@ -12,6 +12,7 @@ describe('UI theme shell smoke', () => {
 
   beforeEach(() => {
     cy.clearLocalStorage()
+    clearEditorStorage()
   })
 
   it('adapts toolbar and settings shell surfaces without changing the selected code theme', () => {
@@ -53,10 +54,10 @@ describe('UI theme shell smoke', () => {
     cy.get('.settings-modal .ant-slider').should('exist')
     cy.get('.settings-modal .slider-control').should('not.exist')
 
-    cy.window().then(win => {
-      expect(JSON.parse(win.localStorage.PANDA_STATE).theme).to.eq('cobalt')
+    readEditorStorage().should(storage => {
+      expect(storage.theme.theme).to.eq('cobalt')
     })
 
-    cy.url().should('contain', 't=cobalt').and('not.contain', 'uiTheme')
+    cy.location().its('pathname').should('eq', '/')
   })
 })

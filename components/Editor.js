@@ -38,11 +38,11 @@ import {
   isStaticGradientActive,
 } from '../src/modules/editor/background'
 import { getDroppedFileLanguage, resolveLanguageMode } from '../src/modules/editor/language'
-import { getRouteState } from '../src/modules/editor/state/routing'
 import {
   fileToDataURL,
   getBackgroundImageAsset,
   formatCode,
+  getFontAsset,
   getSettings,
   getWatermarkFontAsset,
   omit,
@@ -205,56 +205,27 @@ class Editor extends React.Component {
   }
 
   async _initializeState() {
-    const { queryState } = getRouteState(this.props.router)
-    const storedSettings = getSettings(localStorage) || {}
-    const storedBackgroundImageAsset = getBackgroundImageAsset(localStorage)
-    const storedWatermarkFontUrl = getWatermarkFontAsset(localStorage)
+    const [storedSettings, storedBackgroundImageAsset, storedWatermarkFontUrl, storedFontUrl] =
+      await Promise.all([
+        getSettings(),
+        getBackgroundImageAsset(),
+        getWatermarkFontAsset(),
+        getFontAsset(),
+      ])
 
     const newState = {
       ...DEFAULT_SETTINGS,
-      ...storedSettings,
-      ...queryState,
+      ...(storedSettings || {}),
       loading: false,
     }
-    const shouldUseQueryStaticBackground =
-      queryState.backgroundMode !== 'image' &&
-      queryState.backgroundImageSource == null &&
-      (queryState.backgroundColor != null || queryState.backgroundGradient != null)
 
-    if (shouldUseQueryStaticBackground) {
-      newState.backgroundMode = 'color'
-      newState.backgroundImage = null
-      newState.backgroundImageSource = null
-      newState.backgroundImageSelection = null
-
-      if (queryState.backgroundColor != null && queryState.backgroundGradient == null) {
-        newState.backgroundGradient = null
-        newState.backgroundGradientBlendMode = null
-      }
-    }
-
-    const hasQueryBackgroundImageSource = queryState.backgroundImageSource != null
-    const hasRequestedBackgroundImageSource = newState.backgroundImageSource != null
-    const canRestoreMatchingBackgroundAsset =
+    const hasStoredBackgroundAsset =
       storedBackgroundImageAsset &&
-      (hasQueryBackgroundImageSource || newState.backgroundMode === 'image') &&
-      hasRequestedBackgroundImageSource &&
-      storedBackgroundImageAsset.source === newState.backgroundImageSource
-    const canRestoreStoredBackgroundAsset =
-      storedBackgroundImageAsset &&
-      !hasQueryBackgroundImageSource &&
-      newState.backgroundMode === 'image' &&
-      (newState.backgroundImageSource == null ||
-        storedBackgroundImageAsset.source === newState.backgroundImageSource)
+      (storedBackgroundImageAsset.source ||
+        storedBackgroundImageAsset.image ||
+        storedBackgroundImageAsset.selection)
 
-    if (canRestoreMatchingBackgroundAsset) {
-      newState.backgroundMode = 'image'
-      newState.backgroundImage = getStoredBackgroundImageValue(
-        storedBackgroundImageAsset.source,
-        storedBackgroundImageAsset.image,
-      )
-      newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
-    } else if (canRestoreStoredBackgroundAsset) {
+    if (hasStoredBackgroundAsset && newState.backgroundMode === 'image') {
       newState.backgroundMode = 'image'
       newState.backgroundImageSource = storedBackgroundImageAsset.source || null
       newState.backgroundImage = getStoredBackgroundImageValue(
@@ -262,10 +233,7 @@ class Editor extends React.Component {
         storedBackgroundImageAsset.image,
       )
       newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
-    } else if (
-      newState.backgroundImageSource &&
-      (hasQueryBackgroundImageSource || newState.backgroundMode === 'image')
-    ) {
+    } else if (newState.backgroundMode === 'image' && newState.backgroundImageSource) {
       newState.backgroundMode = 'image'
       newState.backgroundImage = resolveBackgroundImageValue(newState.backgroundImageSource)
       newState.backgroundImageSelection = null
@@ -277,7 +245,11 @@ class Editor extends React.Component {
       newState.language = unescapeHtml(newState.language)
     }
 
-    if (newState.fontFamily && !FONTS.find(({ id }) => id === newState.fontFamily)) {
+    if (storedFontUrl) {
+      newState.fontUrl = storedFontUrl
+    }
+
+    if (newState.fontFamily && !FONTS.find(({ id }) => id === newState.fontFamily) && !newState.fontUrl) {
       newState.fontFamily = DEFAULT_SETTINGS.fontFamily
     }
 
@@ -625,6 +597,10 @@ class Editor extends React.Component {
   updateSetting = (key, value) => {
     this.updateState({ [key]: value })
 
+    if (key === 'fontUrl') {
+      this.props.onFontAssetChange?.(value || null)
+    }
+
     if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
       this.updateState({ preset: null })
     }
@@ -664,7 +640,18 @@ class Editor extends React.Component {
   }
 
   resetDefaultSettings = () => {
-    this.updateState(DEFAULT_SETTINGS)
+    this.onUpdate.cancel()
+    this.setState({
+      ...DEFAULT_SETTINGS,
+      preset: null,
+      highlights: null,
+      code: DEFAULT_CODE,
+      fontUrl: null,
+      watermarkFontUrl: null,
+      selectedLines: null,
+      titleBar: null,
+    })
+    this.props.onFontAssetChange?.(null)
     this.setWatermarkFontAsset(null)
     this.props.onReset()
   }
@@ -879,6 +866,7 @@ class Editor extends React.Component {
 }
 
 Editor.defaultProps = {
+  onFontAssetChange: () => {},
   onUpdate: () => {},
   onWatermarkFontAssetChange: () => {},
   onReset: () => {},

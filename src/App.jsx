@@ -3,7 +3,6 @@ import React from 'react'
 import EditorContainer from '../components/EditorContainer'
 import Page from '../components/Page'
 import { MetaLinks } from '../components/Meta'
-import { useRouter } from './router'
 
 async function clearLegacyServiceWorkerState() {
   const cleanupTasks = []
@@ -28,8 +27,6 @@ async function clearLegacyServiceWorkerState() {
 }
 
 export default function App() {
-  const router = useRouter()
-
   React.useEffect(() => {
     void clearLegacyServiceWorkerState().catch(() => {})
   }, [])
@@ -37,7 +34,7 @@ export default function App() {
   return (
     <Page enableHeroText={true} flex={true}>
       <MetaLinks />
-      <EditorContainer router={router} />
+      <EditorContainer />
     </Page>
   )
 }

@@ -1,5 +1,5 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible } from '../support'
 
 const VUE_SFC_CODE = `<template>
   <section class="hero">{{ title }}</section>
@@ -32,8 +32,34 @@ export function Button({ title }: ButtonProps) {
 }`
 
 describe('frontend language detection', () => {
+  beforeEach(() => {
+    cy.clearLocalStorage()
+    clearEditorStorage()
+  })
+
+  function visitWithCode(code) {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {},
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {
+              code,
+            },
+            assets: {},
+          }),
+        )
+      },
+    })
+  }
+
   it('detects Vue single-file components in auto mode', () => {
-    cy.visit(`/?code=${encodeURIComponent(VUE_SFC_CODE)}`)
+    visitWithCode(VUE_SFC_CODE)
     editorVisible()
 
     cy.get('.CodeMirror').should(([element]) => {
@@ -42,7 +68,7 @@ describe('frontend language detection', () => {
   })
 
   it('detects React JSX in auto mode', () => {
-    cy.visit(`/?code=${encodeURIComponent(REACT_JSX_CODE)}`)
+    visitWithCode(REACT_JSX_CODE)
     editorVisible()
 
     cy.get('.CodeMirror').should(([element]) => {
@@ -51,7 +77,7 @@ describe('frontend language detection', () => {
   })
 
   it('detects React TSX in auto mode', () => {
-    cy.visit(`/?code=${encodeURIComponent(REACT_TSX_CODE)}`)
+    visitWithCode(REACT_TSX_CODE)
     editorVisible()
 
     cy.get('.CodeMirror').should(([element]) => {

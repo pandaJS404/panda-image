@@ -1,5 +1,5 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible, readEditorStorage } from '../support'
 
 function blobToDataURL(win, blob) {
   return new Promise(resolve => {
@@ -58,10 +58,6 @@ function installClipboardStub(win, { supportsWebp }) {
   })
 }
 
-function serializeRouteState(state) {
-  return encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(state))))
-}
-
 function waitForDefaultExportLayout() {
   cy.get('#export-container', { timeout: 10000 }).should(([element]) => {
     expect(element.offsetWidth).to.be.greaterThan(890)
@@ -69,10 +65,30 @@ function waitForDefaultExportLayout() {
 }
 
 describe('Basic', () => {
+  beforeEach(() => {
+    cy.clearLocalStorage()
+    clearEditorStorage()
+  })
+
   it('Should open editor with the correct text encoding', () => {
-    cy.visit(
-      '/?code=%250A%252F*%2520Passing%2520Boolean%2520as%2520method%2520to%2520find%2520returns%2520the%250A%2520*%2520first%2520truthy%2520value%2520in%2520the%2520array!%250A%2520*%252F%250A%255Bfalse%252C%2520false%252C%2520%27%27%252C%2520undefined%252C%2520%27qwijo%27%252C%25200%255D.find(Boolean)%2520%252F%252F%2520%27qwijo%27',
-    )
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {},
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {
+              code: "\n/* Passing Boolean as method to find returns the\n * first truthy value in the array!\n */\n[false, false, '', undefined, 'qwijo', 0].find(Boolean) // 'qwijo'",
+            },
+            assets: {},
+          }),
+        )
+      },
+    })
     editorVisible()
 
     cy.contains(
@@ -82,14 +98,48 @@ describe('Basic', () => {
   })
 
   it('Should open editor with the correct text even with bad URI component', () => {
-    cy.visit('/?code=%25')
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {},
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {
+              code: '%',
+            },
+            assets: {},
+          }),
+        )
+      },
+    })
     editorVisible()
 
     cy.contains('.container', '%')
   })
 
   it('Should clear editor state with Shift+Cmd+\\', () => {
-    cy.visit('/?bg=red')
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {
+              backgroundColor: 'red',
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {},
+          }),
+        )
+      },
+    })
     editorVisible()
     cy.wait(50)
 
@@ -110,6 +160,9 @@ describe('Basic', () => {
     cy.get('.container-bg .bg')
       .invoke('css', 'background-image')
       .should('match', /panda-bg-01|url/i)
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundColor).to.eq('rgba(171, 184, 195, 1)')
+    })
   })
 
   it('Should keep CodeMirror input stable while typing', () => {
@@ -298,20 +351,33 @@ describe('Basic', () => {
       dropShadow: false,
     }
 
-    cy.visit(`/?state=${serializeRouteState(localBackgroundState)}`, {
+    cy.visit('/', {
       onBeforeLoad(win) {
         win.localStorage.setItem(
-          'PANDA_BACKGROUND_IMAGE_ASSET',
+          'PANDA_EDITOR_STORAGE',
           JSON.stringify({
-            source: null,
-            image: LOCAL_BACKGROUND_DATA_URL,
-            selection: null,
+            template: {},
+            window: localBackgroundState,
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {
+              backgroundImage: LOCAL_BACKGROUND_DATA_URL,
+              backgroundImageSource: null,
+              backgroundImageSelection: null,
+            },
           }),
         )
       },
     })
     editorVisible()
     waitForDefaultExportLayout()
+
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundMode).to.eq('image')
+      expect(storage.assets.backgroundImage).to.eq(LOCAL_BACKGROUND_DATA_URL)
+    })
 
     cy.window().then(win => {
       win.__exportBlob = null

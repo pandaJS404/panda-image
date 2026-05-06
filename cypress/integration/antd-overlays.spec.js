@@ -1,9 +1,10 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible, readEditorStorage } from '../support'
 
 describe('Antd overlays smoke', () => {
   beforeEach(() => {
     cy.clearLocalStorage()
+    clearEditorStorage()
   })
 
   it('opens the major overlays and closes the theme create modal on outside click', () => {
@@ -49,9 +50,8 @@ describe('Antd overlays smoke', () => {
     cy.get('.settings-modal .slider-control').should('not.exist')
     cy.get('.settings-modal .ant-slider').first().click('center')
     cy.wait(900)
-    cy.window().then(win => {
-      const state = JSON.parse(win.localStorage.PANDA_STATE)
-      expect(state.paddingVertical).to.match(/px$/)
+    readEditorStorage().should(storage => {
+      expect(storage.window.paddingVertical).to.match(/px$/)
     })
     cy.get('.settings-tabs .ant-tabs-tab').last().click()
     cy.get('[data-cy="format-code-button"]').should('be.visible')

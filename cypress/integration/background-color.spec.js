@@ -1,5 +1,5 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { editorVisible, readEditorStorage } from '../support'
 
 // usually we can visit the page before each test
 // but these tests use the url, which means wasted page load
@@ -56,27 +56,85 @@ describe('background color', () => {
     closePicker()
 
     // changing background color triggers url change
-    cy.url().should('contain', '?bg=')
-
     // confirm color change
     cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(208, 2, 27)')
   })
 
-  it('specifies color in url', () => {
-    cy.visit('?bg=rgb(255,0,0)')
+  it('restores color from persisted storage', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {
+              backgroundColor: 'rgb(255,0,0)',
+              backgroundMode: 'color',
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {},
+          }),
+        )
+      },
+    })
     editorVisible()
     cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(255, 0, 0)')
   })
 
-  it('enters neon pink', () => {
-    cy.visit('?bg=rgb(255,0,0)')
+  it('restores color from semantic persisted storage', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {
+              backgroundColor: 'rgb(255,0,0)',
+              backgroundMode: 'color',
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {},
+          }),
+        )
+      },
+    })
+    editorVisible()
+    cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(255, 0, 0)')
+  })
+
+  it('updates the stored color to neon pink', () => {
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem(
+          'PANDA_EDITOR_STORAGE',
+          JSON.stringify({
+            template: {},
+            window: {
+              backgroundColor: 'rgb(255,0,0)',
+              backgroundMode: 'color',
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            assets: {},
+          }),
+        )
+      },
+    })
     editorVisible()
 
     const pink = 'ff00ff'
     openColorPicker().find(`input[value="FF0000"]`).clear().type(`${pink}{enter}`)
     closePicker()
 
-    cy.url().should(url => expect(decodeURIComponent(url)).to.contain(`?bg=rgba(255,0,255,1)`))
+    cy.url().should('not.contain', 'bg=')
     cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(255, 0, 255)')
   })
 
@@ -89,7 +147,6 @@ describe('background color', () => {
     cy.get('.bg-select-panel .ant-tabs-tab').eq(1).click()
     cy.get('[data-cy="background-gradient-item"][data-gradient-name="Warm Flame"]').click()
 
-    cy.url().should('contain', 'bgg=')
     cy.get('.container-bg .bg')
       .invoke('css', 'background-image')
       .should('match', /gradient/i)
@@ -101,11 +158,10 @@ describe('background color', () => {
     cy.get(picker).find(darkRedTile).click()
     closePicker()
 
-    cy.url().should(url => {
-      const decodedUrl = decodeURIComponent(url)
-      expect(decodedUrl).to.contain('?bg=')
-      expect(decodedUrl).not.to.contain('bgg=')
-      expect(decodedUrl).not.to.contain('bgbm=')
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundColor).to.eq('rgb(208, 2, 27)')
+      expect(storage.window.backgroundGradient).to.eq(null)
+      expect(storage.window.backgroundGradientBlendMode).to.eq(null)
     })
     cy.get('.container-bg .bg').should('have.css', 'background-color', 'rgb(208, 2, 27)')
   })

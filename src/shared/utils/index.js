@@ -1,127 +1,167 @@
-import morph from 'morphmorph'
 import omitBy from 'lodash.omitby'
 import { htmlUnescape } from 'escape-goat'
 
-const SETTINGS_KEY = 'PANDA_STATE'
-const PRESETS_KEY = 'PANDA_PRESETS'
-const THEMES_KEY = 'PANDA_THEMES'
-const WATERMARK_FONT_ASSET_KEY = 'PANDA_WATERMARK_FONT_ASSET'
-const BACKGROUND_IMAGE_ASSET_KEY = 'PANDA_BACKGROUND_IMAGE_ASSET'
-const STORAGE_QUOTA_ERROR_PATTERN = /quota/iu
+import {
+  clearStorage,
+  getSection,
+  getStorage,
+  migrateLegacyStorage,
+  patchSection,
+  removeSectionKeysByName,
+  setSection,
+  setStorage,
+} from '../storage/editor-db'
+import {
+  ASSET_KEYS,
+  createSectionedStorageFromState,
+  flattenStorageSections,
+  normalizeImportedConfig,
+  normalizeStorageShape,
+  SETTINGS_SECTION_KEYS,
+  STORAGE_SECTIONS,
+  WATERMARK_ASSET_KEYS,
+} from '../storage/editor-config'
 
-const createAssigner = key => {
-  const assign = morph.assign(key)
+export const unescapeHtml = htmlUnescape
 
-  return v => assign(localStorage, JSON.stringify(v))
-}
-
-const map = fn => obj => obj.map(fn)
 export const omit = keys => object => omitBy(object, (_, k) => keys.indexOf(k) > -1)
 
-export const saveSettings = morph.compose(
-  createAssigner(SETTINGS_KEY),
-  omit([
-    'code',
-    'backgroundImage',
-    'backgroundImageSelection',
-    'themes',
-    'highlights',
-    'fontUrl',
-    'watermarkFontUrl',
-    'selectedLines',
-    'name',
-  ]),
-)
-export const savePresets = morph.compose(
-  createAssigner(PRESETS_KEY),
-  map(omit(['backgroundImageSelection'])),
-)
-export const saveThemes = createAssigner(THEMES_KEY)
+function parse(value) {
+  if (typeof value !== 'string') {
+    return value
+  }
 
-const parse = v => {
   try {
-    return JSON.parse(v)
+    return JSON.parse(value)
   } catch {
-    // pass
+    return undefined
   }
 }
 
-function isQuotaExceededError(error) {
-  return Boolean(
-    error &&
-    (error.name === 'QuotaExceededError' ||
-      error.code === 22 ||
-      error.code === 1014 ||
-      STORAGE_QUOTA_ERROR_PATTERN.test(error.message || '')),
+export const saveSettings = async settings => {
+  const storage = await getStorage()
+  const nextStorage = createSectionedStorageFromState(settings, storage)
+  await setStorage(nextStorage)
+}
+
+export const savePresets = async presets =>
+  setSection(
+    STORAGE_SECTIONS.template,
+    {
+      ...(await getSection(STORAGE_SECTIONS.template)),
+      presets: Array.isArray(presets) ? presets : [],
+    },
   )
+
+export const saveThemes = async themes =>
+  setSection(
+    STORAGE_SECTIONS.theme,
+    {
+      ...(await getSection(STORAGE_SECTIONS.theme)),
+      themes: Array.isArray(themes) ? themes : [],
+    },
+  )
+
+export const getSettings = async () => {
+  const storage = await getStorage()
+  const mergedSettings = flattenStorageSections(storage)
+
+  if (typeof mergedSettings.language === 'string') {
+    mergedSettings.language = htmlUnescape(mergedSettings.language)
+  }
+
+  return mergedSettings
 }
 
-export const toggle = stateField => state => ({ [stateField]: !state[stateField] })
+export const getPresets = async () => {
+  const section = await getSection(STORAGE_SECTIONS.template)
+  return Array.isArray(section.presets) ? section.presets : []
+}
 
-// https://gist.github.com/alexgibson/1704515
-export const escapeHtml = s => {
-  if (typeof s === 'string') {
-    return s.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\//g, '&#x2F;')
+export const getThemes = async () => {
+  const section = await getSection(STORAGE_SECTIONS.theme)
+  return Array.isArray(section.themes) ? section.themes : []
+}
+
+export const getWatermarkFontAsset = async () => {
+  const section = await getSection(STORAGE_SECTIONS.assets)
+  return section.watermarkFontUrl || null
+}
+
+export const getFontAsset = async () => {
+  const section = await getSection(STORAGE_SECTIONS.assets)
+  return section.fontUrl || null
+}
+
+export const getBackgroundImageAsset = async () => {
+  const section = await getSection(STORAGE_SECTIONS.assets)
+  const backgroundImage = section.backgroundImage ?? null
+  const backgroundImageSource = section.backgroundImageSource ?? null
+  const backgroundImageSelection = section.backgroundImageSelection ?? null
+
+  if (
+    backgroundImage == null &&
+    backgroundImageSource == null &&
+    backgroundImageSelection == null
+  ) {
+    return null
+  }
+
+  return {
+    image: backgroundImage,
+    source: backgroundImageSource,
+    selection: backgroundImageSelection,
   }
 }
 
-export const unescapeHtml = s => {
-  if (typeof s === 'string') {
-    return htmlUnescape(s).replace(/&#x2F;/g, '/')
-  }
-}
+export const clearSettings = () =>
+  setStorage(normalizeStorageShape()).then(() => undefined)
 
-export const getSettings = storage => {
-  const rawSettings = morph.get(SETTINGS_KEY, storage)
+export const clearWatermarkFontAsset = () =>
+  removeSectionKeysByName(STORAGE_SECTIONS.assets, ['watermarkFontUrl']).then(() => undefined)
 
-  if (typeof rawSettings !== 'string') {
-    return parse(rawSettings)
-  }
+export const clearFontAsset = () =>
+  removeSectionKeysByName(STORAGE_SECTIONS.assets, ['fontUrl']).then(() => undefined)
 
-  const parsedSettings = parse(rawSettings)
+export const clearBackgroundImageAsset = () =>
+  removeSectionKeysByName(STORAGE_SECTIONS.assets, [
+    'backgroundImage',
+    'backgroundImageSource',
+    'backgroundImageSelection',
+  ]).then(() => undefined)
 
-  if (parsedSettings !== undefined) {
-    return parsedSettings
-  }
-
-  return parse(unescapeHtml(rawSettings))
-}
-
-export const getPresets = morph.compose(parse, morph.get(PRESETS_KEY))
-
-export const getThemes = morph.compose(parse, morph.get(THEMES_KEY))
-export const getWatermarkFontAsset = morph.compose(parse, morph.get(WATERMARK_FONT_ASSET_KEY))
-export const getBackgroundImageAsset = morph.compose(parse, morph.get(BACKGROUND_IMAGE_ASSET_KEY))
-
-export const clearSettings = () => localStorage.removeItem(SETTINGS_KEY)
-export const clearWatermarkFontAsset = () => localStorage.removeItem(WATERMARK_FONT_ASSET_KEY)
-export const clearBackgroundImageAsset = () => localStorage.removeItem(BACKGROUND_IMAGE_ASSET_KEY)
 export const saveWatermarkFontAsset = value => {
   if (value == null) {
-    clearWatermarkFontAsset()
-    return
+    return clearWatermarkFontAsset().then(() => true)
   }
 
-  return createAssigner(WATERMARK_FONT_ASSET_KEY)(value)
+  return patchSection(STORAGE_SECTIONS.assets, { watermarkFontUrl: value }).then(() => true)
+}
+
+export const saveFontAsset = value => {
+  if (value == null) {
+    return clearFontAsset().then(() => true)
+  }
+
+  return patchSection(STORAGE_SECTIONS.assets, { fontUrl: value }).then(() => true)
 }
 
 export const saveBackgroundImageAsset = value => {
   if (value == null) {
-    clearBackgroundImageAsset()
-    return true
+    return clearBackgroundImageAsset().then(() => true)
   }
 
-  try {
-    createAssigner(BACKGROUND_IMAGE_ASSET_KEY)(value)
-    return true
-  } catch (error) {
-    if (isQuotaExceededError(error)) {
-      return false
-    }
-
-    throw error
-  }
+  return patchSection(STORAGE_SECTIONS.assets, {
+    backgroundImage: value.image ?? null,
+    backgroundImageSource: value.source ?? null,
+    backgroundImageSelection: value.selection ?? null,
+  }).then(() => true)
 }
+
+export const syncLegacyStorage = migrateLegacyStorage
+export const clearEditorStorage = clearStorage
+export const toSectionedStorage = normalizeImportedConfig
+export const toFlatSettings = flattenStorageSections
 
 export const fileToDataURL = blob =>
   new Promise((resolve, reject) => {

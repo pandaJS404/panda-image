@@ -3,17 +3,19 @@ import React from 'react'
 import Editor from './Editor'
 
 import { THEMES } from '../src/modules/editor/config'
-import { updateRouteState } from '../src/modules/editor/state/routing'
 import {
   clearBackgroundImageAsset,
-  clearSettings,
+  clearEditorStorage,
+  clearFontAsset,
   clearWatermarkFontAsset,
   getBackgroundImageAsset,
   getThemes,
   saveBackgroundImageAsset,
+  saveFontAsset,
   saveSettings,
   saveThemes,
   saveWatermarkFontAsset,
+  syncLegacyStorage,
 } from '../src/shared/utils'
 
 function isSameBackgroundAsset(left, right) {
@@ -50,73 +52,75 @@ function getPersistedBackgroundImageAsset(state) {
   }
 }
 
-function EditorContainer(props) {
+function EditorContainer() {
   const [themes, updateThemes] = React.useState(THEMES)
   const backgroundAssetRef = React.useRef(null)
 
   React.useEffect(() => {
-    const storedThemes = getThemes(localStorage) || []
-    backgroundAssetRef.current = getBackgroundImageAsset(localStorage) || null
+    void syncLegacyStorage()
+      .then(() => Promise.all([getThemes(), getBackgroundImageAsset()]))
+      .then(([storedThemes, storedBackgroundAsset]) => {
+        backgroundAssetRef.current = storedBackgroundAsset || null
 
-    if (storedThemes.length) {
-      updateThemes(currentThemes => [...storedThemes, ...currentThemes])
-    }
+        if (storedThemes?.length) {
+          updateThemes(currentThemes => [...storedThemes, ...currentThemes])
+        }
+      })
   }, [])
 
   React.useEffect(() => {
-    saveThemes(themes.filter(({ custom }) => custom))
+    void saveThemes(themes.filter(({ custom }) => custom))
   }, [themes])
 
   const onReset = React.useCallback(() => {
-    clearSettings()
-    clearBackgroundImageAsset()
+    void clearEditorStorage()
     backgroundAssetRef.current = null
 
-    if (window.location.search) {
-      window.history.replaceState(null, '', window.location.pathname)
-    }
+    window.history.replaceState(null, '', window.location.pathname)
   }, [])
 
   const onEditorUpdate = React.useCallback(
     state => {
-      updateRouteState(props.router, state)
-      saveSettings(state)
+      void saveSettings(state)
 
       const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
       if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
         if (nextBackgroundAsset) {
-          const didPersistBackgroundAsset = saveBackgroundImageAsset(nextBackgroundAsset)
-
-          if (!didPersistBackgroundAsset) {
-            clearBackgroundImageAsset()
-            backgroundAssetRef.current = nextBackgroundAsset
-            return
-          }
+          void saveBackgroundImageAsset(nextBackgroundAsset)
         } else {
-          clearBackgroundImageAsset()
+          void clearBackgroundImageAsset()
         }
 
         backgroundAssetRef.current = nextBackgroundAsset
       }
     },
-    [props.router],
+    [],
   )
 
   const onWatermarkFontAssetChange = React.useCallback(nextValue => {
     if (nextValue == null) {
-      clearWatermarkFontAsset()
+      void clearWatermarkFontAsset()
       return
     }
 
-    saveWatermarkFontAsset(nextValue)
+    void saveWatermarkFontAsset(nextValue)
+  }, [])
+
+  const onFontAssetChange = React.useCallback(nextValue => {
+    if (nextValue == null) {
+      void clearFontAsset()
+      return
+    }
+
+    void saveFontAsset(nextValue)
   }, [])
 
   return (
     <Editor
-      {...props}
       themes={themes}
       updateThemes={updateThemes}
+      onFontAssetChange={onFontAssetChange}
       onUpdate={onEditorUpdate}
       onWatermarkFontAssetChange={onWatermarkFontAssetChange}
       onReset={onReset}

@@ -19,6 +19,8 @@ import {
   generateId,
   fileToJSON,
   stringifyColor,
+  toFlatSettings,
+  toSectionedStorage,
 } from '../src/shared/utils'
 
 function getViewportWidthMax() {
@@ -534,9 +536,10 @@ function WatermarkSettings({
 function MiscSettings({ format, reset, applyPreset, settings }) {
   const inputRef = React.useRef(null)
   let download
+  const sectionedSettings = React.useMemo(() => toSectionedStorage(settings), [settings])
 
   try {
-    download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(settings))}`
+    download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sectionedSettings))}`
   } catch {
     download = undefined
   }
@@ -552,7 +555,7 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
           onChange={async event => {
             const json = await fileToJSON(event.target.files[0])
             if (json) {
-              applyPreset(json)
+              applyPreset(toFlatSettings(toSectionedStorage(json)))
             }
           }}
         />
@@ -607,12 +610,11 @@ function Settings(props) {
   const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
-    if (typeof localStorage === 'undefined') {
-      return
-    }
-
-    const storedPresets = getPresets(localStorage) || []
-    setPresets(currentPresets => [...storedPresets, ...currentPresets])
+    void getPresets().then(storedPresets => {
+      if (storedPresets?.length) {
+        setPresets(currentPresets => [...storedPresets, ...currentPresets])
+      }
+    })
   }, [])
 
   const handleResetAll = React.useCallback(() => {

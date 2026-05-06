@@ -1,16 +1,15 @@
 /* global cy */
-import { editorVisible } from '../support'
+import { clearEditorStorage, editorVisible, readEditorStorage } from '../support'
 
 describe('localStorage', () => {
   const themeDropdown = () => cy.get('.toolbar .dropdown-container').first()
   const uiThemeToggle = () => cy.get('[data-cy="theme-toggle"]')
   const currentUiTheme = () => cy.document().its('documentElement.dataset.uiTheme')
-  const parseStoredSettings = win => JSON.parse(win.localStorage.PANDA_STATE)
-
   const pickTheme = (name = 'Blackboard') => themeDropdown().click().contains(name).click()
 
   beforeEach(() => {
     cy.clearLocalStorage()
+    clearEditorStorage()
   })
 
   it('defaults to dark UI theme and persists separately from editor theme state', () => {
@@ -27,11 +26,33 @@ describe('localStorage', () => {
     uiThemeToggle().click()
 
     currentUiTheme().should('eq', 'light')
-    cy.url().should('contain', 't=blackboard').and('not.contain', 'uiTheme')
 
-    cy.window().then(win => {
-      expect(win.localStorage.PANDA_UI_THEME).to.eq('light')
-      expect(JSON.parse(win.localStorage.PANDA_STATE).theme).to.eq('blackboard')
+    readEditorStorage().should(storage => {
+      expect(storage.theme.theme).to.eq('blackboard')
+    })
+  })
+
+  it('creates the sectioned root storage shape on first load', () => {
+    cy.visit('/')
+    editorVisible()
+
+    readEditorStorage().should(storage => {
+      expect(storage).to.have.all.keys(
+        'template',
+        'window',
+        'editor',
+        'watermark',
+        'theme',
+        'code',
+        'assets',
+      )
+      expect(storage.template).to.be.an('object')
+      expect(storage.window).to.be.an('object')
+      expect(storage.editor).to.be.an('object')
+      expect(storage.watermark).to.be.an('object')
+      expect(storage.theme).to.be.an('object')
+      expect(storage.code).to.be.an('object')
+      expect(storage.assets).to.be.an('object')
     })
   })
 
@@ -50,47 +71,34 @@ describe('localStorage', () => {
     editorVisible()
 
     currentUiTheme().should('eq', 'light')
-    cy.window().then(win => {
-      expect(parseStoredSettings(win).theme).to.eq('blackboard')
+    readEditorStorage().should(storage => {
+      expect(storage.theme.theme).to.eq('blackboard')
     })
-    cy.url().should('contain', 't=blackboard').and('not.contain', 'uiTheme')
   })
 
-  it('restores non-default settings from plain JSON localStorage state', () => {
+  it('restores non-default settings from IndexedDB storage', () => {
     cy.visit('/', {
       onBeforeLoad(win) {
         win.localStorage.setItem(
-          'PANDA_STATE',
+          'PANDA_EDITOR_STORAGE',
           JSON.stringify({
-            windowTheme: 'bw',
+            window: {
+              windowTheme: 'bw',
+            },
+            editor: {},
+            watermark: {},
+            theme: {},
+            code: {},
+            template: {},
+            assets: {},
           }),
         )
       },
     })
     editorVisible()
 
-    cy.window().then(win => {
-      expect(parseStoredSettings(win).windowTheme).to.eq('bw')
-    })
-    cy.get('.window-theme__bw').should('exist')
-  })
-
-  it('restores non-default settings from legacy escaped localStorage state', () => {
-    cy.visit('/', {
-      onBeforeLoad(win) {
-        win.localStorage.setItem(
-          'PANDA_STATE',
-          '{&quot;windowTheme&quot;:&quot;bw&quot;,&quot;language&quot;:&quot;javascript&quot;}',
-        )
-      },
-    })
-    editorVisible()
-
-    cy.window().then(win => {
-      expect(parseStoredSettings(win)).to.deep.equal({
-        windowTheme: 'bw',
-        language: 'javascript',
-      })
+    readEditorStorage().should(storage => {
+      expect(storage.window.windowTheme).to.eq('bw')
     })
     cy.get('.window-theme__bw').should('exist')
   })
