@@ -154,6 +154,13 @@ describe('background color', () => {
       .invoke('css', 'background-image')
       .should('match', /gradient/i)
 
+    readEditorStorage().should(storage => {
+      expect(storage.window.backgroundGradient).to.match(/linear-gradient/i)
+      expect(storage.window.neumorphismColorMode).to.eq('gradient')
+      expect(storage.window.neumorphismGradientStart).to.match(/#/i)
+      expect(storage.window.neumorphismGradientEnd).to.match(/#/i)
+    })
+
     cy.get('.bg-select-panel .ant-tabs-tab').eq(0).click()
     cy.get(picker).find(darkRedTile).click()
     closePicker()

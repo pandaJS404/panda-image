@@ -18,7 +18,13 @@ import NeumorphismFlatAsset from './svg/assets/mimicry/plane.svg?react'
 import NeumorphismPressedAsset from './svg/assets/mimicry/invagination.svg?react'
 import NeumorphismConcaveAsset from './svg/assets/mimicry/indent.svg?react'
 import NeumorphismConvexAsset from './svg/assets/mimicry/convex.svg?react'
-import { DEFAULT_PRESETS, DEFAULT_SETTINGS, DEFAULT_WIDTHS } from '../src/modules/editor/config'
+import {
+  DEFAULT_PRESETS,
+  DEFAULT_SETTINGS,
+  DEFAULT_WATERMARK_FILL_COLOR,
+  DEFAULT_WATERMARK_STROKE_COLOR,
+  DEFAULT_WIDTHS,
+} from '../src/modules/editor/config'
 import {
   getPresets,
   savePresets,
@@ -111,6 +117,198 @@ function getSliderMarks(minValue, maxValue, unit) {
   }
 }
 
+function expandHexColor(value) {
+  const hexValue = String(value || '').trim()
+
+  if (/^#[0-9a-f]{3}$/i.test(hexValue)) {
+    return `#${hexValue
+      .slice(1)
+      .split('')
+      .map(character => character + character)
+      .join('')}`
+  }
+
+  if (/^#[0-9a-f]{6}$/i.test(hexValue)) {
+    return hexValue
+  }
+
+  return null
+}
+
+function rgbChannelToHex(value) {
+  const numericValue = Number.parseFloat(value)
+
+  if (!Number.isFinite(numericValue)) {
+    return null
+  }
+
+  const normalizedValue = value.includes('%')
+    ? Math.round((Math.min(Math.max(numericValue, 0), 100) / 100) * 255)
+    : Math.round(Math.min(Math.max(numericValue, 0), 255))
+
+  return normalizedValue.toString(16).padStart(2, '0')
+}
+
+function normalizeColorToHex(value, fallback) {
+  const hexValue = expandHexColor(value)
+
+  if (hexValue) {
+    return hexValue
+  }
+
+  const rgbMatch = String(value || '')
+    .trim()
+    .match(/^rgba?\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,)]+)(?:\s*,\s*[^)]+)?\)$/i)
+
+  if (!rgbMatch) {
+    return fallback
+  }
+
+  const channels = rgbMatch.slice(1, 4).map(rgbChannelToHex)
+
+  if (channels.some(channel => !channel)) {
+    return fallback
+  }
+
+  return `#${channels.join('')}`
+}
+
+function splitGradientArguments(value) {
+  const parts = []
+  let current = ''
+  let depth = 0
+
+  for (const character of String(value || '')) {
+    if (character === '(') {
+      depth += 1
+    } else if (character === ')') {
+      depth = Math.max(0, depth - 1)
+    }
+
+    if (character === ',' && depth === 0) {
+      if (current.trim()) {
+        parts.push(current.trim())
+      }
+      current = ''
+      continue
+    }
+
+    current += character
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim())
+  }
+
+  return parts
+}
+
+function resolveGradientAngle(token) {
+  const normalizedToken = String(token || '')
+    .trim()
+    .toLowerCase()
+
+  if (normalizedToken.endsWith('turn')) {
+    const turns = Number.parseFloat(normalizedToken)
+    return Number.isFinite(turns)
+      ? Number.parseFloat((turns * 360).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('rad')) {
+    const radians = Number.parseFloat(normalizedToken)
+    return Number.isFinite(radians)
+      ? Number.parseFloat(((radians * 180) / Math.PI).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('grad')) {
+    const grads = Number.parseFloat(normalizedToken)
+    return Number.isFinite(grads)
+      ? Number.parseFloat((grads * 0.9).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('deg')) {
+    const degrees = Number.parseFloat(normalizedToken)
+    return Number.isFinite(degrees)
+      ? Number.parseFloat(degrees.toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  switch (normalizedToken.replace(/\s+/g, ' ')) {
+    case 'to top':
+      return 0
+    case 'to top right':
+      return 45
+    case 'to right':
+      return 90
+    case 'to bottom right':
+      return 135
+    case 'to bottom':
+      return 180
+    case 'to bottom left':
+      return 225
+    case 'to left':
+      return 270
+    case 'to top left':
+      return 315
+    default:
+      return DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+}
+
+function extractGradientColor(token) {
+  const match = String(token || '')
+    .trim()
+    .match(/(#[0-9a-f]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/i)
+
+  return match ? match[1] : null
+}
+
+function resolveNeumorphismGradientDefaults(gradient) {
+  const fallback = {
+    start: DEFAULT_SETTINGS.neumorphismGradientStart,
+    end: DEFAULT_SETTINGS.neumorphismGradientEnd,
+    angle: DEFAULT_SETTINGS.neumorphismGradientAngle,
+  }
+
+  if (typeof gradient !== 'string' || !/gradient\(/i.test(gradient)) {
+    return fallback
+  }
+
+  const openParenIndex = gradient.indexOf('(')
+  const closeParenIndex = gradient.lastIndexOf(')')
+
+  if (openParenIndex === -1 || closeParenIndex === -1 || closeParenIndex <= openParenIndex) {
+    return fallback
+  }
+
+  const gradientParts = splitGradientArguments(gradient.slice(openParenIndex + 1, closeParenIndex))
+  const firstPart = gradientParts[0] || ''
+  const hasExplicitDirection =
+    /^(to\s+|[-+]?\d+(?:\.\d+)?(?:deg|rad|turn|grad))$/i.test(firstPart.trim()) ||
+    /^to\s+/i.test(firstPart.trim())
+  const colorParts = (hasExplicitDirection ? gradientParts.slice(1) : gradientParts)
+    .map(extractGradientColor)
+    .filter(Boolean)
+
+  if (colorParts.length < 2) {
+    return fallback
+  }
+
+  return {
+    start: normalizeColorToHex(colorParts[0], DEFAULT_SETTINGS.neumorphismGradientStart),
+    end: normalizeColorToHex(
+      colorParts[colorParts.length - 1],
+      DEFAULT_SETTINGS.neumorphismGradientEnd,
+    ),
+    angle: hasExplicitDirection
+      ? resolveGradientAngle(firstPart)
+      : DEFAULT_SETTINGS.neumorphismGradientAngle,
+  }
+}
+
 function KeyboardShortcut({ trigger, handle }) {
   useKeyboardListener(trigger, handle)
   return null
@@ -191,7 +389,7 @@ function SettingsColorField({
   onChange,
   fallbackColor = DEFAULT_SETTINGS.codeMirrorBorderColor,
   onClear,
-  clearLabel = '复原',
+  clearLabel = '重置',
   disabled = false,
 }) {
   const [open, setOpen] = React.useState(false)
@@ -475,8 +673,15 @@ function WindowSettings({
 
 function NeumorphismSettings({
   onChange,
+  backgroundMode,
+  backgroundColor,
+  backgroundGradient,
   neumorphismEnabled,
   neumorphismColor,
+  neumorphismColorMode,
+  neumorphismGradientStart,
+  neumorphismGradientEnd,
+  neumorphismGradientAngle,
   neumorphismShape,
   neumorphismLightSource,
   neumorphismDistance,
@@ -484,90 +689,145 @@ function NeumorphismSettings({
   neumorphismIntensity,
   neumorphismRadius,
 }) {
+  const isImageBackground = backgroundMode === 'image'
+  const resolvedColorMode = backgroundGradient ? 'gradient' : neumorphismColorMode || 'solid'
+  const showNeumorphismOptions = Boolean(neumorphismEnabled) && !isImageBackground
+  const solidBackgroundColor = backgroundColor || DEFAULT_SETTINGS.neumorphismColor
+  const gradientDefaults = React.useMemo(
+    () => resolveNeumorphismGradientDefaults(backgroundGradient),
+    [backgroundGradient],
+  )
+
   return (
     <div className="settings-content">
       <Toggle
         label="启用拟态"
         enabled={neumorphismEnabled}
+        disabled={isImageBackground}
         onChange={onChange.bind(null, 'neumorphismEnabled')}
       />
-      <HexColorField
-        label="基色"
-        value={neumorphismColor}
-        fallbackColor={DEFAULT_SETTINGS.neumorphismColor}
-        onChange={onChange.bind(null, 'neumorphismColor')}
-        onClear={onChange.bind(null, 'neumorphismColor', DEFAULT_SETTINGS.neumorphismColor)}
-      />
-      <div className="settings-row settings-radio-row">
-        <span className="settings-slider-label">形状</span>
-        <Radio.Group
-          className="settings-radio-group settings-radio-group--wide settings-radio-group--iconic"
-          optionType="button"
-          buttonStyle="solid"
-          value={neumorphismShape || DEFAULT_SETTINGS.neumorphismShape}
-          onChange={event => onChange('neumorphismShape', event.target.value)}
-        >
-          {NEUMORPHISM_SHAPE_OPTIONS.map(({ id, name }) => (
-            <Radio.Button key={id} value={id} aria-label={name}>
-              <NeumorphismShapeIcon shape={id} label={name} />
-            </Radio.Button>
-          ))}
-        </Radio.Group>
-      </div>
-      <div className="settings-row settings-radio-row">
-        <span className="settings-slider-label">光源</span>
-        <Radio.Group
-          className="settings-radio-group settings-radio-group--wide"
-          optionType="button"
-          buttonStyle="solid"
-          value={neumorphismLightSource || DEFAULT_SETTINGS.neumorphismLightSource}
-          onChange={event => onChange('neumorphismLightSource', event.target.value)}
-        >
-          {NEUMORPHISM_LIGHT_OPTIONS.map(({ id, name }) => (
-            <Radio.Button key={id} value={id}>
-              {name}
-            </Radio.Button>
-          ))}
-        </Radio.Group>
-      </div>
-      <SettingsSlider
-        label="距离"
-        value={neumorphismDistance}
-        minValue={0}
-        maxValue={80}
-        unit="px"
-        serializeValue={nextValue => nextValue}
-        onChange={onChange.bind(null, 'neumorphismDistance')}
-      />
-      <SettingsSlider
-        label="模糊"
-        value={neumorphismBlur}
-        minValue={0}
-        maxValue={140}
-        unit="px"
-        serializeValue={nextValue => nextValue}
-        onChange={onChange.bind(null, 'neumorphismBlur')}
-      />
-      <SettingsSlider
-        label="强度"
-        value={
-          Number.parseFloat(neumorphismIntensity || DEFAULT_SETTINGS.neumorphismIntensity) * 100
-        }
-        minValue={1}
-        maxValue={60}
-        unit="%"
-        serializeValue={nextValue => serializeNumericValue(nextValue / 100)}
-        onChange={onChange.bind(null, 'neumorphismIntensity')}
-      />
-      <SettingsSlider
-        label="圆角"
-        value={neumorphismRadius}
-        minValue={0}
-        maxValue={120}
-        unit="px"
-        serializeValue={nextValue => nextValue}
-        onChange={onChange.bind(null, 'neumorphismRadius')}
-      />
+      {showNeumorphismOptions && resolvedColorMode === 'gradient' ? (
+        <>
+          <HexColorField
+            label="起始色"
+            value={neumorphismGradientStart}
+            fallbackColor={neumorphismGradientStart || DEFAULT_SETTINGS.neumorphismGradientStart}
+            disabled={isImageBackground}
+            onChange={onChange.bind(null, 'neumorphismGradientStart')}
+            onClear={onChange.bind(
+              null,
+              'neumorphismGradientStart',
+              gradientDefaults.start,
+            )}
+          />
+          <HexColorField
+            label="结束色"
+            value={neumorphismGradientEnd}
+            fallbackColor={neumorphismGradientEnd || DEFAULT_SETTINGS.neumorphismGradientEnd}
+            disabled={isImageBackground}
+            onChange={onChange.bind(null, 'neumorphismGradientEnd')}
+            onClear={onChange.bind(
+              null,
+              'neumorphismGradientEnd',
+              gradientDefaults.end,
+            )}
+          />
+          <SettingsSlider
+            label="渐变角度"
+            value={neumorphismGradientAngle}
+            minValue={0}
+            maxValue={360}
+            disabled={isImageBackground}
+            unit="deg"
+            serializeValue={nextValue => nextValue}
+            onChange={onChange.bind(null, 'neumorphismGradientAngle')}
+          />
+        </>
+      ) : null}
+      {showNeumorphismOptions && resolvedColorMode !== 'gradient' ? (
+        <HexColorField
+          label="单色基色"
+          value={neumorphismColor}
+          fallbackColor={solidBackgroundColor}
+          disabled={isImageBackground}
+          onChange={onChange.bind(null, 'neumorphismColor')}
+          onClear={onChange.bind(null, 'neumorphismColor', solidBackgroundColor)}
+        />
+      ) : null}
+      {showNeumorphismOptions ? (
+        <>
+          <div className="settings-row settings-radio-row">
+            <span className="settings-slider-label">形状</span>
+            <Radio.Group
+              className="settings-radio-group settings-radio-group--wide settings-radio-group--iconic"
+              optionType="button"
+              buttonStyle="solid"
+              value={neumorphismShape || DEFAULT_SETTINGS.neumorphismShape}
+              onChange={event => onChange('neumorphismShape', event.target.value)}
+            >
+              {NEUMORPHISM_SHAPE_OPTIONS.map(({ id, name }) => (
+                <Radio.Button key={id} value={id} aria-label={name}>
+                  <NeumorphismShapeIcon shape={id} label={name} />
+                </Radio.Button>
+              ))}
+            </Radio.Group>
+          </div>
+          <div className="settings-row settings-radio-row">
+            <span className="settings-slider-label">光源</span>
+            <Radio.Group
+              className="settings-radio-group settings-radio-group--wide"
+              optionType="button"
+              buttonStyle="solid"
+              value={neumorphismLightSource || DEFAULT_SETTINGS.neumorphismLightSource}
+              onChange={event => onChange('neumorphismLightSource', event.target.value)}
+            >
+              {NEUMORPHISM_LIGHT_OPTIONS.map(({ id, name }) => (
+                <Radio.Button key={id} value={id}>
+                  {name}
+                </Radio.Button>
+              ))}
+            </Radio.Group>
+          </div>
+          <SettingsSlider
+            label="距离"
+            value={neumorphismDistance}
+            minValue={0}
+            maxValue={80}
+            unit="px"
+            serializeValue={nextValue => nextValue}
+            onChange={onChange.bind(null, 'neumorphismDistance')}
+          />
+          <SettingsSlider
+            label="模糊"
+            value={neumorphismBlur}
+            minValue={0}
+            maxValue={140}
+            unit="px"
+            serializeValue={nextValue => nextValue}
+            onChange={onChange.bind(null, 'neumorphismBlur')}
+          />
+          <SettingsSlider
+            label="强度"
+            value={
+              Number.parseFloat(neumorphismIntensity || DEFAULT_SETTINGS.neumorphismIntensity) * 100
+            }
+            minValue={1}
+            maxValue={60}
+            unit="%"
+            serializeValue={nextValue => serializeNumericValue(nextValue / 100)}
+            onChange={onChange.bind(null, 'neumorphismIntensity')}
+          />
+          <SettingsSlider
+            label="圆角"
+            value={neumorphismRadius}
+            minValue={0}
+            maxValue={120}
+            unit="px"
+            serializeValue={nextValue => nextValue}
+            onChange={onChange.bind(null, 'neumorphismRadius')}
+          />
+        </>
+      ) : null}
     </div>
   )
 }
@@ -753,9 +1013,13 @@ function WatermarkSettings({
                 <SettingsColorField
                   label="描边颜色"
                   value={watermarkStrokeColor}
-                  fallbackColor="rgba(255,255,255,1)"
+                  fallbackColor={DEFAULT_WATERMARK_STROKE_COLOR}
                   onChange={onChange.bind(null, 'watermarkStrokeColor')}
-                  onClear={onChange.bind(null, 'watermarkStrokeColor', 'rgba(255,255,255,1)')}
+                  onClear={onChange.bind(
+                    null,
+                    'watermarkStrokeColor',
+                    DEFAULT_WATERMARK_STROKE_COLOR,
+                  )}
                 />
                 <SettingsSlider
                   label="描边宽度"
@@ -778,9 +1042,9 @@ function WatermarkSettings({
                   <SettingsColorField
                     label="填充颜色"
                     value={watermarkFillColor}
-                    fallbackColor="rgba(255, 174, 0, 1)"
+                    fallbackColor={DEFAULT_WATERMARK_FILL_COLOR}
                     onChange={onChange.bind(null, 'watermarkFillColor')}
-                    onClear={onChange.bind(null, 'watermarkFillColor', 'rgba(255, 174, 0, 1)')}
+                    onClear={onChange.bind(null, 'watermarkFillColor', DEFAULT_WATERMARK_FILL_COLOR)}
                   />
                 ) : null}
               </SettingsSection>
@@ -1089,8 +1353,15 @@ function Settings(props) {
       children: (
         <NeumorphismSettings
           onChange={handleChange}
+          backgroundMode={props.backgroundMode}
+          backgroundColor={props.backgroundColor}
+          backgroundGradient={props.backgroundGradient}
           neumorphismEnabled={props.neumorphismEnabled}
           neumorphismColor={props.neumorphismColor}
+          neumorphismColorMode={props.neumorphismColorMode}
+          neumorphismGradientStart={props.neumorphismGradientStart}
+          neumorphismGradientEnd={props.neumorphismGradientEnd}
+          neumorphismGradientAngle={props.neumorphismGradientAngle}
           neumorphismShape={props.neumorphismShape}
           neumorphismLightSource={props.neumorphismLightSource}
           neumorphismDistance={props.neumorphismDistance}

@@ -1,4 +1,5 @@
 import { DEFAULT_BG_COLOR } from '../config'
+import { resolveBuiltInBackgroundImageSource } from '../../../bg-image'
 
 const IMAGE_BACKGROUND_STYLE = {
   backgroundSize: 'cover',
@@ -12,7 +13,11 @@ const STATIC_BACKGROUND_STYLE = {
 
 export function getBackgroundImageSource(config = {}) {
   return (
-    (config.backgroundImage && config.backgroundImageSelection) || config.backgroundImage || null
+    (config.backgroundImage && config.backgroundImageSelection) ||
+    config.backgroundImage ||
+    resolveBuiltInBackgroundImageSource(config.backgroundImageSource) ||
+    config.backgroundImageSource ||
+    null
   )
 }
 

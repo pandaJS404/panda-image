@@ -12,9 +12,18 @@ export const NEUMORPHISM_LIGHT_SOURCES = {
   bottomLeft: 'bottom-left',
 }
 
+export const NEUMORPHISM_COLOR_MODES = {
+  solid: 'solid',
+  gradient: 'gradient',
+}
+
 export const DEFAULT_NEUMORPHISM_SETTINGS = {
   neumorphismEnabled: false,
   neumorphismColor: '#55b9f3',
+  neumorphismColorMode: NEUMORPHISM_COLOR_MODES.solid,
+  neumorphismGradientStart: '#55b9f3',
+  neumorphismGradientEnd: '#7fd8ff',
+  neumorphismGradientAngle: 145,
   neumorphismShape: NEUMORPHISM_SHAPES.flat,
   neumorphismLightSource: NEUMORPHISM_LIGHT_SOURCES.topLeft,
   neumorphismDistance: 20,
@@ -70,6 +79,10 @@ function normalizeNumber(value, fallback, { min = -Infinity, max = Infinity } = 
 export function getNeumorphismStyle(settings = {}) {
   const {
     neumorphismColor,
+    neumorphismColorMode,
+    neumorphismGradientStart,
+    neumorphismGradientEnd,
+    neumorphismGradientAngle,
     neumorphismShape,
     neumorphismLightSource,
     neumorphismDistance,
@@ -82,6 +95,22 @@ export function getNeumorphismStyle(settings = {}) {
   }
 
   const color = normalizeHexColor(neumorphismColor)
+  const colorMode = Object.values(NEUMORPHISM_COLOR_MODES).includes(neumorphismColorMode)
+    ? neumorphismColorMode
+    : DEFAULT_NEUMORPHISM_SETTINGS.neumorphismColorMode
+  const gradientStart = normalizeHexColor(
+    neumorphismGradientStart,
+    DEFAULT_NEUMORPHISM_SETTINGS.neumorphismGradientStart,
+  )
+  const gradientEnd = normalizeHexColor(
+    neumorphismGradientEnd,
+    DEFAULT_NEUMORPHISM_SETTINGS.neumorphismGradientEnd,
+  )
+  const gradientAngle = normalizeNumber(
+    neumorphismGradientAngle,
+    DEFAULT_NEUMORPHISM_SETTINGS.neumorphismGradientAngle,
+    { min: 0, max: 360 },
+  )
   const shape = Object.values(NEUMORPHISM_SHAPES).includes(neumorphismShape)
     ? neumorphismShape
     : DEFAULT_NEUMORPHISM_SETTINGS.neumorphismShape
@@ -93,8 +122,11 @@ export function getNeumorphismStyle(settings = {}) {
   const intensity = normalizeNumber(neumorphismIntensity, 0.15, { min: 0.01, max: 0.6 })
   const radius = normalizeNumber(neumorphismRadius, 12, { min: 0, max: 120 })
   const { x, y, angle } = getLightSourcePosition(lightSource, distance)
-  const darkColor = colorLuminance(color, intensity * -1)
-  const lightColor = colorLuminance(color, intensity)
+  const isGradientMode = colorMode === NEUMORPHISM_COLOR_MODES.gradient
+  const shadowDarkBase = isGradientMode ? gradientStart : color
+  const shadowLightBase = isGradientMode ? gradientEnd : color
+  const darkColor = colorLuminance(shadowDarkBase, intensity * -1)
+  const lightColor = colorLuminance(shadowLightBase, intensity)
   const usesGradient = shape === NEUMORPHISM_SHAPES.concave || shape === NEUMORPHISM_SHAPES.convex
   const firstGradientColor =
     usesGradient && shape !== NEUMORPHISM_SHAPES.pressed
@@ -104,12 +136,21 @@ export function getNeumorphismStyle(settings = {}) {
     usesGradient && shape !== NEUMORPHISM_SHAPES.pressed
       ? colorLuminance(color, shape === NEUMORPHISM_SHAPES.concave ? 0.07 : -0.1)
       : color
+  const gradientModeFirstColor = usesGradient
+    ? colorLuminance(gradientStart, shape === NEUMORPHISM_SHAPES.convex ? 0.07 : -0.1)
+    : gradientStart
+  const gradientModeSecondColor = usesGradient
+    ? colorLuminance(gradientEnd, shape === NEUMORPHISM_SHAPES.concave ? 0.07 : -0.1)
+    : gradientEnd
   const inset = shape === NEUMORPHISM_SHAPES.pressed ? 'inset ' : ''
+  const background = isGradientMode
+    ? `linear-gradient(${gradientAngle}deg, ${gradientModeFirstColor}, ${gradientModeSecondColor})`
+    : usesGradient
+      ? `linear-gradient(${angle}deg, ${firstGradientColor}, ${secondGradientColor})`
+      : color
 
   return {
-    background: usesGradient
-      ? `linear-gradient(${angle}deg, ${firstGradientColor}, ${secondGradientColor})`
-      : color,
+    background,
     borderRadius: `${radius}px`,
     boxShadow: `${inset}${x}px ${y}px ${blur}px ${darkColor}, ${inset}${x * -1}px ${
       y * -1

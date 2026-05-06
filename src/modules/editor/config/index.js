@@ -1262,6 +1262,8 @@ export const DEFAULT_BG_COLOR = 'rgba(171, 184, 195, 1)'
 export const DEFAULT_BACKGROUND_IMAGE_SOURCE = 'builtin:panda-bg-01'
 export const DEFAULT_EXPORT_SIZE = EXPORT_SIZES_HASH['2x']
 export const DEFAULT_FONT_FAMILY = 'Google Sans Code'
+export const DEFAULT_WATERMARK_FILL_COLOR = 'rgba(255, 174, 0, 1)'
+export const DEFAULT_WATERMARK_STROKE_COLOR = 'rgba(255,255,255,1)'
 
 export const COLORS = {
   BLACK: 'var(--color-black)',
@@ -1335,10 +1337,10 @@ export const DEFAULT_SETTINGS = {
   watermarkFontFamily: DEFAULT_FONT_FAMILY,
   watermarkTextSize: '96px',
   watermarkTextKerning: true,
-  watermarkStrokeColor: '',
+  watermarkStrokeColor: DEFAULT_WATERMARK_STROKE_COLOR,
   watermarkStrokeWidth: '0px',
   watermarkFillEnabled: true,
-  watermarkFillColor: '',
+  watermarkFillColor: DEFAULT_WATERMARK_FILL_COLOR,
   watermarkFontUrl: null,
   squaredImage: false,
   hiddenCharacters: false,

@@ -76,13 +76,79 @@ const NEUMORPHISM_CONFLICTING_SETTINGS = {
   glassEffect: false,
 }
 
-function getNeumorphismCompatibleSettings(settings) {
-  if (!settings?.neumorphismEnabled) {
-    return settings
+function pickChangedState(currentState, nextState) {
+  const changedEntries = Object.entries(nextState).filter(
+    ([nextKey, nextValue]) => currentState[nextKey] !== nextValue,
+  )
+
+  return changedEntries.length ? Object.fromEntries(changedEntries) : null
+}
+
+function expandHexColor(value) {
+  const hexValue = String(value || '').trim()
+
+  if (/^#[0-9a-f]{3}$/i.test(hexValue)) {
+    return `#${hexValue
+      .slice(1)
+      .split('')
+      .map(character => character + character)
+      .join('')}`
+  }
+
+  if (/^#[0-9a-f]{6}$/i.test(hexValue)) {
+    return hexValue
+  }
+
+  return null
+}
+
+function rgbChannelToHex(value) {
+  const numericValue = Number.parseFloat(value)
+
+  if (!Number.isFinite(numericValue)) {
+    return null
+  }
+
+  const normalizedValue = value.includes('%')
+    ? Math.round((Math.min(Math.max(numericValue, 0), 100) / 100) * 255)
+    : Math.round(Math.min(Math.max(numericValue, 0), 255))
+
+  return normalizedValue.toString(16).padStart(2, '0')
+}
+
+function normalizeColorToHex(value, fallback = DEFAULT_SETTINGS.neumorphismColor) {
+  const hexValue = expandHexColor(value)
+
+  if (hexValue) {
+    return hexValue
+  }
+
+  const rgbMatch = String(value || '')
+    .trim()
+    .match(/^rgba?\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,)]+)(?:\s*,\s*[^)]+)?\)$/i)
+
+  if (!rgbMatch) {
+    return fallback
+  }
+
+  const channels = rgbMatch.slice(1, 4).map(rgbChannelToHex)
+
+  if (channels.some(channel => !channel)) {
+    return fallback
+  }
+
+  return `#${channels.join('')}`
+}
+
+function getNeumorphismCompatibleSettings(settings, options) {
+  const nextSettings = constrainNeumorphismToBackground(settings, options)
+
+  if (!nextSettings?.neumorphismEnabled) {
+    return nextSettings
   }
 
   return {
-    ...settings,
+    ...nextSettings,
     ...NEUMORPHISM_CONFLICTING_SETTINGS,
   }
 }
@@ -123,6 +189,195 @@ function clearGradientBackgroundFields(config) {
     backgroundGradient: null,
     backgroundGradientBlendMode: null,
   }
+}
+
+function splitGradientArguments(value) {
+  const parts = []
+  let current = ''
+  let depth = 0
+
+  for (const character of String(value || '')) {
+    if (character === '(') {
+      depth += 1
+    } else if (character === ')') {
+      depth = Math.max(0, depth - 1)
+    }
+
+    if (character === ',' && depth === 0) {
+      if (current.trim()) {
+        parts.push(current.trim())
+      }
+      current = ''
+      continue
+    }
+
+    current += character
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim())
+  }
+
+  return parts
+}
+
+function resolveGradientAngle(token) {
+  const normalizedToken = String(token || '')
+    .trim()
+    .toLowerCase()
+
+  if (!normalizedToken) {
+    return DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('turn')) {
+    const turns = Number.parseFloat(normalizedToken)
+    return Number.isFinite(turns)
+      ? Number.parseFloat((turns * 360).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('rad')) {
+    const radians = Number.parseFloat(normalizedToken)
+    return Number.isFinite(radians)
+      ? Number.parseFloat(((radians * 180) / Math.PI).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('grad')) {
+    const grads = Number.parseFloat(normalizedToken)
+    return Number.isFinite(grads)
+      ? Number.parseFloat((grads * 0.9).toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  if (normalizedToken.endsWith('deg')) {
+    const degrees = Number.parseFloat(normalizedToken)
+    return Number.isFinite(degrees)
+      ? Number.parseFloat(degrees.toFixed(2))
+      : DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+
+  switch (normalizedToken.replace(/\s+/g, ' ')) {
+    case 'to top':
+      return 0
+    case 'to top right':
+      return 45
+    case 'to right':
+      return 90
+    case 'to bottom right':
+      return 135
+    case 'to bottom':
+      return 180
+    case 'to bottom left':
+      return 225
+    case 'to left':
+      return 270
+    case 'to top left':
+      return 315
+    default:
+      return DEFAULT_SETTINGS.neumorphismGradientAngle
+  }
+}
+
+function extractGradientColor(token) {
+  const match = String(token || '')
+    .trim()
+    .match(/(#[0-9a-f]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/i)
+
+  return match ? match[1] : null
+}
+
+function resolveNeumorphismGradientFromBackground(gradient) {
+  if (typeof gradient !== 'string' || !/gradient\(/i.test(gradient)) {
+    return null
+  }
+
+  const openParenIndex = gradient.indexOf('(')
+  const closeParenIndex = gradient.lastIndexOf(')')
+
+  if (openParenIndex === -1 || closeParenIndex === -1 || closeParenIndex <= openParenIndex) {
+    return null
+  }
+
+  const gradientBody = gradient.slice(openParenIndex + 1, closeParenIndex)
+  const gradientParts = splitGradientArguments(gradientBody)
+
+  if (!gradientParts.length) {
+    return null
+  }
+
+  const firstPart = gradientParts[0]
+  const hasExplicitDirection =
+    /^(to\s+|[-+]?\d+(?:\.\d+)?(?:deg|rad|turn|grad))$/i.test(firstPart.trim()) ||
+    /^to\s+/i.test(firstPart.trim())
+  const colorParts = (hasExplicitDirection ? gradientParts.slice(1) : gradientParts)
+    .map(extractGradientColor)
+    .filter(Boolean)
+
+  if (colorParts.length < 2) {
+    return null
+  }
+
+  return {
+    neumorphismColorMode: 'gradient',
+    neumorphismGradientStart: normalizeColorToHex(
+      colorParts[0],
+      DEFAULT_SETTINGS.neumorphismGradientStart,
+    ),
+    neumorphismGradientEnd: normalizeColorToHex(
+      colorParts[colorParts.length - 1],
+      DEFAULT_SETTINGS.neumorphismGradientEnd,
+    ),
+    neumorphismGradientAngle: hasExplicitDirection
+      ? resolveGradientAngle(firstPart)
+      : DEFAULT_SETTINGS.neumorphismGradientAngle,
+  }
+}
+
+function isConfiguredBackgroundImage(config = {}) {
+  return Boolean(
+    config.backgroundMode === 'image' ||
+    config.backgroundImageSelection ||
+    config.backgroundImage ||
+    config.backgroundImageSource,
+  )
+}
+
+function constrainNeumorphismToBackground(settings = {}, { enforceBackgroundMode = false } = {}) {
+  const nextSettings = { ...settings }
+
+  if (isConfiguredBackgroundImage(nextSettings)) {
+    return {
+      ...nextSettings,
+      neumorphismEnabled: false,
+    }
+  }
+
+  if (enforceBackgroundMode && nextSettings.backgroundGradient) {
+    const gradientSettings = resolveNeumorphismGradientFromBackground(
+      nextSettings.backgroundGradient,
+    )
+
+    return {
+      ...nextSettings,
+      neumorphismColorMode: 'gradient',
+      ...gradientSettings,
+    }
+  }
+
+  if (enforceBackgroundMode && !nextSettings.backgroundGradient) {
+    return {
+      ...nextSettings,
+      neumorphismColorMode: 'solid',
+      neumorphismColor: normalizeColorToHex(
+        nextSettings.backgroundColor,
+        DEFAULT_SETTINGS.neumorphismColor,
+      ),
+    }
+  }
+
+  return nextSettings
 }
 
 function normalizeRestoredBackgroundState(config = {}) {
@@ -201,6 +456,87 @@ function waitForImageReady(image) {
   })
 }
 
+function createEditorState(settings = {}, options = {}) {
+  const {
+    backgroundImageAsset = null,
+    fontUrl = null,
+    loading = false,
+    watermarkFontUrl = null,
+  } = options
+  const newState = {
+    ...DEFAULT_SETTINGS,
+    ...settings,
+    code: settings.code ?? DEFAULT_CODE,
+    fontUrl: settings.fontUrl ?? null,
+    highlights: settings.highlights ?? null,
+    loading,
+    preset: settings.preset ?? null,
+    selectedLines: settings.selectedLines ?? null,
+    titleBar: settings.titleBar ?? null,
+    watermarkFontUrl: settings.watermarkFontUrl ?? null,
+  }
+  const hasStoredBackgroundAsset =
+    backgroundImageAsset &&
+    (backgroundImageAsset.source || backgroundImageAsset.image || backgroundImageAsset.selection)
+
+  if (hasStoredBackgroundAsset && newState.backgroundMode === 'image') {
+    newState.backgroundMode = 'image'
+    newState.backgroundImageSource = backgroundImageAsset.source || null
+    newState.backgroundImage = getStoredBackgroundImageValue(
+      backgroundImageAsset.source,
+      backgroundImageAsset.image,
+    )
+    newState.backgroundImageSelection = backgroundImageAsset.selection || null
+  } else if (newState.backgroundMode === 'image' && newState.backgroundImageSource) {
+    newState.backgroundMode = 'image'
+    newState.backgroundImage = resolveBackgroundImageValue(newState.backgroundImageSource)
+    newState.backgroundImageSelection = null
+  }
+
+  Object.assign(newState, normalizeRestoredBackgroundState(newState))
+
+  if (newState.language) {
+    newState.language = unescapeHtml(newState.language)
+  }
+
+  if (fontUrl) {
+    newState.fontUrl = fontUrl
+  }
+
+  if (
+    newState.fontFamily &&
+    !FONTS.find(({ id }) => id === newState.fontFamily) &&
+    !newState.fontUrl
+  ) {
+    newState.fontFamily = DEFAULT_SETTINGS.fontFamily
+  }
+
+  const isBuiltInWatermarkFont = Boolean(FONTS_HASH[newState.watermarkFontFamily])
+  const shouldRestoreStoredWatermarkFont =
+    watermarkFontUrl &&
+    !isBuiltInWatermarkFont &&
+    newState.watermarkFontFamily &&
+    newState.watermarkFontFamily === settings.watermarkFontFamily
+
+  if (shouldRestoreStoredWatermarkFont) {
+    newState.watermarkFontUrl = watermarkFontUrl
+  }
+
+  if (newState.watermarkFontFamily && !FONTS_HASH[newState.watermarkFontFamily]) {
+    if (!newState.watermarkFontUrl) {
+      newState.watermarkFontFamily = DEFAULT_SETTINGS.watermarkFontFamily
+    }
+  }
+
+  if (newState.watermarkFontUrl && !newState.watermarkFontFamily) {
+    newState.watermarkFontFamily = DEFAULT_FONT_FAMILY
+  }
+
+  return getNeumorphismCompatibleSettings(newState, {
+    enforceBackgroundMode: true,
+  })
+}
+
 class Editor extends React.Component {
   state = {
     ...DEFAULT_SETTINGS,
@@ -229,77 +565,15 @@ class Editor extends React.Component {
         getFontAsset(),
       ])
 
-    const newState = {
-      ...DEFAULT_SETTINGS,
-      ...(storedSettings || {}),
+    const compatibleState = createEditorState(storedSettings || {}, {
+      backgroundImageAsset: storedBackgroundImageAsset,
+      fontUrl: storedFontUrl,
       loading: false,
-    }
-
-    const hasStoredBackgroundAsset =
-      storedBackgroundImageAsset &&
-      (storedBackgroundImageAsset.source ||
-        storedBackgroundImageAsset.image ||
-        storedBackgroundImageAsset.selection)
-
-    if (hasStoredBackgroundAsset && newState.backgroundMode === 'image') {
-      newState.backgroundMode = 'image'
-      newState.backgroundImageSource = storedBackgroundImageAsset.source || null
-      newState.backgroundImage = getStoredBackgroundImageValue(
-        storedBackgroundImageAsset.source,
-        storedBackgroundImageAsset.image,
-      )
-      newState.backgroundImageSelection = storedBackgroundImageAsset.selection || null
-    } else if (newState.backgroundMode === 'image' && newState.backgroundImageSource) {
-      newState.backgroundMode = 'image'
-      newState.backgroundImage = resolveBackgroundImageValue(newState.backgroundImageSource)
-      newState.backgroundImageSelection = null
-    }
-
-    Object.assign(newState, normalizeRestoredBackgroundState(newState))
-
-    if (newState.language) {
-      newState.language = unescapeHtml(newState.language)
-    }
-
-    if (storedFontUrl) {
-      newState.fontUrl = storedFontUrl
-    }
-
-    if (
-      newState.fontFamily &&
-      !FONTS.find(({ id }) => id === newState.fontFamily) &&
-      !newState.fontUrl
-    ) {
-      newState.fontFamily = DEFAULT_SETTINGS.fontFamily
-    }
-
-    const isBuiltInWatermarkFont = Boolean(FONTS_HASH[newState.watermarkFontFamily])
-    const shouldRestoreStoredWatermarkFont =
-      storedWatermarkFontUrl &&
-      !isBuiltInWatermarkFont &&
-      newState.watermarkFontFamily &&
-      newState.watermarkFontFamily === storedSettings.watermarkFontFamily
-
-    if (shouldRestoreStoredWatermarkFont) {
-      newState.watermarkFontUrl = storedWatermarkFontUrl
-    }
-
-    if (newState.watermarkFontFamily && !FONTS_HASH[newState.watermarkFontFamily]) {
-      if (!newState.watermarkFontUrl) {
-        newState.watermarkFontFamily = DEFAULT_SETTINGS.watermarkFontFamily
-      }
-    }
-
-    if (newState.watermarkFontUrl && !newState.watermarkFontFamily) {
-      newState.watermarkFontFamily = DEFAULT_FONT_FAMILY
-    }
-
-    const compatibleState = getNeumorphismCompatibleSettings(newState)
+      watermarkFontUrl: storedWatermarkFontUrl,
+    })
 
     this.setState(compatibleState, () => {
-      if (compatibleState.neumorphismEnabled) {
-        this.sync()
-      }
+      this.sync()
     })
   }
 
@@ -375,7 +649,11 @@ class Editor extends React.Component {
 
     const className = String(element.className)
 
-    return !className.includes('eliminateOnRender') && !className.includes('CodeMirror-cursors')
+    return (
+      !className.includes('eliminateOnRender') &&
+      !className.includes('CodeMirror-cursors') &&
+      !className.includes('width-handler')
+    )
   }
 
   prepareExportBackgroundImage = async clone => {
@@ -626,16 +904,15 @@ class Editor extends React.Component {
     }
 
     this.setState(currentState => {
-      const candidateState = getNeumorphismCompatibleSettings({ ...currentState, [key]: value })
-      const changedEntries = Object.entries(candidateState).filter(
-        ([nextKey, nextValue]) => currentState[nextKey] !== nextValue,
+      const candidateState = getNeumorphismCompatibleSettings(
+        { ...currentState, [key]: value },
+        { enforceBackgroundMode: false },
       )
+      const nextState = pickChangedState(currentState, candidateState)
 
-      if (!changedEntries.length) {
+      if (!nextState) {
         return null
       }
-
-      const nextState = Object.fromEntries(changedEntries)
 
       if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
         nextState.preset = null
@@ -703,19 +980,13 @@ class Editor extends React.Component {
 
   resetDefaultSettings = () => {
     this.onUpdate.cancel()
-    this.setState({
-      ...DEFAULT_SETTINGS,
-      preset: null,
-      highlights: null,
-      code: DEFAULT_CODE,
-      fontUrl: null,
-      watermarkFontUrl: null,
-      selectedLines: null,
-      titleBar: null,
-    })
+    const defaultState = createEditorState({}, { loading: false })
+
     this.props.onFontAssetChange?.(null)
     this.setWatermarkFontAsset(null)
-    this.props.onReset()
+    this.setState(defaultState, () => {
+      void this.props.onReset(defaultState)
+    })
   }
 
   onDrop = ([file]) => {
@@ -760,20 +1031,64 @@ class Editor extends React.Component {
             backgroundGradientBlendMode: null,
           }
         : changes
-
-    if (photographer) {
-      const backgroundCredit = formatBackgroundPhotographerCredit(photographer)
-
-      this.updateState(({ code = DEFAULT_CODE }) => ({
-        ...nextBackgroundChanges,
-        code:
-          code.replace(backgroundPhotographerCredit, '') + `\n\n// 图片来源：${backgroundCredit}`,
-        preset: null,
-      }))
-      return
+    const nextBackgroundMode = nextBackgroundChanges.backgroundMode || this.state.backgroundMode
+    const hasBackgroundColorChange = Object.prototype.hasOwnProperty.call(
+      nextBackgroundChanges,
+      'backgroundColor',
+    )
+    const hasBackgroundGradientChange = Object.prototype.hasOwnProperty.call(
+      nextBackgroundChanges,
+      'backgroundGradient',
+    )
+    const backgroundGradientSync =
+      nextBackgroundMode !== 'image' &&
+      hasBackgroundGradientChange &&
+      nextBackgroundChanges.backgroundGradient
+        ? resolveNeumorphismGradientFromBackground(nextBackgroundChanges.backgroundGradient)
+        : null
+    const backgroundNeumorphismSync =
+      nextBackgroundMode === 'image'
+        ? { neumorphismEnabled: false }
+        : backgroundGradientSync
+          ? { neumorphismColorMode: 'gradient', ...backgroundGradientSync }
+          : hasBackgroundColorChange
+            ? {
+                neumorphismColorMode: 'solid',
+                neumorphismColor: normalizeColorToHex(
+                  nextBackgroundChanges.backgroundColor || this.state.backgroundColor,
+                  DEFAULT_SETTINGS.neumorphismColor,
+                ),
+              }
+            : {}
+    const mergedBackgroundChanges = {
+      ...nextBackgroundChanges,
+      ...backgroundNeumorphismSync,
     }
 
-    this.updateState({ ...nextBackgroundChanges, preset: null })
+    this.setState(currentState => {
+      const backgroundCredit = photographer
+        ? formatBackgroundPhotographerCredit(photographer)
+        : null
+      const candidateState = getNeumorphismCompatibleSettings({
+        ...currentState,
+        ...mergedBackgroundChanges,
+        ...(photographer
+          ? {
+              code:
+                currentState.code.replace(backgroundPhotographerCredit, '') +
+                `\n\n// 图片来源：${backgroundCredit}`,
+            }
+          : null),
+        preset: null,
+      })
+      const nextState = pickChangedState(currentState, candidateState)
+
+      if (!nextState) {
+        return null
+      }
+
+      return nextState
+    }, this.sync)
   }
 
   createTheme = theme => {
@@ -871,6 +1186,9 @@ class Editor extends React.Component {
               />
               <Settings
                 {...config}
+                backgroundMode={backgroundMode}
+                backgroundColor={backgroundColor}
+                backgroundGradient={backgroundGradient}
                 onChange={this.updateSetting}
                 onWatermarkFontChange={this.updateWatermarkFontFamily}
                 onWatermarkFontUpload={this.uploadWatermarkFont}

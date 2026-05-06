@@ -55,6 +55,16 @@ function getPersistedBackgroundImageAsset(state) {
 function EditorContainer() {
   const [themes, updateThemes] = React.useState(THEMES)
   const backgroundAssetRef = React.useRef(null)
+  const storageQueueRef = React.useRef(Promise.resolve())
+
+  const enqueueStorageTask = React.useCallback(task => {
+    const nextTask = storageQueueRef.current
+      .catch(() => {})
+      .then(task)
+
+    storageQueueRef.current = nextTask.catch(() => {})
+    return nextTask
+  }, [])
 
   React.useEffect(() => {
     void syncLegacyStorage()
@@ -72,28 +82,43 @@ function EditorContainer() {
     void saveThemes(themes.filter(({ custom }) => custom))
   }, [themes])
 
-  const onReset = React.useCallback(() => {
-    void clearEditorStorage()
-    backgroundAssetRef.current = null
-
-    window.history.replaceState(null, '', window.location.pathname)
-  }, [])
-
-  const onEditorUpdate = React.useCallback(state => {
-    void saveSettings(state)
+  const persistEditorState = React.useCallback(async state => {
+    await saveSettings(state)
 
     const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
     if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
       if (nextBackgroundAsset) {
-        void saveBackgroundImageAsset(nextBackgroundAsset)
+        await saveBackgroundImageAsset(nextBackgroundAsset)
       } else {
-        void clearBackgroundImageAsset()
+        await clearBackgroundImageAsset()
       }
 
       backgroundAssetRef.current = nextBackgroundAsset
     }
   }, [])
+
+  const onReset = React.useCallback(
+    nextDefaultState =>
+      enqueueStorageTask(async () => {
+        await clearEditorStorage()
+        backgroundAssetRef.current = null
+
+        window.history.replaceState(null, '', window.location.pathname)
+
+        if (nextDefaultState) {
+          await persistEditorState(nextDefaultState)
+        }
+      }),
+    [enqueueStorageTask, persistEditorState],
+  )
+
+  const onEditorUpdate = React.useCallback(
+    state => {
+      void enqueueStorageTask(() => persistEditorState(state))
+    },
+    [enqueueStorageTask, persistEditorState],
+  )
 
   const onWatermarkFontAssetChange = React.useCallback(nextValue => {
     if (nextValue == null) {

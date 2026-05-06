@@ -116,6 +116,10 @@ describe('localStorage', () => {
           JSON.stringify({
             neumorphismEnabled: true,
             neumorphismColor: '#55b9f3',
+            neumorphismColorMode: 'gradient',
+            neumorphismGradientStart: '#55b9f3',
+            neumorphismGradientEnd: '#7fd8ff',
+            neumorphismGradientAngle: 145,
             neumorphismShape: 'convex',
             neumorphismLightSource: 'top-right',
             neumorphismDistance: 24,
@@ -132,6 +136,10 @@ describe('localStorage', () => {
       expect(storage.window).to.include({
         neumorphismEnabled: true,
         neumorphismColor: '#55b9f3',
+        neumorphismColorMode: 'gradient',
+        neumorphismGradientStart: '#55b9f3',
+        neumorphismGradientEnd: '#7fd8ff',
+        neumorphismGradientAngle: 145,
         neumorphismShape: 'convex',
         neumorphismLightSource: 'top-right',
         neumorphismDistance: 24,
@@ -141,6 +149,7 @@ describe('localStorage', () => {
       })
       expect(storage).not.to.have.property('neumorphismEnabled')
       expect(storage).not.to.have.property('neumorphismColor')
+      expect(storage).not.to.have.property('neumorphismColorMode')
     })
     cy.window().its('localStorage.PANDA_STATE').should('be.undefined')
   })
@@ -153,6 +162,10 @@ describe('localStorage', () => {
           JSON.stringify({
             neumorphismEnabled: true,
             neumorphismColor: '#55b9f3',
+            neumorphismColorMode: 'gradient',
+            neumorphismGradientStart: '#55b9f3',
+            neumorphismGradientEnd: '#7fd8ff',
+            neumorphismGradientAngle: 160,
             neumorphismShape: 'flat',
             neumorphismLightSource: 'bottom-left',
             neumorphismDistance: 16,
@@ -169,6 +182,10 @@ describe('localStorage', () => {
       expect(storage.window).to.include({
         neumorphismEnabled: true,
         neumorphismColor: '#55b9f3',
+        neumorphismColorMode: 'gradient',
+        neumorphismGradientStart: '#55b9f3',
+        neumorphismGradientEnd: '#7fd8ff',
+        neumorphismGradientAngle: 160,
         neumorphismShape: 'flat',
         neumorphismLightSource: 'bottom-left',
         neumorphismDistance: 16,
@@ -178,6 +195,7 @@ describe('localStorage', () => {
       })
       expect(storage).not.to.have.property('neumorphismEnabled')
       expect(storage).not.to.have.property('neumorphismColor')
+      expect(storage).not.to.have.property('neumorphismColorMode')
     })
     cy.window().its('localStorage.PANDA_EDITOR_STORAGE').should('be.undefined')
   })
@@ -190,9 +208,14 @@ describe('localStorage', () => {
           JSON.stringify({
             neumorphismShape: 'flat',
             neumorphismColor: '#e0e0e0',
+            neumorphismColorMode: 'solid',
             window: {
               neumorphismEnabled: true,
               neumorphismColor: '#55b9f3',
+              neumorphismColorMode: 'gradient',
+              neumorphismGradientStart: '#55b9f3',
+              neumorphismGradientEnd: '#7fd8ff',
+              neumorphismGradientAngle: 155,
               neumorphismShape: 'pressed',
               neumorphismRadius: 22,
             },
@@ -206,11 +229,16 @@ describe('localStorage', () => {
       expect(storage.window).to.include({
         neumorphismEnabled: true,
         neumorphismColor: '#55b9f3',
+        neumorphismColorMode: 'gradient',
+        neumorphismGradientStart: '#55b9f3',
+        neumorphismGradientEnd: '#7fd8ff',
+        neumorphismGradientAngle: 155,
         neumorphismShape: 'pressed',
         neumorphismRadius: 22,
       })
       expect(storage.window.neumorphismColor).not.to.eq('#e0e0e0')
       expect(storage.window.neumorphismShape).not.to.eq('flat')
+      expect(storage.window.neumorphismColorMode).not.to.eq('solid')
     })
     cy.get('.panda-container').should('have.attr', 'data-neumorphism-enabled')
     cy.get('.panda-container').should('have.attr', 'data-neumorphism-shape', 'pressed')
@@ -229,6 +257,10 @@ describe('localStorage', () => {
     writeEditorStorage({
       neumorphismEnabled: true,
       neumorphismColor: '#55b9f3',
+      neumorphismColorMode: 'gradient',
+      neumorphismGradientStart: '#55b9f3',
+      neumorphismGradientEnd: '#7fd8ff',
+      neumorphismGradientAngle: 170,
       neumorphismShape: 'concave',
       neumorphismLightSource: 'bottom-right',
       neumorphismDistance: 28,
@@ -244,6 +276,10 @@ describe('localStorage', () => {
       expect(storage.window).to.include({
         neumorphismEnabled: true,
         neumorphismColor: '#55b9f3',
+        neumorphismColorMode: 'gradient',
+        neumorphismGradientStart: '#55b9f3',
+        neumorphismGradientEnd: '#7fd8ff',
+        neumorphismGradientAngle: 170,
         neumorphismShape: 'concave',
         neumorphismLightSource: 'bottom-right',
         neumorphismDistance: 28,
@@ -253,6 +289,7 @@ describe('localStorage', () => {
       })
       expect(storage).not.to.have.property('neumorphismEnabled')
       expect(storage).not.to.have.property('neumorphismColor')
+      expect(storage).not.to.have.property('neumorphismColorMode')
     })
   })
 
@@ -293,6 +330,7 @@ describe('localStorage', () => {
       expect(storage.window.codeMirrorBorder).to.eq(false)
       expect(storage.window.dropShadow).to.eq(false)
       expect(storage.window.glassEffect).to.eq(false)
+      expect(storage.window.neumorphismColorMode).to.eq('gradient')
       expect(storage.window.codeMirrorBorderRadius).to.eq('20px')
     })
 
@@ -354,6 +392,7 @@ describe('localStorage', () => {
       expect(storage.window.codeMirrorBorder).to.eq(false)
       expect(storage.window.dropShadow).to.eq(false)
       expect(storage.window.glassEffect).to.eq(false)
+      expect(storage.window.neumorphismColorMode).to.eq('gradient')
     })
   })
 
@@ -387,10 +426,11 @@ describe('localStorage', () => {
       expect(storage.window.codeMirrorBorder).to.eq(false)
       expect(storage.window.dropShadow).to.eq(false)
       expect(storage.window.glassEffect).to.eq(false)
+      expect(storage.window.neumorphismColorMode).to.eq('gradient')
     })
   })
 
-  it('shows Chinese neumorphism radio labels while preserving semantic values', () => {
+  it('shows neumorphism shape icons while preserving semantic values', () => {
     cy.visit('/')
     editorVisible()
 
@@ -398,14 +438,21 @@ describe('localStorage', () => {
     cy.get('.settings-modal').should('be.visible')
     cy.contains('.settings-tabs .ant-tabs-tab', '拟态').click()
 
-    ;['平面', '内凹', '外凸', '按下', '左上', '右上', '右下', '左下'].forEach(label => {
+    ;['平面', '内凹', '外凸', '按下'].forEach(label => {
+      cy.get(
+        `.settings-tabs .ant-tabs-tabpane-active .ant-radio-button-wrapper[aria-label="${label}"]`,
+      ).should('exist')
+    })
+    ;['左上', '右上', '右下', '左下'].forEach(label => {
       cy.contains(
         '.settings-tabs .ant-tabs-tabpane-active .ant-radio-button-wrapper',
         label,
       ).should('exist')
     })
 
-    cy.contains('.settings-tabs .ant-tabs-tabpane-active .ant-radio-button-wrapper', '按下').click()
+    cy.get(
+      '.settings-tabs .ant-tabs-tabpane-active .ant-radio-button-wrapper[aria-label="按下"]',
+    ).click()
     cy.contains('.settings-tabs .ant-tabs-tabpane-active .ant-radio-button-wrapper', '右下').click()
     cy.wait(1000)
 
