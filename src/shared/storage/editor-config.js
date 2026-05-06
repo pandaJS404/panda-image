@@ -107,6 +107,26 @@ function pickKeys(source, keys) {
   }, {})
 }
 
+function normalizeStorageSectionValue(section, key, value) {
+  if (section === STORAGE_SECTIONS.code && key === 'code' && typeof value !== 'string') {
+    return undefined
+  }
+
+  return value
+}
+
+function pickSectionKeys(section, source, keys) {
+  return keys.reduce((picked, key) => {
+    const nextValue = normalizeStorageSectionValue(section, key, source[key])
+
+    if (nextValue !== undefined) {
+      picked[key] = nextValue
+    }
+
+    return picked
+  }, {})
+}
+
 export function createEmptyStorage() {
   return STORAGE_SECTION_LIST.reduce((storage, key) => {
     storage[key] = {}
@@ -116,7 +136,7 @@ export function createEmptyStorage() {
 
 function mergeFlatFieldsIntoSections(storage, source) {
   Object.entries(SETTINGS_SECTION_KEYS).forEach(([section, keys]) => {
-    const flatValues = pickKeys(source, keys)
+    const flatValues = pickSectionKeys(section, source, keys)
 
     if (Object.keys(flatValues).length) {
       storage[section] = {
@@ -164,12 +184,16 @@ export function flattenStorageSections(value = {}) {
   const storage = normalizeStorageShape(value)
 
   return {
-    ...pickKeys(storage.template, SETTINGS_SECTION_KEYS.template),
-    ...pickKeys(storage.window, SETTINGS_SECTION_KEYS.window),
-    ...pickKeys(storage.editor, SETTINGS_SECTION_KEYS.editor),
-    ...pickKeys(storage.watermark, SETTINGS_SECTION_KEYS.watermark),
-    ...pickKeys(storage.theme, SETTINGS_SECTION_KEYS.theme),
-    ...pickKeys(storage.code, SETTINGS_SECTION_KEYS.code),
+    ...pickSectionKeys(STORAGE_SECTIONS.template, storage.template, SETTINGS_SECTION_KEYS.template),
+    ...pickSectionKeys(STORAGE_SECTIONS.window, storage.window, SETTINGS_SECTION_KEYS.window),
+    ...pickSectionKeys(STORAGE_SECTIONS.editor, storage.editor, SETTINGS_SECTION_KEYS.editor),
+    ...pickSectionKeys(
+      STORAGE_SECTIONS.watermark,
+      storage.watermark,
+      SETTINGS_SECTION_KEYS.watermark,
+    ),
+    ...pickSectionKeys(STORAGE_SECTIONS.theme, storage.theme, SETTINGS_SECTION_KEYS.theme),
+    ...pickSectionKeys(STORAGE_SECTIONS.code, storage.code, SETTINGS_SECTION_KEYS.code),
     ...pickKeys(storage.assets, ASSET_KEYS),
     ...pickKeys(storage.assets, WATERMARK_ASSET_KEYS),
   }
@@ -180,7 +204,7 @@ export function createSectionedStorageFromState(value = {}, baseStorage = create
   const state = isSectionedStorage(value) ? flattenStorageSections(value) : normalizeObject(value)
 
   Object.entries(SETTINGS_SECTION_KEYS).forEach(([section, keys]) => {
-    const nextValues = pickKeys(state, keys)
+    const nextValues = pickSectionKeys(section, state, keys)
 
     if (Object.keys(nextValues).length) {
       storage[section] = {

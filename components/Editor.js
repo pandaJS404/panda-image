@@ -466,7 +466,7 @@ function createEditorState(settings = {}, options = {}) {
   const newState = {
     ...DEFAULT_SETTINGS,
     ...settings,
-    code: settings.code ?? DEFAULT_CODE,
+    code: typeof settings.code === 'string' ? settings.code : DEFAULT_CODE,
     fontUrl: settings.fontUrl ?? null,
     highlights: settings.highlights ?? null,
     loading,
