@@ -7,7 +7,7 @@ const INPUT_TONES = {
     color: 'var(--text-secondary)',
   },
   brand: {
-    color: 'var(--brand-purple)',
+    color: 'var(--accent)',
   },
   danger: {
     color: 'var(--status-danger)',

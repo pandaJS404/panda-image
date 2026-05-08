@@ -1272,8 +1272,6 @@ export const COLORS = {
   GRAY: 'var(--color-gray)',
   DARK_GRAY: 'var(--color-dark-gray)',
   HOVER: 'var(--color-hover)',
-  PURPLE: 'var(--brand-purple)',
-  DARK_PURPLE: 'var(--brand-purple-muted)',
   RED: 'var(--status-danger)',
   BLUE: 'var(--status-info)',
   GREEN: 'var(--status-success)',
@@ -1356,6 +1354,7 @@ export const DEFAULT_WIDTHS = {
 export const DEFAULT_PRESETS = [
   {
     ...DEFAULT_SETTINGS,
+    name: '薄荷清风',
     backgroundMode: 'color',
     backgroundColor: 'rgba(101,232,235,1)',
     backgroundGradient: 'linear-gradient(135deg, #96F8D6 0%, #44D8F8 100%)',
@@ -1371,6 +1370,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '晴空蔚蓝',
     backgroundMode: 'color',
     backgroundColor: 'rgba(135,192,254,1)',
     backgroundGradient: 'linear-gradient(135deg, #67A5FE 0%, #A0D2FE 100%)',
@@ -1387,6 +1387,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '粉紫花境',
     backgroundMode: 'color',
     backgroundColor: 'rgba(207,177,217,1)',
     backgroundGradient: 'linear-gradient(180deg, #C1D3F8 0%, #DC8FBA 100%)',
@@ -1402,6 +1403,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '幻彩极光',
     backgroundMode: 'color',
     backgroundColor: 'rgba(108,123,253,1)',
     backgroundGradient: 'linear-gradient(135deg, #2AC9FC 0%, #AD2CFE 100%)',
@@ -1417,6 +1419,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '烈焰霞光',
     backgroundMode: 'color',
     backgroundColor: 'rgba(254,93,111,1)',
     backgroundGradient: 'linear-gradient(180deg, #FEA593 0%, #FE154B 100%)',
@@ -1432,6 +1435,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '虹彩流光',
     backgroundMode: 'color',
     backgroundColor: 'rgba(157,176,232,1)',
     backgroundGradient: 'linear-gradient(135deg, #77E6D0 0%, #C1A7F5 45%, #7461F0 100%)',
@@ -1447,6 +1451,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '烟粉暮色',
     backgroundMode: 'color',
     backgroundColor: 'rgba(201,175,226,1)',
     backgroundGradient: 'linear-gradient(180deg, #F3C4D6 0%, #9E99ED 100%)',
@@ -1462,6 +1467,7 @@ export const DEFAULT_PRESETS = [
   },
   {
     ...DEFAULT_SETTINGS,
+    name: '深邃星夜',
     backgroundMode: 'color',
     backgroundColor: 'rgba(110,101,198,1)',
     backgroundGradient: 'linear-gradient(135deg, #677BE6 0%, #714EA6 100%)',
