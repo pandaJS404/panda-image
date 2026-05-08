@@ -24,6 +24,7 @@ import {
   DEFAULT_WATERMARK_FILL_COLOR,
   DEFAULT_WATERMARK_STROKE_COLOR,
   DEFAULT_WIDTHS,
+  THEMES_HASH,
 } from '../src/modules/editor/config'
 import {
   getPresets,
@@ -1048,10 +1049,16 @@ function WatermarkSettings({
   )
 }
 
+function getConfigDownloadName(themeId) {
+  const themeName = THEMES_HASH[themeId]?.name || 'Custom'
+  return `Panda-${themeName}-config.json`
+}
+
 function MiscSettings({ format, reset, applyPreset, settings }) {
   const inputRef = React.useRef(null)
   let download
   const sectionedSettings = React.useMemo(() => prepareConfigForExport(settings), [settings])
+  const downloadName = getConfigDownloadName(settings.theme)
 
   try {
     download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sectionedSettings))}`
@@ -1085,7 +1092,7 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
         <ButtonPrimitive
           fullWidth
           href={download}
-          download="panda-config.json"
+          download={downloadName}
           className="settings-link-button settings-misc-button"
           data-layout="split"
         >
