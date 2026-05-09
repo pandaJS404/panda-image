@@ -23,7 +23,7 @@ const Input = React.forwardRef(
       tone = 'default',
       align = 'right',
       width = '100%',
-      fontSize = '12px',
+      fontSize = 'var(--h5)',
       label,
       fieldClassName = '',
       className = '',

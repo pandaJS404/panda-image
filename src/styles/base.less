@@ -302,6 +302,48 @@ kbd {
   margin-bottom: var(--x6);
 }
 
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--x4);
+  text-align: center;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--app-bg);
+}
+
+.error-boundary__title {
+  margin-bottom: var(--x1);
+  font-size: var(--h3);
+}
+
+.error-boundary__message {
+  margin-bottom: var(--x3);
+  color: var(--text-secondary);
+  font-size: var(--h4);
+}
+
+.error-boundary__action {
+  padding: 8px var(--x3);
+  font-size: var(--h5);
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  transition: var(--interactive-transition);
+}
+
+.error-boundary__action:hover {
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+  box-shadow: 0 0 0 2px var(--control-focus-ring);
+}
+
 :where(
   a,
   button,

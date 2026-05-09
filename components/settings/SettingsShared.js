@@ -156,7 +156,11 @@ export function SettingsColorField({
           getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
           content={
             <div className="settings-color-popover__content">
-              <ColorPicker color={displayColor} onChange={handleChange} disableAlpha={disableAlpha} />
+              <ColorPicker
+                color={displayColor}
+                onChange={handleChange}
+                disableAlpha={disableAlpha}
+              />
             </div>
           }
         >

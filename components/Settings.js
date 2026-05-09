@@ -12,15 +12,8 @@ import MiscSettings from './settings/MiscSettings'
 
 import ToolbarIconButton from './buttons/ToolbarIconButton'
 import Presets from './Presets'
-import {
-  DEFAULT_PRESETS,
-  DEFAULT_SETTINGS,
-} from '../src/modules/editor/config'
-import {
-  getPresets,
-  savePresets,
-  generateId,
-} from '../src/shared/utils'
+import { DEFAULT_PRESETS, DEFAULT_SETTINGS } from '../src/modules/editor/config'
+import { getPresets, savePresets, generateId } from '../src/shared/utils'
 
 const SETTINGS_MENU_LABELS = {
   Templates: '模板',

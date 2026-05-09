@@ -4,7 +4,12 @@ import { Radio } from 'antd'
 import FontSelect from '../FontSelect'
 import Input from '../Input'
 import Toggle from '../Toggle'
-import { SettingsSlider, SettingsColorField, SettingsSection, serializeNumericValue } from './SettingsShared'
+import {
+  SettingsSlider,
+  SettingsColorField,
+  SettingsSection,
+  serializeNumericValue,
+} from './SettingsShared'
 import {
   DEFAULT_WATERMARK_FILL_COLOR,
   DEFAULT_WATERMARK_STROKE_COLOR,
