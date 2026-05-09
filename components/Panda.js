@@ -332,7 +332,7 @@ class Panda extends React.PureComponent {
       lineNumbers: config.lineNumbers,
       firstLineNumber: config.firstLineNumber,
       mode: activeLanguageMode,
-      theme: config.theme,
+      theme: typeof config.theme === 'string' ? config.theme : DEFAULT_SETTINGS.theme,
       scrollbarStyle: null,
       viewportMargin: Infinity,
       lineWrapping: true,

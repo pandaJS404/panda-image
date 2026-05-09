@@ -128,6 +128,10 @@ function normalizeStorageSectionValue(section, key, value) {
     return undefined
   }
 
+  if (section === STORAGE_SECTIONS.theme && key === 'theme' && typeof value !== 'string') {
+    return undefined
+  }
+
   return value
 }
 
