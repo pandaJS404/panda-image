@@ -1,3 +1,19 @@
+/**
+ * @typedef {'template'|'window'|'editor'|'watermark'|'theme'|'code'|'assets'} StorageSectionName
+ */
+
+/**
+ * @typedef {Object} SectionedStorage
+ * @property {Object} template - { preset, presets }
+ * @property {Object} window - padding, background, shadow, neumorphism settings
+ * @property {Object} editor - language, font, line settings
+ * @property {Object} watermark - watermark configuration
+ * @property {Object} theme - theme and highlights
+ * @property {Object} code - code content, name, export settings
+ * @property {Object} assets - fontUrl, backgroundImage, backgroundImageSource, backgroundImageSelection, watermarkFontUrl
+ */
+
+/** @type {StorageSectionName[]} */
 export const STORAGE_SECTION_LIST = [
   'template',
   'window',
@@ -127,6 +143,7 @@ function pickSectionKeys(section, source, keys) {
   }, {})
 }
 
+/** @returns {import('./editor-config').SectionedStorage} */
 export function createEmptyStorage() {
   return STORAGE_SECTION_LIST.reduce((storage, key) => {
     storage[key] = {}
@@ -161,6 +178,10 @@ function mergeFlatFieldsIntoSections(storage, source) {
   return storage
 }
 
+/**
+ * @param {Object} value
+ * @returns {import('./editor-config').SectionedStorage}
+ */
 export function normalizeStorageShape(value) {
   const storage = createEmptyStorage()
   const source = normalizeObject(value)
@@ -180,6 +201,11 @@ export function isSectionedStorage(value) {
   )
 }
 
+/**
+ * Flatten sectioned storage into a flat EditorSettings object.
+ * @param {Object} value
+ * @returns {import('../../modules/editor/config').EditorSettings}
+ */
 export function flattenStorageSections(value = {}) {
   const storage = normalizeStorageShape(value)
 
@@ -199,6 +225,12 @@ export function flattenStorageSections(value = {}) {
   }
 }
 
+/**
+ * Merge flat editor state into sectioned storage.
+ * @param {import('../../modules/editor/config').EditorSettings} value
+ * @param {import('./editor-config').SectionedStorage} [baseStorage]
+ * @returns {import('./editor-config').SectionedStorage}
+ */
 export function createSectionedStorageFromState(value = {}, baseStorage = createEmptyStorage()) {
   const storage = normalizeStorageShape(baseStorage)
   const state = isSectionedStorage(value) ? flattenStorageSections(value) : normalizeObject(value)

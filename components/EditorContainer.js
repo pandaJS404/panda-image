@@ -4,19 +4,18 @@ import Editor from './Editor'
 
 import { THEMES } from '../src/modules/editor/config'
 import {
-  clearBackgroundImageAsset,
   clearEditorStorage,
   clearFontAsset,
   clearWatermarkFontAsset,
   getBackgroundImageAsset,
   getThemes,
-  saveBackgroundImageAsset,
   saveFontAsset,
-  saveSettings,
   saveThemes,
   saveWatermarkFontAsset,
   syncLegacyStorage,
 } from '../src/shared/utils'
+import { getStorage, setStorage } from '../src/shared/storage/editor-db'
+import { createSectionedStorageFromState } from '../src/shared/storage/editor-config'
 
 function isSameBackgroundAsset(left, right) {
   if (left === right) {
@@ -85,20 +84,43 @@ function EditorContainer() {
     })
   }, [themes])
 
+  const lastPersistedStateRef = React.useRef(null)
+
   const persistEditorState = React.useCallback(async state => {
-    await saveSettings(state)
+    const prevState = lastPersistedStateRef.current
+
+    if (prevState && JSON.stringify(state) === JSON.stringify(prevState)) {
+      return
+    }
+
+    lastPersistedStateRef.current = state
+
+    const storage = await getStorage()
+    let nextStorage = createSectionedStorageFromState(state, storage)
 
     const nextBackgroundAsset = getPersistedBackgroundImageAsset(state)
 
     if (!isSameBackgroundAsset(backgroundAssetRef.current, nextBackgroundAsset)) {
       if (nextBackgroundAsset) {
-        await saveBackgroundImageAsset(nextBackgroundAsset)
+        nextStorage.assets = {
+          ...nextStorage.assets,
+          backgroundImage: nextBackgroundAsset.image ?? null,
+          backgroundImageSource: nextBackgroundAsset.source ?? null,
+          backgroundImageSelection: nextBackgroundAsset.selection ?? null,
+        }
       } else {
-        await clearBackgroundImageAsset()
+        nextStorage.assets = {
+          ...nextStorage.assets,
+          backgroundImage: null,
+          backgroundImageSource: null,
+          backgroundImageSelection: null,
+        }
       }
 
       backgroundAssetRef.current = nextBackgroundAsset
     }
+
+    await setStorage(nextStorage)
   }, [])
 
   const onReset = React.useCallback(

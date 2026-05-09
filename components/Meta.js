@@ -14,9 +14,9 @@ export const HIGHLIGHTS_ONLY = [
   'dracula',
   'slate-dark',
   'slate-light',
-  'panda-Gradation',
-  'Panda-Gradation',
-  'vscode-Gradation',
+  'panda-gradation',
+  'panda-light-gradation',
+  'vscode-gradation',
 ]
 
 const LOCAL_STYLESHEETS = ['one-light', 'one-dark', 'verminal', 'night-owl', 'nord', 'synthwave-84']

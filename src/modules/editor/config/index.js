@@ -2,6 +2,101 @@ import toHash from 'tohash'
 import { getAssetUrl } from '../../../shared/assets'
 import { DEFAULT_NEUMORPHISM_SETTINGS } from '../neumorphism'
 
+/**
+ * @typedef {Object} ThemeHighlightColors
+ * @property {string} background
+ * @property {string} text
+ * @property {string} variable
+ * @property {string} [variable2]
+ * @property {string} [variable3]
+ * @property {string} [attribute]
+ * @property {string} [definition]
+ * @property {string} keyword
+ * @property {string} operator
+ * @property {string} [property]
+ * @property {string} number
+ * @property {string} string
+ * @property {string} comment
+ * @property {string} meta
+ * @property {string} tag
+ * @property {string} [builtin]
+ */
+
+/**
+ * @typedef {Object} ThemeDefinition
+ * @property {string} id - Kebab-case unique identifier
+ * @property {string} name - Display name
+ * @property {string} [link] - CDN theme link name override
+ * @property {boolean} [light] - Whether this is a light theme
+ * @property {ThemeHighlightColors} highlights - Syntax highlighting colors
+ */
+
+/**
+ * @typedef {Object} EditorSettings
+ * @property {string} paddingVertical - CSS padding value (e.g. '56px')
+ * @property {string} paddingHorizontal - CSS padding value (e.g. '56px')
+ * @property {string|null} backgroundImage - Background image data URL
+ * @property {string} backgroundImageSource - Background image source identifier
+ * @property {string|null} backgroundImageSelection - Selected background image variant
+ * @property {'image'|'color'|'gradient'} backgroundMode - Background rendering mode
+ * @property {string} backgroundColor - CSS color string
+ * @property {string|null} backgroundGradient - CSS gradient string
+ * @property {string|null} backgroundGradientBlendMode - CSS blend mode
+ * @property {boolean} glassEffect - Enable glass morphism effect
+ * @property {string} glassBlurRadius - CSS blur value
+ * @property {boolean} dropShadow - Enable drop shadow
+ * @property {string} dropShadowOffsetY - CSS offset value
+ * @property {string} dropShadowBlurRadius - CSS blur value
+ * @property {boolean} neumorphismEnabled - Enable neumorphism effect
+ * @property {string} neumorphismColor - Hex color for neumorphism
+ * @property {string} neumorphismColorMode - 'solid' or 'gradient'
+ * @property {string} neumorphismGradientStart - Hex color
+ * @property {string} neumorphismGradientEnd - Hex color
+ * @property {number} neumorphismGradientAngle - Degrees 0-360
+ * @property {'flat'|'concave'|'convex'|'pressed'} neumorphismShape
+ * @property {'top-left'|'top-right'|'bottom-right'|'bottom-left'} neumorphismLightSource
+ * @property {number} neumorphismDistance - Pixel distance
+ * @property {number} neumorphismBlur - Pixel blur radius
+ * @property {number} neumorphismIntensity - 0-1 intensity value
+ * @property {number} neumorphismRadius - Pixel border radius
+ * @property {string} theme - Theme ID
+ * @property {string} windowTheme - Window chrome theme ID
+ * @property {boolean} codeMirrorBorder - Enable editor border
+ * @property {string} codeMirrorBorderColor - CSS color
+ * @property {string} codeMirrorBorderRadius - CSS value
+ * @property {string} language - Language mode ID
+ * @property {string} fontFamily - Font family name
+ * @property {string} fontSize - CSS font-size value
+ * @property {string} lineHeight - CSS line-height value
+ * @property {boolean} windowControls - Show window controls
+ * @property {boolean} widthAdjustment - Enable width adjustment
+ * @property {boolean} lineNumbers - Show line numbers
+ * @property {number} firstLineNumber - Starting line number
+ * @property {string} exportSize - Export scale factor ID ('1x','2x','4x')
+ * @property {boolean} watermark - Enable watermark
+ * @property {'logo'|'text-svg'} watermarkMode - Watermark rendering mode
+ * @property {string} watermarkOpacity - Opacity as string number (0-1)
+ * @property {string} watermarkScale - Scale factor as string
+ * @property {string} watermarkOffsetX - CSS offset value
+ * @property {string} watermarkOffsetY - CSS offset value
+ * @property {string} watermarkText - Custom watermark text
+ * @property {string} watermarkFontFamily - Watermark font family
+ * @property {string} watermarkTextSize - CSS font-size value
+ * @property {boolean} watermarkTextKerning - Enable text kerning
+ * @property {string} watermarkStrokeColor - CSS color
+ * @property {string} watermarkStrokeWidth - CSS stroke width
+ * @property {boolean} watermarkFillEnabled - Enable text fill
+ * @property {string} watermarkFillColor - CSS color
+ * @property {string|null} watermarkFontUrl - Custom watermark font data URL
+ * @property {boolean} squaredImage - Export with squared aspect ratio
+ * @property {boolean} hiddenCharacters - Show invisible characters
+ * @property {string} name - Code snippet name
+ * @property {number} width - Editor width in pixels
+ * @property {string|null} [fontUrl] - Custom font data URL
+ * @property {string|null} [preset] - Active preset ID
+ * @property {string|null} [code] - Editor code content
+ */
+
 export const FONTS = [
   {
     id: 'Google Sans Code',
@@ -143,7 +238,7 @@ export const THEMES = [
     },
   },
   {
-    id: 'panda-Gradation',
+    id: 'panda-gradation',
     name: 'Panda（Gradation）',
     highlights: {
       background: 'rgba(0,0,0,.25)',
@@ -164,7 +259,7 @@ export const THEMES = [
     },
   },
   {
-    id: 'Panda-Gradation',
+    id: 'panda-light-gradation',
     name: 'Panda Light(Gradation)',
     light: true,
     highlights: {
@@ -204,7 +299,7 @@ export const THEMES = [
     },
   },
   {
-    id: 'vscode-Gradation',
+    id: 'vscode-gradation',
     name: 'VSCode（Gradation）',
     highlights: {
       background: 'rgba(0,0,0,.15)',
@@ -692,7 +787,7 @@ export const THEMES = [
     },
   },
   {
-    id: 'solarized dark',
+    id: 'solarized-dark',
     name: 'Solarized (Dark)',
     link: 'solarized',
     highlights: {
@@ -714,7 +809,7 @@ export const THEMES = [
     },
   },
   {
-    id: 'solarized light',
+    id: 'solarized-light',
     name: 'Solarized (Light)',
     link: 'solarized',
     light: true,
@@ -1257,7 +1352,7 @@ export const LANGUAGE_MODE_HASH = toHash(LANGUAGES, 'mode')
 export const LANGUAGE_NAME_HASH = toHash(LANGUAGES, 'short')
 
 export const DEFAULT_LANGUAGE = 'auto'
-export const DEFAULT_THEME = THEMES_HASH['panda-Gradation']
+export const DEFAULT_THEME = THEMES_HASH['panda-gradation']
 export const DEFAULT_BG_COLOR = 'rgba(171, 184, 195, 1)'
 export const DEFAULT_BACKGROUND_IMAGE_SOURCE = 'builtin:panda-bg-01'
 export const DEFAULT_EXPORT_SIZE = EXPORT_SIZES_HASH['2x']
@@ -1360,7 +1455,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(135deg, #96F8D6 0%, #44D8F8 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'Panda-Gradation',
+    theme: 'panda-light-gradation',
     windowTheme: 'none',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
@@ -1376,7 +1471,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(135deg, #67A5FE 0%, #A0D2FE 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'Panda-Gradation',
+    theme: 'panda-light-gradation',
     windowTheme: 'bw',
     codeMirrorBorder: true,
     codeMirrorBorderColor: 'rgba(246,238,220,0.92)',
@@ -1393,7 +1488,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(180deg, #C1D3F8 0%, #DC8FBA 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'Panda-Gradation',
+    theme: 'panda-light-gradation',
     windowTheme: 'boxy',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
@@ -1409,7 +1504,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(135deg, #2AC9FC 0%, #AD2CFE 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'vscode-Gradation',
+    theme: 'vscode-gradation',
     windowTheme: 'boxy',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
@@ -1441,7 +1536,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(135deg, #77E6D0 0%, #C1A7F5 45%, #7461F0 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'Panda-Gradation',
+    theme: 'panda-light-gradation',
     windowTheme: 'none',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
@@ -1457,7 +1552,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(180deg, #F3C4D6 0%, #9E99ED 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'Panda-Gradation',
+    theme: 'panda-light-gradation',
     windowTheme: 'none',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',
@@ -1473,7 +1568,7 @@ export const DEFAULT_PRESETS = [
     backgroundGradient: 'linear-gradient(135deg, #677BE6 0%, #714EA6 100%)',
     backgroundGradientBlendMode: null,
     dropShadow: true,
-    theme: 'vscode-Gradation',
+    theme: 'vscode-gradation',
     windowTheme: 'none',
     codeMirrorBorder: false,
     codeMirrorBorderRadius: '12px',

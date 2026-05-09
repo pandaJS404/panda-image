@@ -35,6 +35,7 @@ function parse(value) {
   }
 }
 
+/** @param {import('../../modules/editor/config').EditorSettings} settings */
 export const saveSettings = async settings => {
   const storage = await getStorage()
   const nextStorage = createSectionedStorageFromState(settings, storage)
@@ -53,6 +54,7 @@ export const saveThemes = async themes =>
     themes: Array.isArray(themes) ? themes : [],
   })
 
+/** @returns {Promise<import('../../modules/editor/config').EditorSettings>} */
 export const getSettings = async () => {
   const storage = await getStorage()
   const mergedSettings = flattenStorageSections(storage)

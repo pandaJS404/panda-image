@@ -466,10 +466,12 @@ export async function clearValues(options = {}) {
   return true
 }
 
+/** @returns {Promise<import('./editor-config').SectionedStorage>} */
 export async function getStorage() {
   return readRootStorage()
 }
 
+/** @param {import('./editor-config').SectionedStorage} nextStorage */
 export async function setStorage(nextStorage) {
   return writeValue(STORAGE_ROOT_KEY, normalizeStorageShape(nextStorage))
 }
@@ -487,6 +489,10 @@ export async function setSection(section, value) {
   return cloneValue(nextStorage[section])
 }
 
+/**
+ * @param {import('./editor-config').StorageSectionName} section
+ * @param {Object} updates
+ */
 export async function patchSection(section, updates) {
   const storage = await readRootStorage()
   const nextStorage = mergeSection(storage, section, updates)
