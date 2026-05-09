@@ -37,6 +37,8 @@ import {
   getSquareExportBackgroundStyle,
   isStaticGradientActive,
 } from '../src/modules/editor/background'
+import { normalizeColorToHex } from '../src/modules/editor/color'
+import { resolveNeumorphismGradientFromBackground } from '../src/modules/editor/gradient'
 import { getDroppedFileLanguage, resolveLanguageMode } from '../src/modules/editor/language'
 import {
   fileToDataURL,
@@ -84,62 +86,6 @@ function pickChangedState(currentState, nextState) {
   return changedEntries.length ? Object.fromEntries(changedEntries) : null
 }
 
-function expandHexColor(value) {
-  const hexValue = String(value || '').trim()
-
-  if (/^#[0-9a-f]{3}$/i.test(hexValue)) {
-    return `#${hexValue
-      .slice(1)
-      .split('')
-      .map(character => character + character)
-      .join('')}`
-  }
-
-  if (/^#[0-9a-f]{6}$/i.test(hexValue)) {
-    return hexValue
-  }
-
-  return null
-}
-
-function rgbChannelToHex(value) {
-  const numericValue = Number.parseFloat(value)
-
-  if (!Number.isFinite(numericValue)) {
-    return null
-  }
-
-  const normalizedValue = value.includes('%')
-    ? Math.round((Math.min(Math.max(numericValue, 0), 100) / 100) * 255)
-    : Math.round(Math.min(Math.max(numericValue, 0), 255))
-
-  return normalizedValue.toString(16).padStart(2, '0')
-}
-
-function normalizeColorToHex(value, fallback = DEFAULT_SETTINGS.neumorphismColor) {
-  const hexValue = expandHexColor(value)
-
-  if (hexValue) {
-    return hexValue
-  }
-
-  const rgbMatch = String(value || '')
-    .trim()
-    .match(/^rgba?\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,)]+)(?:\s*,\s*[^)]+)?\)$/i)
-
-  if (!rgbMatch) {
-    return fallback
-  }
-
-  const channels = rgbMatch.slice(1, 4).map(rgbChannelToHex)
-
-  if (channels.some(channel => !channel)) {
-    return fallback
-  }
-
-  return `#${channels.join('')}`
-}
-
 function getNeumorphismCompatibleSettings(settings, options) {
   const nextSettings = constrainNeumorphismToBackground(settings, options)
 
@@ -168,7 +114,7 @@ function formatBackgroundPhotographerCredit(photographer) {
   return `${name} · ${sourceName}`
 }
 
-function hasConfiguredBackgroundImage(config = {}) {
+function hasBackgroundImageFields(config = {}) {
   return Boolean(
     config.backgroundImageSelection || config.backgroundImage || config.backgroundImageSource,
   )
@@ -191,157 +137,8 @@ function clearGradientBackgroundFields(config) {
   }
 }
 
-function splitGradientArguments(value) {
-  const parts = []
-  let current = ''
-  let depth = 0
-
-  for (const character of String(value || '')) {
-    if (character === '(') {
-      depth += 1
-    } else if (character === ')') {
-      depth = Math.max(0, depth - 1)
-    }
-
-    if (character === ',' && depth === 0) {
-      if (current.trim()) {
-        parts.push(current.trim())
-      }
-      current = ''
-      continue
-    }
-
-    current += character
-  }
-
-  if (current.trim()) {
-    parts.push(current.trim())
-  }
-
-  return parts
-}
-
-function resolveGradientAngle(token) {
-  const normalizedToken = String(token || '')
-    .trim()
-    .toLowerCase()
-
-  if (!normalizedToken) {
-    return DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('turn')) {
-    const turns = Number.parseFloat(normalizedToken)
-    return Number.isFinite(turns)
-      ? Number.parseFloat((turns * 360).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('rad')) {
-    const radians = Number.parseFloat(normalizedToken)
-    return Number.isFinite(radians)
-      ? Number.parseFloat(((radians * 180) / Math.PI).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('grad')) {
-    const grads = Number.parseFloat(normalizedToken)
-    return Number.isFinite(grads)
-      ? Number.parseFloat((grads * 0.9).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('deg')) {
-    const degrees = Number.parseFloat(normalizedToken)
-    return Number.isFinite(degrees)
-      ? Number.parseFloat(degrees.toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  switch (normalizedToken.replace(/\s+/g, ' ')) {
-    case 'to top':
-      return 0
-    case 'to top right':
-      return 45
-    case 'to right':
-      return 90
-    case 'to bottom right':
-      return 135
-    case 'to bottom':
-      return 180
-    case 'to bottom left':
-      return 225
-    case 'to left':
-      return 270
-    case 'to top left':
-      return 315
-    default:
-      return DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-}
-
-function extractGradientColor(token) {
-  const match = String(token || '')
-    .trim()
-    .match(/(#[0-9a-f]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/i)
-
-  return match ? match[1] : null
-}
-
-function resolveNeumorphismGradientFromBackground(gradient) {
-  if (typeof gradient !== 'string' || !/gradient\(/i.test(gradient)) {
-    return null
-  }
-
-  const openParenIndex = gradient.indexOf('(')
-  const closeParenIndex = gradient.lastIndexOf(')')
-
-  if (openParenIndex === -1 || closeParenIndex === -1 || closeParenIndex <= openParenIndex) {
-    return null
-  }
-
-  const gradientBody = gradient.slice(openParenIndex + 1, closeParenIndex)
-  const gradientParts = splitGradientArguments(gradientBody)
-
-  if (!gradientParts.length) {
-    return null
-  }
-
-  const firstPart = gradientParts[0]
-  const hasExplicitDirection =
-    /^(to\s+|[-+]?\d+(?:\.\d+)?(?:deg|rad|turn|grad))$/i.test(firstPart.trim()) ||
-    /^to\s+/i.test(firstPart.trim())
-  const colorParts = (hasExplicitDirection ? gradientParts.slice(1) : gradientParts)
-    .map(extractGradientColor)
-    .filter(Boolean)
-
-  if (colorParts.length < 2) {
-    return null
-  }
-
-  return {
-    neumorphismColorMode: 'gradient',
-    neumorphismGradientStart: normalizeColorToHex(
-      colorParts[0],
-      DEFAULT_SETTINGS.neumorphismGradientStart,
-    ),
-    neumorphismGradientEnd: normalizeColorToHex(
-      colorParts[colorParts.length - 1],
-      DEFAULT_SETTINGS.neumorphismGradientEnd,
-    ),
-    neumorphismGradientAngle: hasExplicitDirection
-      ? resolveGradientAngle(firstPart)
-      : DEFAULT_SETTINGS.neumorphismGradientAngle,
-  }
-}
-
 function isConfiguredBackgroundImage(config = {}) {
-  return Boolean(
-    config.backgroundMode === 'image' ||
-    config.backgroundImageSelection ||
-    config.backgroundImage ||
-    config.backgroundImageSource,
-  )
+  return config.backgroundMode === 'image' || hasBackgroundImageFields(config)
 }
 
 function constrainNeumorphismToBackground(settings = {}, { enforceBackgroundMode = false } = {}) {
@@ -386,7 +183,7 @@ function normalizeRestoredBackgroundState(config = {}) {
   }
 
   if (config.backgroundMode === 'image') {
-    if (hasConfiguredBackgroundImage(config)) {
+    if (hasBackgroundImageFields(config)) {
       return clearGradientBackgroundFields(config)
     }
 
@@ -990,6 +787,10 @@ class Editor extends React.Component {
   }
 
   onDrop = ([file]) => {
+    if (!file) {
+      return
+    }
+
     const isImageFile =
       file.type.split('/')[0] === 'image' ||
       (typeof file.content === 'string' && file.content.startsWith('data:image/'))

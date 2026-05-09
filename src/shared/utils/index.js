@@ -12,14 +12,11 @@ import {
   setStorage,
 } from '../storage/editor-db'
 import {
-  ASSET_KEYS,
   createSectionedStorageFromState,
   flattenStorageSections,
   normalizeImportedConfig,
   normalizeStorageShape,
-  SETTINGS_SECTION_KEYS,
   STORAGE_SECTIONS,
-  WATERMARK_ASSET_KEYS,
 } from '../storage/editor-config'
 
 export const unescapeHtml = htmlUnescape

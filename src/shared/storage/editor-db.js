@@ -1,9 +1,4 @@
-import {
-  createEmptyStorage,
-  normalizeStorageShape,
-  SETTINGS_SECTION_KEYS,
-  STORAGE_SECTION_LIST,
-} from './editor-config'
+import { normalizeStorageShape, SETTINGS_SECTION_KEYS } from './editor-config'
 
 const DB_NAME = 'panda-editor'
 const DB_VERSION = 1

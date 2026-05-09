@@ -26,6 +26,7 @@ import {
   DEFAULT_WIDTHS,
   THEMES_HASH,
 } from '../src/modules/editor/config'
+import { resolveNeumorphismGradientDefaults } from '../src/modules/editor/gradient'
 import {
   getPresets,
   savePresets,
@@ -115,198 +116,6 @@ function getSliderMarks(minValue, maxValue, unit) {
   }
 }
 
-function expandHexColor(value) {
-  const hexValue = String(value || '').trim()
-
-  if (/^#[0-9a-f]{3}$/i.test(hexValue)) {
-    return `#${hexValue
-      .slice(1)
-      .split('')
-      .map(character => character + character)
-      .join('')}`
-  }
-
-  if (/^#[0-9a-f]{6}$/i.test(hexValue)) {
-    return hexValue
-  }
-
-  return null
-}
-
-function rgbChannelToHex(value) {
-  const numericValue = Number.parseFloat(value)
-
-  if (!Number.isFinite(numericValue)) {
-    return null
-  }
-
-  const normalizedValue = value.includes('%')
-    ? Math.round((Math.min(Math.max(numericValue, 0), 100) / 100) * 255)
-    : Math.round(Math.min(Math.max(numericValue, 0), 255))
-
-  return normalizedValue.toString(16).padStart(2, '0')
-}
-
-function normalizeColorToHex(value, fallback) {
-  const hexValue = expandHexColor(value)
-
-  if (hexValue) {
-    return hexValue
-  }
-
-  const rgbMatch = String(value || '')
-    .trim()
-    .match(/^rgba?\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,)]+)(?:\s*,\s*[^)]+)?\)$/i)
-
-  if (!rgbMatch) {
-    return fallback
-  }
-
-  const channels = rgbMatch.slice(1, 4).map(rgbChannelToHex)
-
-  if (channels.some(channel => !channel)) {
-    return fallback
-  }
-
-  return `#${channels.join('')}`
-}
-
-function splitGradientArguments(value) {
-  const parts = []
-  let current = ''
-  let depth = 0
-
-  for (const character of String(value || '')) {
-    if (character === '(') {
-      depth += 1
-    } else if (character === ')') {
-      depth = Math.max(0, depth - 1)
-    }
-
-    if (character === ',' && depth === 0) {
-      if (current.trim()) {
-        parts.push(current.trim())
-      }
-      current = ''
-      continue
-    }
-
-    current += character
-  }
-
-  if (current.trim()) {
-    parts.push(current.trim())
-  }
-
-  return parts
-}
-
-function resolveGradientAngle(token) {
-  const normalizedToken = String(token || '')
-    .trim()
-    .toLowerCase()
-
-  if (normalizedToken.endsWith('turn')) {
-    const turns = Number.parseFloat(normalizedToken)
-    return Number.isFinite(turns)
-      ? Number.parseFloat((turns * 360).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('rad')) {
-    const radians = Number.parseFloat(normalizedToken)
-    return Number.isFinite(radians)
-      ? Number.parseFloat(((radians * 180) / Math.PI).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('grad')) {
-    const grads = Number.parseFloat(normalizedToken)
-    return Number.isFinite(grads)
-      ? Number.parseFloat((grads * 0.9).toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  if (normalizedToken.endsWith('deg')) {
-    const degrees = Number.parseFloat(normalizedToken)
-    return Number.isFinite(degrees)
-      ? Number.parseFloat(degrees.toFixed(2))
-      : DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-
-  switch (normalizedToken.replace(/\s+/g, ' ')) {
-    case 'to top':
-      return 0
-    case 'to top right':
-      return 45
-    case 'to right':
-      return 90
-    case 'to bottom right':
-      return 135
-    case 'to bottom':
-      return 180
-    case 'to bottom left':
-      return 225
-    case 'to left':
-      return 270
-    case 'to top left':
-      return 315
-    default:
-      return DEFAULT_SETTINGS.neumorphismGradientAngle
-  }
-}
-
-function extractGradientColor(token) {
-  const match = String(token || '')
-    .trim()
-    .match(/(#[0-9a-f]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/i)
-
-  return match ? match[1] : null
-}
-
-function resolveNeumorphismGradientDefaults(gradient) {
-  const fallback = {
-    start: DEFAULT_SETTINGS.neumorphismGradientStart,
-    end: DEFAULT_SETTINGS.neumorphismGradientEnd,
-    angle: DEFAULT_SETTINGS.neumorphismGradientAngle,
-  }
-
-  if (typeof gradient !== 'string' || !/gradient\(/i.test(gradient)) {
-    return fallback
-  }
-
-  const openParenIndex = gradient.indexOf('(')
-  const closeParenIndex = gradient.lastIndexOf(')')
-
-  if (openParenIndex === -1 || closeParenIndex === -1 || closeParenIndex <= openParenIndex) {
-    return fallback
-  }
-
-  const gradientParts = splitGradientArguments(gradient.slice(openParenIndex + 1, closeParenIndex))
-  const firstPart = gradientParts[0] || ''
-  const hasExplicitDirection =
-    /^(to\s+|[-+]?\d+(?:\.\d+)?(?:deg|rad|turn|grad))$/i.test(firstPart.trim()) ||
-    /^to\s+/i.test(firstPart.trim())
-  const colorParts = (hasExplicitDirection ? gradientParts.slice(1) : gradientParts)
-    .map(extractGradientColor)
-    .filter(Boolean)
-
-  if (colorParts.length < 2) {
-    return fallback
-  }
-
-  return {
-    start: normalizeColorToHex(colorParts[0], DEFAULT_SETTINGS.neumorphismGradientStart),
-    end: normalizeColorToHex(
-      colorParts[colorParts.length - 1],
-      DEFAULT_SETTINGS.neumorphismGradientEnd,
-    ),
-    angle: hasExplicitDirection
-      ? resolveGradientAngle(firstPart)
-      : DEFAULT_SETTINGS.neumorphismGradientAngle,
-  }
-}
-
 function KeyboardShortcut({ trigger, handle }) {
   useKeyboardListener(trigger, handle)
   return null
@@ -388,6 +197,7 @@ function SettingsColorField({
   onClear,
   clearLabel = '重置',
   disabled = false,
+  disableAlpha = false,
 }) {
   const [open, setOpen] = React.useState(false)
   const displayColor = value || fallbackColor
@@ -399,11 +209,16 @@ function SettingsColorField({
         return
       }
 
+      if (disableAlpha && nextColor?.hex) {
+        onChange(nextColor.hex)
+        return
+      }
+
       if (nextColor?.rgb) {
         onChange(stringifyColor(nextColor))
       }
     },
-    [onChange],
+    [onChange, disableAlpha],
   )
 
   return (
@@ -423,7 +238,7 @@ function SettingsColorField({
           getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
           content={
             <div className="settings-color-popover__content">
-              <ColorPicker color={displayColor} onChange={handleChange} />
+              <ColorPicker color={displayColor} onChange={handleChange} disableAlpha={disableAlpha} />
             </div>
           }
         >
@@ -445,78 +260,6 @@ function SettingsColorField({
         {onClear ? (
           <ButtonPrimitive className="settings-color-clear" disabled={disabled} onClick={onClear}>
             {clearLabel}
-          </ButtonPrimitive>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
-function HexColorField({
-  className = '',
-  label,
-  value,
-  onChange,
-  fallbackColor,
-  onClear,
-  disabled = false,
-}) {
-  const [open, setOpen] = React.useState(false)
-  const displayColor = value || fallbackColor
-
-  const handleChange = React.useCallback(
-    nextColor => {
-      if (typeof nextColor === 'string') {
-        onChange(nextColor)
-        return
-      }
-
-      if (nextColor?.hex) {
-        onChange(nextColor.hex)
-      }
-    },
-    [onChange],
-  )
-
-  return (
-    <div
-      className={`settings-row settings-color-row${className ? ` ${className}` : ''}`}
-      data-disabled={disabled || undefined}
-    >
-      <span className="settings-slider-label">{label}</span>
-      <div className="settings-color-actions">
-        <Popover
-          trigger="click"
-          placement="bottomRight"
-          open={disabled ? false : open}
-          onOpenChange={nextOpen => setOpen(disabled ? false : nextOpen)}
-          classNames={{ root: 'settings-color-popover' }}
-          styles={{ body: { padding: 0 } }}
-          getPopupContainer={triggerNode => triggerNode.parentElement || document.body}
-          content={
-            <div className="settings-color-popover__content">
-              <ColorPicker color={displayColor} onChange={handleChange} disableAlpha />
-            </div>
-          }
-        >
-          <ButtonPrimitive
-            active={open}
-            className="settings-color-trigger"
-            aria-label={label}
-            aria-tooltip={label}
-            disabled={disabled}
-          >
-            <span className="settings-color-trigger__alpha" aria-hidden="true" />
-            <span
-              className="settings-color-trigger__swatch"
-              aria-hidden="true"
-              style={{ background: displayColor }}
-            />
-          </ButtonPrimitive>
-        </Popover>
-        {onClear ? (
-          <ButtonPrimitive className="settings-color-clear" disabled={disabled} onClick={onClear}>
-            重置
           </ButtonPrimitive>
         ) : null}
       </div>
@@ -705,19 +448,21 @@ function NeumorphismSettings({
       />
       {showNeumorphismOptions && resolvedColorMode === 'gradient' ? (
         <>
-          <HexColorField
+          <SettingsColorField
             label="起始色"
             value={neumorphismGradientStart}
             fallbackColor={neumorphismGradientStart || DEFAULT_SETTINGS.neumorphismGradientStart}
             disabled={isImageBackground}
+            disableAlpha
             onChange={onChange.bind(null, 'neumorphismGradientStart')}
             onClear={onChange.bind(null, 'neumorphismGradientStart', gradientDefaults.start)}
           />
-          <HexColorField
+          <SettingsColorField
             label="结束色"
             value={neumorphismGradientEnd}
             fallbackColor={neumorphismGradientEnd || DEFAULT_SETTINGS.neumorphismGradientEnd}
             disabled={isImageBackground}
+            disableAlpha
             onChange={onChange.bind(null, 'neumorphismGradientEnd')}
             onClear={onChange.bind(null, 'neumorphismGradientEnd', gradientDefaults.end)}
           />
@@ -734,11 +479,12 @@ function NeumorphismSettings({
         </>
       ) : null}
       {showNeumorphismOptions && resolvedColorMode !== 'gradient' ? (
-        <HexColorField
+        <SettingsColorField
           label="单色基色"
           value={neumorphismColor}
           fallbackColor={solidBackgroundColor}
           disabled={isImageBackground}
+          disableAlpha
           onChange={onChange.bind(null, 'neumorphismColor')}
           onClear={onChange.bind(null, 'neumorphismColor', solidBackgroundColor)}
         />
@@ -1132,11 +878,15 @@ function Settings(props) {
   const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
-    void getPresets().then(storedPresets => {
-      if (storedPresets?.length) {
-        setPresets(currentPresets => [...storedPresets, ...currentPresets])
-      }
-    })
+    void getPresets()
+      .then(storedPresets => {
+        if (storedPresets?.length) {
+          setPresets(currentPresets => [...storedPresets, ...currentPresets])
+        }
+      })
+      .catch(error => {
+        console.warn('[Settings] Failed to load presets:', error)
+      })
   }, [])
 
   const handleResetAll = React.useCallback(() => {
@@ -1262,7 +1012,7 @@ function Settings(props) {
 
       setPresets(currentPresets => {
         const nextPresets = currentPresets.filter(currentPreset => currentPreset.id !== id)
-        savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
+        void savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
         return nextPresets
       })
     },
@@ -1284,7 +1034,7 @@ function Settings(props) {
 
     setPresets(currentPresets => {
       const nextPresets = [newPreset, ...currentPresets]
-      savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
+      void savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
       return nextPresets
     })
     setPreviousSettings(null)

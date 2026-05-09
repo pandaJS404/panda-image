@@ -74,10 +74,15 @@ function EditorContainer() {
           updateThemes(currentThemes => [...storedThemes, ...currentThemes])
         }
       })
+      .catch(error => {
+        console.warn('[EditorContainer] Failed to initialize from storage:', error)
+      })
   }, [])
 
   React.useEffect(() => {
-    void saveThemes(themes.filter(({ custom }) => custom))
+    void saveThemes(themes.filter(({ custom }) => custom)).catch(error => {
+      console.warn('[EditorContainer] Failed to save themes:', error)
+    })
   }, [themes])
 
   const persistEditorState = React.useCallback(async state => {

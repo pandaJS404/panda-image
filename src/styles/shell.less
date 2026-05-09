@@ -80,50 +80,6 @@
   box-shadow: 0 0 0 2px var(--control-focus-ring);
 }
 
-.theme-toggle__switch-shell {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 auto;
-  width: var(--switch-host-width);
-  height: var(--switch-host-height);
-}
-
-.theme-toggle {
-  flex: 0 0 auto;
-  width: 100%;
-  height: 100%;
-}
-
-.theme-toggle__state-icon {
-  position: absolute;
-  top: var(--switch-host-icon-top);
-  left: var(--switch-host-icon-unchecked-left);
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--switch-host-icon-size);
-  height: var(--switch-host-icon-size);
-  pointer-events: none;
-  color: var(--switch-host-icon-color);
-  transition:
-    left 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.theme-toggle__switch-shell[data-checked='true'] .theme-toggle__state-icon {
-  left: var(--switch-host-icon-checked-left);
-  color: var(--switch-host-icon-checked-color);
-}
-
-.theme-toggle__state-icon :where(svg) {
-  display: block;
-  width: 1em;
-  height: 1em;
-  flex: none;
-}
-
 .theme-toggle__label {
   font-size: 12px;
   font-weight: 600;

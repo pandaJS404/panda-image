@@ -2,7 +2,6 @@ import React from 'react'
 import { DeleteOutlined } from '@ant-design/icons'
 
 import ButtonPrimitive from './buttons/ButtonPrimitive'
-import { DEFAULT_PRESETS } from '../src/modules/editor/config'
 
 const WINDOW_THEME_LABELS = {
   none: '无窗口',

@@ -119,7 +119,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
                 />
               </div>
               <div className="export-row export-row--stacked">
-                <span className="export-menu-filename">文件名</span>
+                <span className="export-menu-filename">导出尺寸</span>
                 <Segmented
                   block
                   className="export-size-segmented"
