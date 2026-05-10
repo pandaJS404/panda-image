@@ -70,7 +70,6 @@ const EXPORT_STAGE_STYLES = {
   opacity: '0',
   pointerEvents: 'none',
   zIndex: '-1',
-  contain: 'layout style paint',
 }
 const NEUMORPHISM_CONFLICTING_SETTINGS = {
   codeMirrorBorder: false,
@@ -515,8 +514,6 @@ class Editor extends React.Component {
       clone.style.backgroundRepeat = ''
       clone.style.backgroundBlendMode = ''
     }
-    clone.style.alignItems = 'start'
-    clone.style.justifyContent = 'start'
 
     stage.appendChild(clone)
     document.body.appendChild(stage)
@@ -539,6 +536,8 @@ class Editor extends React.Component {
       if (this.state.backgroundMode === 'image') {
         await this.prepareExportBackgroundImage(exportTarget.node)
       }
+
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
       return await snapdom(exportTarget.node, {
         scale: exportSize,

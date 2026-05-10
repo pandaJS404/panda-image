@@ -492,13 +492,13 @@
   justify-content: flex-start;
   width: 100%;
   height: 100%;
-  min-height: 118px;
+  min-height: 108px;
   padding: 0;
   margin-inline-end: 0;
   overflow: hidden;
-  border-radius: var(--control-radius);
-  border: 1px solid var(--control-border);
-  background: var(--control-surface);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-1);
   color: var(--text-primary);
   box-shadow: none;
   line-height: normal;
@@ -519,9 +519,9 @@
 .preset-preview-button:focus-visible,
 .preset-preview-button:focus-within {
   transform: translateY(-1px);
-  border-color: var(--control-border-hover);
-  background: var(--control-surface-hover);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .preset-preview-button[data-selected='true'],
@@ -534,17 +534,18 @@
 .preset-preview-button:hover .preset-preview-image,
 .preset-preview-button:focus-visible .preset-preview-image,
 .preset-preview-button:focus-within .preset-preview-image {
-  filter: brightness(1.06);
-  transform: scale(1.03);
+  filter: brightness(1.04);
+  transform: scale(1.02);
 }
 
 .preset-preview-image {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 8;
+  aspect-ratio: 16 / 9;
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
+  border-radius: 7px 7px 0 0;
   transition: var(--interactive-transition);
 }
 
@@ -552,18 +553,18 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
-  padding: 8px;
+  padding: 6px 8px;
   text-align: left;
 }
 
 .preset-card-title {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -572,22 +573,28 @@
   display: block;
   overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 15px;
+  font-size: 10px;
+  line-height: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .preset-remove-button {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 4px;
+  right: 4px;
   min-width: 20px;
   min-height: 20px;
   background-color: var(--surface-1);
   border-color: var(--border-subtle);
-  border-radius: var(--control-radius);
+  border-radius: 6px;
   padding: 0;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.preset-container:hover .preset-remove-button {
+  opacity: 1;
 }
 
 .settings-presets-create-button {

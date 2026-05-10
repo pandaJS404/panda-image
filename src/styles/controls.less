@@ -487,23 +487,23 @@
 .settings-presets {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  padding: 10px 8px;
+  padding: 6px 4px;
 }
 
 .settings-presets-header {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: var(--control-height);
+  min-height: var(--control-height-sm);
 }
 
 .settings-presets-content {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   align-items: stretch;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
 }
 
@@ -518,19 +518,22 @@
 }
 
 .settings-presets-group-title {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
+  padding: 4px 0 2px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 14px;
+  text-transform: uppercase;
 }
 
 .settings-presets-empty {
-  padding: 10px;
-  border: 1px dashed var(--control-border);
+  padding: 16px 10px;
+  border: 1px dashed var(--border-subtle);
   border-radius: var(--control-radius);
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 18px;
+  color: var(--text-quaternary);
+  font-size: 11px;
+  line-height: 16px;
   text-align: center;
 }
 

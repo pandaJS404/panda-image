@@ -90,7 +90,7 @@ const Preset = React.memo(({ remove, apply, selected, preset, title, description
 })
 
 const Presets = React.memo(
-  ({ create, undo, presets, selected, remove, apply, applied, contentRef }) => {
+  ({ create, creating, undo, presets, selected, remove, apply, applied, contentRef }) => {
     const customPresets = presets.filter(preset => preset.custom)
     const defaultPresets = presets.filter(preset => !preset.custom)
     const renderPreset = (preset, index) => (
@@ -108,8 +108,13 @@ const Presets = React.memo(
     return (
       <div className="settings-presets">
         <div className="settings-presets-header">
-          <ButtonPrimitive fullWidth onClick={create} className="settings-presets-create-button">
-            存为模板
+          <ButtonPrimitive
+            fullWidth
+            onClick={create}
+            loading={creating}
+            className="settings-presets-create-button"
+          >
+            {creating ? '保存中…' : '存为模板'}
           </ButtonPrimitive>
         </div>
         <div className="settings-presets-content" ref={contentRef} role="radiogroup">

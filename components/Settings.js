@@ -174,25 +174,33 @@ function Settings(props) {
     [props],
   )
 
+  const [creating, setCreating] = React.useState(false)
+
   const createPreset = React.useCallback(async () => {
-    const newPreset = getSettingsFromProps()
+    setCreating(true)
 
-    newPreset.id = `preset:${generateId()}`
-    newPreset.custom = true
-    newPreset.icon = await props.getPandaImage({
-      format: 'png',
-      squared: true,
-      exportSize: 1,
-    })
+    try {
+      const newPreset = getSettingsFromProps()
 
-    props.onChange('preset', newPreset.id)
+      newPreset.id = `preset:${generateId()}`
+      newPreset.custom = true
+      newPreset.icon = await props.getPandaImage({
+        format: 'png',
+        squared: true,
+        exportSize: 1,
+      })
 
-    setPresets(currentPresets => {
-      const nextPresets = [newPreset, ...currentPresets]
-      void savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
-      return nextPresets
-    })
-    setPreviousSettings(null)
+      props.onChange('preset', newPreset.id)
+
+      setPresets(currentPresets => {
+        const nextPresets = [newPreset, ...currentPresets]
+        void savePresets(nextPresets.filter(currentPreset => currentPreset.custom))
+        return nextPresets
+      })
+      setPreviousSettings(null)
+    } finally {
+      setCreating(false)
+    }
   }, [getSettingsFromProps, props])
 
   const tabItems = [
@@ -207,6 +215,7 @@ function Settings(props) {
           undo={undoPreset}
           remove={removePreset}
           create={createPreset}
+          creating={creating}
           applied={Boolean(previousSettings)}
         />
       ),
