@@ -936,6 +936,7 @@ class Editor extends React.Component {
       exportSize,
       highlights,
       language,
+      name,
       titleBar,
     } = this.state
 
@@ -1006,6 +1007,7 @@ class Editor extends React.Component {
               onChange={this.updateSetting}
               exportImage={this.exportImage}
               exportSize={exportSize}
+              filename={name}
             />
           }
         />

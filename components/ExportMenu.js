@@ -1,12 +1,10 @@
 import React from 'react'
-import { DownOutlined } from '@ant-design/icons'
 import { Modal, Segmented } from 'antd'
 import { useKeyboardListener, useAsyncCallback } from '../src/shared/react/hooks'
 
 import { EXPORT_SIZES, EXPORT_SIZES_HASH } from '../src/modules/editor/config'
 import Input from './Input'
-import ButtonPrimitive from './buttons/ButtonPrimitive'
-import ToolbarButton from './buttons/ToolbarButton'
+import RainbowButton from './buttons/RainbowButton'
 
 const EXPORT_FORMATS = [
   { id: 'export-png', label: 'PNG', format: 'blob' },
@@ -24,13 +22,13 @@ function preventDefault(fn) {
   }
 }
 
-function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
-  const inputRef = React.useRef(null)
+function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage, filename = '' }) {
   const [open, setOpen] = React.useState(false)
   const [exportImage, { loading }] = useAsyncCallback(exportPandaImage)
 
   const getFilename = () => {
-    return inputRef.current?.input?.value || inputRef.current?.value || undefined
+    const nextFilename = filename.trim()
+    return nextFilename || undefined
   }
 
   const handleQuickExport = React.useCallback(
@@ -66,9 +64,7 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
   return (
     <div className="export-menu-container export-menu-container--brand">
       <div className="export-trigger">
-        <ToolbarButton
-          justify="center"
-          tone="brand"
+        <RainbowButton
           onClick={handleQuickExport}
           data-cy="quick-export-button"
           className="export-trigger-button export-trigger-button--quick"
@@ -76,23 +72,18 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
           aria-tooltip="快速导出"
         >
           {loading ? '导出中…' : '快速导出'}
-        </ToolbarButton>
-        <ToolbarButton
+        </RainbowButton>
+        <RainbowButton
           id="export-menu"
           active={open}
-          justify="between"
-          tone="brand"
           className="export-trigger-button export-trigger-button--menu"
           data-cy="export-button"
           data-role="menu"
           aria-tooltip="导出菜单"
           onClick={() => setOpen(true)}
         >
-          <span className="export-trigger-button__label">{'导出'}</span>
-          <span className="export-trigger-button__icon">
-            <DownOutlined />
-          </span>
-        </ToolbarButton>
+          {'导出配置'}
+        </RainbowButton>
         <Modal
           open={open}
           title="导出"
@@ -111,11 +102,12 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
               <div className="export-row">
                 <span className="export-menu-filename">文件名</span>
                 <Input
-                  ref={inputRef}
                   title="文件名"
                   placeholder="panda"
                   tone="brand"
                   fieldClassName="export-filename-field"
+                  value={filename}
+                  onChange={event => onChange('name', event.target.value)}
                 />
               </div>
               <div className="export-row export-row--stacked">
@@ -130,36 +122,36 @@ function ExportMenu({ onChange, exportSize, exportImage: exportPandaImage }) {
               </div>
               <div className="export-row export-row--actions">
                 <div className="export-action-stack">
-                  <ButtonPrimitive
+                  <RainbowButton
                     fullWidth
-                    className="export-open-button export-preview-button"
+                    className="export-open-button export-preview-button export-modal-rainbow-button"
                     onClick={handlePreviewExport}
                     disabled={loading}
                   >
                     预览
-                  </ButtonPrimitive>
-                  <ButtonPrimitive
+                  </RainbowButton>
+                  <RainbowButton
                     fullWidth
-                    className="export-download-button"
+                    className="export-download-button export-modal-rainbow-button"
                     onClick={handleModalExport('blob')}
                     disabled={loading}
                   >
                     导出
-                  </ButtonPrimitive>
+                  </RainbowButton>
                 </div>
                 <div className="export-save-container export-save-container--brand">
                   <span>下载</span>
                   <div className="export-format-actions">
                     {EXPORT_FORMATS.map(({ id, label, format }) => (
-                      <ButtonPrimitive
+                      <RainbowButton
                         key={id}
-                        className="export-format-button"
+                        className="export-format-button export-format-rainbow-button"
                         onClick={handleModalExport(format)}
                         id={id}
                         disabled={loading}
                       >
                         {label}
-                      </ButtonPrimitive>
+                      </RainbowButton>
                     ))}
                   </div>
                 </div>

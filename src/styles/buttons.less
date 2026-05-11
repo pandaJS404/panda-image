@@ -90,11 +90,11 @@
 
   .toolbar-group--export {
     .export-trigger-button--quick {
-      min-width: 112px;
+      min-width: 144px;
     }
 
     .export-trigger-button--menu {
-      min-width: 92px;
+      min-width: 120px;
     }
 
     .export-trigger-button__label,
@@ -105,7 +105,7 @@
     }
 
     .export-trigger-button__icon {
-      color: var(--accent);
+      color: currentColor;
     }
   }
 
@@ -355,16 +355,11 @@
 .settings-presets-create-button,
 .settings-presets-undo,
 .export-size-option,
-.export-format-button,
 .theme-item-remove-button {
   padding-inline: 0;
   background: transparent;
   border-color: transparent;
   box-shadow: none;
-}
-
-.export-format-button {
-  padding: 10px;
 }
 
 .image-picker-mode-button {
@@ -621,51 +616,22 @@
   justify-content: center;
   flex: 1 1 auto;
   min-height: 56px;
-  color: var(--accent);
 }
 
 .export-download-button {
   justify-content: center;
   flex: 1 1 auto;
   min-height: 56px;
-  color: var(--accent);
 }
 
-.export-size-option,
-.export-format-button {
+.export-size-option {
   justify-content: center;
   color: var(--text-secondary);
 }
 
-.export-format-actions .export-format-button,
-.export-format-actions .export-format-button.ant-btn {
-  border-color: var(--border-subtle);
-}
-
 .export-size-option[data-selected='true'],
-.export-format-button:hover,
-.export-format-button:focus-visible {
+.export-size-option[data-selected='true'] {
   color: var(--accent);
-}
-
-.export-format-actions .export-format-button:hover,
-.export-format-actions .export-format-button:focus-visible,
-.export-format-actions .export-format-button:active,
-.export-format-actions .export-format-button.ant-btn:hover,
-.export-format-actions .export-format-button.ant-btn:focus-visible,
-.export-format-actions .export-format-button.ant-btn:active,
-.export-format-actions .export-format-button.ant-btn.ant-btn-default:hover,
-.export-format-actions .export-format-button.ant-btn.ant-btn-default:focus-visible,
-.export-format-actions .export-format-button.ant-btn.ant-btn-default:active,
-.export-format-actions
-  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:hover,
-.export-format-actions
-  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:focus-visible,
-.export-format-actions
-  .export-format-button.ant-btn.ant-btn-color-default.ant-btn-variant-outlined:active {
-  border-color: var(--control-selected-border);
-  background: var(--control-selected-surface);
-  box-shadow: none;
 }
 
 .list-setting-display-button.ant-select {
