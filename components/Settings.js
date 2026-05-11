@@ -40,7 +40,7 @@ function Settings(props) {
         }
       })
       .catch(error => {
-        console.warn('[Settings] Failed to load presets:', error)
+        console.error('[Settings] Failed to load presets:', error)
       })
   }, [])
 

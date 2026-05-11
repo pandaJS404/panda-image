@@ -74,13 +74,13 @@ function EditorContainer() {
         }
       })
       .catch(error => {
-        console.warn('[EditorContainer] Failed to initialize from storage:', error)
+        console.error('[EditorContainer] Failed to initialize from storage:', error)
       })
   }, [])
 
   React.useEffect(() => {
     void saveThemes(themes.filter(({ custom }) => custom)).catch(error => {
-      console.warn('[EditorContainer] Failed to save themes:', error)
+      console.error('[EditorContainer] Failed to save themes:', error)
     })
   }, [themes])
 
